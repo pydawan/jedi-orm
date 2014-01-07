@@ -26,7 +26,7 @@ import jedi.db.annotations.fields.ManyToManyField;
 import jedi.db.models.Manager;
 
 /**
- * Classe do Mecanismo de Mapeamento Objeto-Relacional.
+ * Jedi's Object-Relational Mapping Engine.
  * 
  * @author Thiago Alexandre Martins Monteiro
  *
@@ -34,76 +34,78 @@ import jedi.db.models.Manager;
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class JediORMEngine {
 	
-	// Diretório raiz da aplicação.
+	// Application's root directory.
 	public static String app_root_dir = System.getProperty("user.dir");
 	
-	// Diretório dos códigos-fonte da aplicação.
+	// Application's source code directory.
 	public static String app_src_dir = String.format("%s/web/WEB-INF/src", app_root_dir);
 	
 	public static String app_db_config = String.format("%s/web/WEB-INF/config/database.properties", JediORMEngine.app_root_dir);
 	
-	// Diretório de arquivos de model deste framework.
+	// Framework's model directory.
 	public static final String jedi_db_models = String.format("jedi%sdb%smodels", File.separator, File.separator, File.separator);
 	
-	// Modelos da aplicação lidos e que serão mapeados em tabelas por este framework.
+	// Application's models that were read and that will be mapped in tables.
 	public static List<String> readed_app_models = new ArrayList<String>();
 	
-	// Tabelas geradas.
+	// Generated tables.
 	public static List<String> generated_tables = new ArrayList<String>();
 	
 	/**
-	 * Método responsável por converter modelos da aplicação em tabelas no banco de dados.
+	 * Converts model objects of a application in database tables.
 	 * 
 	 * @author Thiago Alexandre Martins Monteiro
 	 * @param path
 	 */
 	public static void syncdb(String path) {
 		
-		// Referenciando o diretório da aplicação.
+		// Referencing the application's directory.
 		File app_dir = new File(path);
 
-		// Verificando se app_dir existe.
+		// Verify if the app_dir exists.
 		if (app_dir != null && app_dir.exists() ) {
 			
-			// Verificando se app_dir é um diretório e não um arquivo (tanto arquivos como diretórios são referenciados por File).
+			// Verify if app_dir is a directory and not a file (both are referenced as a File object).
 			if (app_dir.isDirectory() ) {
 				
-				// Obtendo o conteúdo (arquivos e sub-diretórios) de app_dir (diretório da aplicação).
+				// Gets the app_dir content.
 				File[] app_dir_contents = app_dir.listFiles();
 				
-				// Procurando pelo sub-diretório app/models no conteúdo de app_dir.
+				// Searching for app/models sub-directory in the app_dir content.
 				for (File app_dir_content : app_dir_contents) {
 					
-					// Obtém todos os diretórios models que não sejam do framework.					
+					// Gets all directories named as "models" (except the models directory of the Framework).					
 					if (!app_dir_content.getAbsolutePath().contains(JediORMEngine.jedi_db_models) && app_dir_content.getAbsolutePath().endsWith("models") ) {
 						
-						// Obter a lista de arquivos de app/models.
+						// Gets all files in app/models.
 						File[] app_models_files = app_dir_content.listFiles();
 						
-						//Strings para criação de instruções SQL.
+						// Strings for SQL statements generation.
 						
-						// SQL geral.
+						// General SQL.
 						String sql = "";
 						
-						// SQL para criação de índices (indexes).
+						// SQL for the indexes generation.
 						String sql_index = "";
 						
-						// SQL para criação de chaves estrangeiras (foreign keys).
+						// SQL for the foreign key generation.
 						String sql_foreign_key = "";
 						
-						// SQL para criação de relações de relacionamento (tabela de associações).
+						// SQL for the generation of association tables (many to many tables).
 						String sql_many_to_many_association = "";
 						
+						// SQL for the ORACLE® auto increment triggers generation.
 						Map<String, String> sql_oracle_auto_increment_triggers = new HashMap<String, String>();
 						
+						// SQL for the ORACLE® sequences generation.
 						String sql_oracle_sequences = "";
 						
-						// Triggers para DATETIME no MySQL.
+						// SQL for the MySQL DATETIME triggers generation.
 						List<String> mysql_datetime_triggers = new ArrayList<String>();
 						
 						int mysql_version_number = 0;
 						
-						// Obtendo uma conexão com o banco de dados por meio de uma fábrica de conexões.
+						// Gets a connection with the database through the connections factory.
 						Connection conn = ConnectionFactory.getConnection();
 						
 						Statement stmt = null;
@@ -112,14 +114,13 @@ public abstract class JediORMEngine {
 						
 						try {
 							
-							// Desabilitando o auto-commit.
+							// Disable the auto-commit.
 							conn.setAutoCommit(false);
 							
 							stmt = conn.createStatement();
 							
 							Properties database_settings = new Properties();
 							
-							// BUG: Se o arquivo nao for encontrado tem que encerrar aqui ou lancar excecao.
 							FileInputStream file_input_stream = new FileInputStream(app_db_config);
 							
 							database_settings.load(file_input_stream);
@@ -130,21 +131,20 @@ public abstract class JediORMEngine {
 							e.printStackTrace();
 						}
 						
-						// Realizando o mapeamento ORM (criando a estrutura de banco de dados) para cada classe de modelo do projeto da aplicação.
+						// ORM Mapping - generates the database structure for each model class of the application.
 						for (File app_model_file : app_models_files) {
 							
 							try {
 								
 								String model_class_name = app_model_file.getAbsolutePath();
 								
-								// Despreza arquivos que não terminem com .java
+								// Ignore files that doesn't end with the .java extension.
 								if (!model_class_name.endsWith("java") ) {
 									continue;
 								}
 								
 								model_class_name = model_class_name.replace(String.format("%s%ssrc%s", JediORMEngine.app_root_dir, File.separator, File.separator) , "");
 								
-								// model_class_name = model_class_name.replace("/", ".").replace(".java", "");
 								model_class_name = model_class_name.replace(File.separator, ".").replace(".java", "");
 								
 								JediORMEngine.readed_app_models.add(model_class_name);

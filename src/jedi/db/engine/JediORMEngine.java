@@ -953,297 +953,179 @@ public abstract class JediORMEngine {
                                         }
 
                                         if (fieldAnnotation instanceof ManyToManyField) {
-
-                                            ManyToManyField many_to_many_field_annotation = (ManyToManyField) fieldAnnotation;
+                                            ManyToManyField manyToManyFieldAnnotation = (ManyToManyField) fieldAnnotation;
 
                                             String fmt = "";
 
-                                            if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
-
+                                            if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
                                                 fmt = "CREATE TABLE IF NOT EXISTS %s_%s (\n";
-
                                                 fmt += "    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    CONSTRAINT unq_%s_%s UNIQUE (%s_id, %s_id)\n";
-
                                                 fmt += ");\n\n";
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "postgresql")) {
-
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("postgresql") ) {
                                                 fmt = "CREATE TABLE %s_%s (\n";
-
                                                 fmt += "    id SERIAL NOT NULL PRIMARY KEY,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    CONSTRAINT unq_%s_%s UNIQUE (%s_id, %s_id)\n";
-
                                                 fmt += ");\n\n";
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "oracle")) {
-
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
                                                 fmt = "CREATE TABLE %s_%s (\n";
-
                                                 fmt += "    id NUMBER(10, 0) NOT NULL PRIMARY KEY,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    CONSTRAINT unq_%s_%s UNIQUE (%s_id, %s_id)\n";
-
                                                 fmt += ");\n\n";
-
-                                            } else if (databaseEngine.trim()
-                                                    .equalsIgnoreCase("h2")) {
-
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("h2") ) {
                                                 fmt = "CREATE TABLE IF NOT EXISTS %s_%s (\n";
-
                                                 fmt += "    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    %s_id INT NOT NULL,\n";
-
                                                 fmt += "    CONSTRAINT unq_%s_%s UNIQUE (%s_id, %s_id)\n";
-
                                                 fmt += ");\n\n";
-
                                             } else {
 
                                             }
 
                                             sqlManyToManyAssociation += String.format(
-
-                                                    fmt,
-
-                                                    tableName,
-
-                                                    many_to_many_field_annotation
-                                                            .references()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase(),
-
-                                                    modelClass
-                                                            .getSimpleName()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase(),
-
-                                                    many_to_many_field_annotation
-                                                            .model()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase(),
-
-                                                    tableName,
-
-                                                    many_to_many_field_annotation
-                                                            .references()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase(),
-
-                                                    modelClass
-                                                            .getSimpleName()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase(),
-
-                                                    many_to_many_field_annotation
-                                                            .model()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase());
+                                                fmt,
+                                                tableName,
+                                                manyToManyFieldAnnotation.references()
+                                                .replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                modelClass.getSimpleName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.model().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                modelClass.getSimpleName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.model().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase());
 
                                             // Sequência
-                                            sqlOracleSequences += String
-                                                    .format(
-
-                                                    "CREATE SEQUENCE seq_%s_%s MINVALUE 1 MAXVALUE 999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE;\n\n",
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase());
+                                            sqlOracleSequences += String.format(
+                                                "CREATE SEQUENCE seq_%s_%s MINVALUE 1 MAXVALUE 999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE;\n\n",
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase() );
 
                                             // Trigger de auto-incremento
                                             sqlOracleAutoIncrementTriggers.put(
-
-                                            String.format(
+                                                String.format(
                                                     "%s_%s",
                                                     tableName,
-                                                    many_to_many_field_annotation
-                                                            .references()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase()),
-
-                                            String.format(
+                                                    manyToManyFieldAnnotation.references().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase() ),
+                                            
+                                                String.format(
                                                     "tgr_autoincr_%s_%s",
                                                     tableName,
-                                                    many_to_many_field_annotation
-                                                            .references()
-                                                            .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                    "$1_$2").toLowerCase()));
+                                                    manyToManyFieldAnnotation.references().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase()
+                                                )
+                                            );
 
-                                            sqlForeignKey += String
-                                                    .format(
+                                            sqlForeignKey += String.format(
+                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                modelClass.getSimpleName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName
+                                            );
 
-                                                    "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
+                                            sqlIndex += String.format(
+                                                "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n\n",
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                modelClass.getSimpleName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                modelClass.getSimpleName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase());
 
-                                                            tableName,
+                                            sqlForeignKey += String.format(
+                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.model().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase()
+                                            );
 
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName,
-
-                                                            modelClass
-                                                                    .getSimpleName()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName);
-
-                                            sqlIndex += String
-                                                    .format(
-
-                                                    "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n\n",
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            modelClass
-                                                                    .getSimpleName()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            modelClass
-                                                                    .getSimpleName()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase());
-
-                                            sqlForeignKey += String
-                                                    .format(
-
-                                                    "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            many_to_many_field_annotation
-                                                                    .model()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase());
-
-                                            sqlIndex += String
-                                                    .format(
-
-                                                    "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n\n",
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            many_to_many_field_annotation
-                                                                    .model()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            tableName,
-
-                                                            many_to_many_field_annotation
-                                                                    .references()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase(),
-
-                                                            many_to_many_field_annotation
-                                                                    .model()
-                                                                    .replaceAll(
-                                                                            "([a-z0-9]+)([A-Z])",
-                                                                            "$1_$2").toLowerCase());
+                                            sqlIndex += String.format(
+                                                "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n\n",
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.model().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                tableName,
+                                                manyToManyFieldAnnotation.references().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase(),
+                                                manyToManyFieldAnnotation.model().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase()
+                                            );
 
                                             java.io.RandomAccessFile out = null;
 
                                             try {
+                                                boolean generateCode = true;
 
-                                                boolean generate_code = true;
+                                                String classPath = appModelFile.getAbsolutePath();
 
-                                                String class_path = appModelFile
-                                                        .getAbsolutePath();
-
-                                                class_path = class_path.replace(appModelFile
+                                                classPath = classPath.replace(appModelFile
                                                         .getName(), String.format("%s.java",
-                                                        many_to_many_field_annotation.model()));
+                                                        manyToManyFieldAnnotation.model()));
 
                                                 // Criando arquivo de acesso
                                                 // aleatório.
-                                                out = new java.io.RandomAccessFile(class_path, "rw");
+                                                out = new java.io.RandomAccessFile(classPath, "rw");
 
                                                 // Posicionando o ponteiro de
                                                 // registro no início do
@@ -1257,7 +1139,7 @@ public abstract class JediORMEngine {
                                                     if (current_line.contains(String.format(
                                                             "%s_set", modelClass.getSimpleName()
                                                                     .toLowerCase()))) {
-                                                        generate_code = false;
+                                                        generateCode = false;
                                                     }
                                                 }
 
@@ -1286,14 +1168,14 @@ public abstract class JediORMEngine {
                                                         .append(String
                                                                 .format("\t\treturn %s.objects.get_set(%s.class, this.id);\n",
                                                                         modelClass.getSimpleName(),
-                                                                        many_to_many_field_annotation
+                                                                        manyToManyFieldAnnotation
                                                                                 .model()));
 
                                                 method_str.append("\t}\n");
 
                                                 method_str.append("}");
 
-                                                if (generate_code) {
+                                                if (generateCode) {
                                                     out.writeBytes(method_str.toString());
                                                 }
 

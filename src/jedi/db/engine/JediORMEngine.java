@@ -551,7 +551,8 @@ public abstract class JediORMEngine {
                                             DateField dateFieldAnnotation = (DateField) fieldAnnotation;
 
                                             String format = "    %s DATE%s%s%s%s%s,\n";
-                                            String defaultDate = dateFieldAnnotation.default_value().isEmpty() ? "" : String.format(
+                                            String defaultDate = dateFieldAnnotation.default_value()
+                                            .isEmpty() ? "" : String.format(
                                                 " DEFAULT '%s'", 
                                                 dateFieldAnnotation.default_value()
                                                 .trim()
@@ -560,139 +561,112 @@ public abstract class JediORMEngine {
 
                                             defaultDate = defaultDate.replace("'NULL'", "NULL");
 
-                                            if (defaultDate.contains("NULL")) {
+                                            if (defaultDate.contains("NULL") ) {
                                                 defaultDate = defaultDate.replace("DEFAULT", "");
                                             }
 
-                                            if (dateFieldAnnotation.auto_now_add()
-                                                    || dateFieldAnnotation.auto_now()) {
+                                            if (dateFieldAnnotation.auto_now_add() || dateFieldAnnotation.auto_now() ) {
 
-                                                if (databaseEngine.equals("mysql")) {
-
+                                                if (databaseEngine.equals("mysql") ) {
                                                     format = "    %s DATETIME%s%s%s%s%s,\n";
-
+                                                    
                                                     Manager manager = new Manager(modelClass);
+                                                    
+                                                    String[] mysqlVersion = manager.raw("SELECT VERSION()")
+                                                    .get(0)
+                                                    .get(0)
+                                                    .get("VERSION()")
+                                                    .toString().split("\\.");
+                                                    
+                                                    mysqlVersionNumber = Integer.parseInt(
+                                                        String.format(
+                                                            "%s%s", 
+                                                            mysqlVersion[0],
+                                                            mysqlVersion[1]
+                                                        )
+                                                    );
 
-                                                    String[] mysql_version = manager
-                                                            .raw("SELECT VERSION()").get(0).get(0)
-                                                            .get("VERSION()").toString()
-                                                            .split("\\.");
-
-                                                    mysqlVersionNumber = Integer.parseInt(String
-                                                            .format("%s%s", mysql_version[0],
-                                                                    mysql_version[1]));
-
-                                                    if (mysqlVersionNumber >= 56
-                                                            && dateFieldAnnotation.auto_now_add()) {
+                                                    if (mysqlVersionNumber >= 56 && dateFieldAnnotation.auto_now_add() ) {
                                                         defaultDate = String.format(
-                                                                " DEFAULT CURRENT_TIMESTAMP",
-                                                                dateFieldAnnotation
-                                                                        .default_value());
+                                                            " DEFAULT CURRENT_TIMESTAMP",
+                                                            dateFieldAnnotation.default_value()
+                                                        );
                                                     }
-
                                                 } else {
                                                     format = "    %s TIMESTAMP%s%s%s%s%s,\n";
                                                 }
 
-                                                // sb.append("DELIMITER $\n\n");
-
                                                 if (mysqlVersionNumber < 56) {
-
                                                     StringBuilder sb = null;
 
-                                                    if (dateFieldAnnotation.auto_now_add()) {
-
+                                                    if (dateFieldAnnotation.auto_now_add() ) {
                                                         sb = new StringBuilder();
-
-                                                        sb.append(String
-                                                                .format("\nCREATE TRIGGER tgr_%s_%s_insert BEFORE INSERT ON %s\n",
-                                                                        tableName,
-                                                                        field.getName()
-                                                                                .replaceAll(
-                                                                                        "([a-z0-9]+)([A-Z])",
-                                                                                        "$1_$2")
-                                                                                .toLowerCase(),
-                                                                        tableName));
-
+                                                        sb.append(
+                                                            String.format(
+                                                                "\nCREATE TRIGGER tgr_%s_%s_insert BEFORE INSERT ON %s\n",
+                                                                tableName,
+                                                                field.getName().replaceAll(
+                                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                                ).toLowerCase(),
+                                                                tableName
+                                                            )
+                                                        );
                                                         sb.append("FOR EACH ROW\n");
                                                         sb.append("BEGIN\n");
                                                         sb.append("    SET NEW.data_nascimento = NOW();\n");
-                                                        // sb.append("END;$\n\n");
                                                         sb.append("END;\n\n");
-
-                                                        mysqlDatetimeTriggers.add(sb.toString());
+                                                        
+                                                        mysqlDatetimeTriggers.add(sb.toString() );
                                                     }
 
                                                     if (dateFieldAnnotation.auto_now()) {
-
                                                         sb = new StringBuilder();
-
-                                                        sb.append(String
-                                                                .format("CREATE TRIGGER tgr_%s_%s_update BEFORE UPDATE ON %s\n",
-                                                                        tableName,
-                                                                        field.getName()
-                                                                                .replaceAll(
-                                                                                        "([a-z0-9]+)([A-Z])",
-                                                                                        "$1_$2")
-                                                                                .toLowerCase(),
-                                                                        tableName));
-
+                                                        sb.append(
+                                                            String.format(
+                                                                "CREATE TRIGGER tgr_%s_%s_update BEFORE UPDATE ON %s\n",
+                                                                tableName,
+                                                                field.getName().replaceAll(
+                                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                                ).toLowerCase(),
+                                                                tableName
+                                                            )
+                                                        );
                                                         sb.append("FOR EACH ROW\n");
                                                         sb.append("BEGIN\n");
                                                         sb.append("    SET NEW.data_nascimento = NOW();\n");
-                                                        // sb.append("END;$\n\n");
                                                         sb.append("END;\n\n");
 
-                                                        mysqlDatetimeTriggers.add(sb.toString());
+                                                        mysqlDatetimeTriggers.add(sb.toString() );
                                                     }
-
                                                     sb = null;
-
-                                                    // sb.append("DELIMITER ;\n");
                                                 }
                                             }
 
-                                            if (databaseEngine.equalsIgnoreCase("mysql")) {
-
-                                                sql += String
-                                                        .format(
-
-                                                        format,
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                dateFieldAnnotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                defaultDate,
-
-                                                                dateFieldAnnotation.auto_now()
-                                                                        && (mysqlVersionNumber >= 56 || !databaseEngine
-                                                                                .equals("mysql"))
-                                                                        ? String.format(" ON UPDATE CURRENT_TIMESTAMP")
-                                                                        : "",
-
-                                                                dateFieldAnnotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : "",
-
-                                                                (dateFieldAnnotation.comment() != null && !dateFieldAnnotation
-                                                                        .comment().equals(""))
-                                                                        ? " COMMENT '"
-                                                                                + dateFieldAnnotation
-                                                                                        .comment()
-                                                                                + "'" : "");
-
-                                            } else if (databaseEngine
-                                                    .equalsIgnoreCase("postgresql")) {
-
-                                                sql += String
-                                                        .format(
+                                            if (databaseEngine.equalsIgnoreCase("mysql") ) {
+                                                sql += String.format(
+                                                    format,
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    dateFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    defaultDate,
+                                                    dateFieldAnnotation.auto_now()
+                                                    && (
+                                                        mysqlVersionNumber >= 56 || !databaseEngine.equals("mysql") 
+                                                    ) ? String.format(
+                                                        " ON UPDATE CURRENT_TIMESTAMP"
+                                                    ) : "", 
+                                                    dateFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        dateFieldAnnotation.comment() != null 
+                                                        && !dateFieldAnnotation.comment().equals("")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        dateFieldAnnotation.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.equalsIgnoreCase("postgresql") ) {
+                                                sql += String.format(
 
                                                         "    %s DATE%s%s%s,\n",
 

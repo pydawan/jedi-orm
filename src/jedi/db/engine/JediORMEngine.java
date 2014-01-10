@@ -667,389 +667,245 @@ public abstract class JediORMEngine {
                                                 );
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql") ) {
                                                 sql += String.format(
-
-                                                        "    %s DATE%s%s%s,\n",
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                dateFieldAnnotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                dateFieldAnnotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : "",
-
-                                                                (dateFieldAnnotation
-                                                                        .default_value() != null && !dateFieldAnnotation
-                                                                        .default_value().equals(
-                                                                                "\0"))
-                                                                        ? " DEFAULT '"
-                                                                                + dateFieldAnnotation
-                                                                                        .default_value()
-                                                                                + "'"
-                                                                        : ""
-
-                                                        );
+                                                    "    %s DATE%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    dateFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    dateFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        dateFieldAnnotation.default_value() != null 
+                                                        && !dateFieldAnnotation.default_value().equals("\0")
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        dateFieldAnnotation.default_value() 
+                                                    ) : ""
+                                                );
 
                                                 if (dateFieldAnnotation != null
-                                                        && dateFieldAnnotation.comment() != null
-                                                        && !dateFieldAnnotation.comment().trim()
-                                                                .isEmpty()) {
+                                                    && dateFieldAnnotation.comment() != null
+                                                    && !dateFieldAnnotation.comment().trim().isEmpty() ) {
 
-                                                    postgresqlOrOracleColumnsComments += String
-                                                            .format("COMMENT ON COLUMN %s.%s IS '%s';\n\n",
-                                                                    tableName,
-                                                                    field.getName()
-                                                                            .replaceAll(
-                                                                                    "([a-z0-9]+)([A-Z])",
-                                                                                    "$1_$2")
-                                                                            .toLowerCase(),
-                                                                    dateFieldAnnotation.comment());
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        field.getName().replaceAll(
+                                                            "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                        ).toLowerCase(),
+                                                        dateFieldAnnotation.comment()
+                                                    );
                                                 }
 
-                                            } else if (databaseEngine.equalsIgnoreCase("oracle")) {
-
-                                                sql += String
-                                                        .format(
-
-                                                        "    %s DATE%s%s%s,\n",
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                (dateFieldAnnotation
-                                                                        .default_value() != null && !dateFieldAnnotation
-                                                                        .default_value().equals(
-                                                                                "\0"))
-                                                                        ? " DEFAULT '"
-                                                                                + dateFieldAnnotation
-                                                                                        .default_value()
-                                                                                + "'"
-                                                                        : "",
-
-                                                                dateFieldAnnotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                dateFieldAnnotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : ""
-
-                                                        );
+                                            } else if (databaseEngine.equalsIgnoreCase("oracle") ) {
+                                                sql += String.format(
+                                                    "    %s DATE%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    (
+                                                        dateFieldAnnotation.default_value() != null 
+                                                        && !dateFieldAnnotation.default_value().equals("\0") 
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        dateFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    dateFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    dateFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
 
                                                 if (dateFieldAnnotation != null
-                                                        && dateFieldAnnotation.comment() != null
-                                                        && !dateFieldAnnotation.comment().trim()
-                                                                .isEmpty()) {
+                                                    && dateFieldAnnotation.comment() != null
+                                                    && !dateFieldAnnotation.comment().trim().isEmpty() ) {
 
-                                                    postgresqlOrOracleColumnsComments += String
-                                                            .format(
-
-                                                            "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
-
-                                                                    tableName,
-
-                                                                    field.getName()
-                                                                            .replaceAll(
-                                                                                    "([a-z0-9]+)([A-Z])",
-                                                                                    "$1_$2")
-                                                                            .toLowerCase(),
-
-                                                                    dateFieldAnnotation.comment());
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        field.getName().replaceAll(
+                                                            "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                        ).toLowerCase(),
+                                                        dateFieldAnnotation.comment()
+                                                    );
                                                 }
 
-                                            } else if (databaseEngine.equalsIgnoreCase("h2")) {
-
+                                            } else if (databaseEngine.equalsIgnoreCase("h2") ) {
                                                 format = "    %s TIMESTAMP%s%s%s,\n";
 
-                                                if (dateFieldAnnotation.auto_now()) {
+                                                if (dateFieldAnnotation.auto_now() ) {
                                                     defaultDate = " AS CURRENT_TIMESTAMP()";
                                                 } else {
-                                                    if (dateFieldAnnotation.auto_now_add()) {
+                                                    
+                                                    if (dateFieldAnnotation.auto_now_add() ) {
                                                         defaultDate = " DEFAULT CURRENT_TIMESTAMP";
                                                     }
                                                 }
 
                                                 sql += String.format(
-
-                                                        format,
-
-                                                        field.getName()
-                                                                .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                        "$1_$2").toLowerCase(),
-
-                                                        dateFieldAnnotation.required()
-                                                                ? " NOT NULL"
-                                                                : "",
-
-                                                        defaultDate,
-
-                                                        dateFieldAnnotation.unique()
-                                                                ? " UNIQUE"
-                                                                : "");
-
+                                                    format,
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    dateFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    defaultDate,
+                                                    dateFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
                                             } else {
 
                                             }
-
                                         }
 
                                         if (fieldAnnotation instanceof ForeignKeyField) {
+                                            ForeignKeyField foreignKeyFieldAnnotation = (ForeignKeyField) fieldAnnotation;
 
-                                            ForeignKeyField foreign_key_field_annotation = (ForeignKeyField) fieldAnnotation;
+                                            String columnName = "";
+                                            String referencedColumn = "";
 
-                                            String column_name = "";
-
-                                            String referenced_column = "";
-
-                                            if (foreign_key_field_annotation.column_name().equals(
-                                                    "")) {
-
-                                                column_name = field.getName()
-                                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        .toLowerCase();
-
-                                                column_name = String.format("%s_id", column_name);
-
+                                            if (foreignKeyFieldAnnotation.column_name().equals("") ) {
+                                                columnName = field.getName().replaceAll(
+                                                    "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                ).toLowerCase();
+                                                columnName = String.format("%s_id", columnName);
                                             } else {
-
-                                                column_name = foreign_key_field_annotation
-                                                        .column_name()
-                                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        .toLowerCase();
-
+                                                columnName = foreignKeyFieldAnnotation.column_name()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase();
                                             }
 
-                                            if (foreign_key_field_annotation.referenced_column()
-                                                    .equals("")) {
-
-                                                referenced_column = "id";
-
+                                            if (foreignKeyFieldAnnotation.referenced_column().equals("") ) {
+                                                referencedColumn = "id";
                                             } else {
-
-                                                referenced_column = foreign_key_field_annotation
-                                                        .referenced_column()
-                                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        .toLowerCase();
-
+                                                referencedColumn = foreignKeyFieldAnnotation.referenced_column()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase();
                                             }
 
-                                            sql += String
-                                                    .format(
+                                            sql += String.format(
+                                                "    %s INT NOT NULL%s,\n",
+                                                columnName,
+                                                (
+                                                    foreignKeyFieldAnnotation.comment() != null
+                                                    && !foreignKeyFieldAnnotation.comment().equals("") 
+                                                    && databaseEngine.trim().equalsIgnoreCase("mysql") 
+                                                ) ? String.format(
+                                                    " COMMENT '%s'", 
+                                                    foreignKeyFieldAnnotation.comment() 
+                                                ) : ""
+                                            );
 
-                                                    "    %s INT NOT NULL%s,\n",
+                                            String onDeleteString = "";
 
-                                                            column_name,
-
-                                                            (foreign_key_field_annotation.comment() != null
-                                                                    && !foreign_key_field_annotation
-                                                                            .comment().equals("") && databaseEngine
-                                                                    .trim().equalsIgnoreCase(
-                                                                            "mysql"))
-                                                                    ? " COMMENT '"
-                                                                            + foreign_key_field_annotation
-                                                                                    .comment()
-                                                                            + "'" : "");
-
-                                            String on_delete_string = "";
-
-                                            if (foreign_key_field_annotation.on_delete().equals(
-                                                    Models.PROTECT)) {
-
-                                                on_delete_string = " ON DELETE RESTRICT";
-
-                                            } else if (foreign_key_field_annotation.on_delete()
-                                                    .equals(Models.SET_NULL)) {
-
-                                                on_delete_string = " ON DELETE SET NULL";
-
-                                            } else if (foreign_key_field_annotation.on_delete()
-                                                    .equals(Models.CASCADE)) {
-
-                                                on_delete_string = " ON DELETE CASCADE";
-
-                                            } else if (foreign_key_field_annotation.on_delete()
-                                                    .equals(Models.SET_DEFAULT)) {
-
-                                                on_delete_string = " ON DELETE SET DEFAULT";
-
+                                            if (foreignKeyFieldAnnotation.on_delete().equals(Models.PROTECT) ) {
+                                                onDeleteString = " ON DELETE RESTRICT";
+                                            } else if (foreignKeyFieldAnnotation.on_delete().equals(Models.SET_NULL) ) {
+                                                onDeleteString = " ON DELETE SET NULL";
+                                            } else if (foreignKeyFieldAnnotation.on_delete().equals(Models.CASCADE) ) {
+                                                onDeleteString = " ON DELETE CASCADE";
+                                            } else if (foreignKeyFieldAnnotation.on_delete().equals(Models.SET_DEFAULT) ) {
+                                                onDeleteString = " ON DELETE SET DEFAULT";
                                             }
 
-                                            String on_update_string = " ON UPDATE";
+                                            String onUpdateString = " ON UPDATE";
 
-                                            if (foreign_key_field_annotation.on_update().equals(
-                                                    Models.PROTECT)) {
-
-                                                on_update_string = " ON UPDATE RESTRICT";
-
-                                            } else if (foreign_key_field_annotation.on_update()
-                                                    .equals(Models.SET_NULL)) {
-
-                                                on_update_string = " ON UPDATE SET NULL";
-
-                                            } else if (foreign_key_field_annotation.on_update()
-                                                    .equals(Models.CASCADE)) {
-
-                                                on_update_string = " ON UPDATE CASCADE";
-
-                                                if (databaseEngine != null
-                                                        && databaseEngine
-                                                                .equalsIgnoreCase("oracle")) {
-
-                                                    on_update_string = "";
+                                            if (foreignKeyFieldAnnotation.on_update().equals(Models.PROTECT) ) {
+                                                onUpdateString = " ON UPDATE RESTRICT";
+                                            } else if (foreignKeyFieldAnnotation.on_update().equals(Models.SET_NULL) ) {
+                                                onUpdateString = " ON UPDATE SET NULL";
+                                            } else if (foreignKeyFieldAnnotation.on_update().equals(Models.CASCADE) ) {
+                                                onUpdateString = " ON UPDATE CASCADE";
+                                                
+                                                if (databaseEngine != null && databaseEngine.equalsIgnoreCase("oracle") ) {
+                                                    onUpdateString = "";
                                                 }
 
-                                            } else if (foreign_key_field_annotation.on_update()
-                                                    .equals(Models.SET_DEFAULT)) {
-
-                                                on_update_string = " ON UPDATE SET DEFAULT";
-
+                                            } else if (foreignKeyFieldAnnotation.on_update().equals(Models.SET_DEFAULT) ) {
+                                                onUpdateString = " ON UPDATE SET DEFAULT";
                                             }
 
-                                            if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
-
-                                                sqlForeignKey += String
-                                                        .format(
-
-                                                        "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
-
-                                                                tableName,
-
-                                                                foreign_key_field_annotation
-                                                                        .constraint_name(),
-
-                                                                column_name,
-
-                                                                foreign_key_field_annotation
-                                                                        .references()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                referenced_column,
-
-                                                                on_delete_string,
-
-                                                                on_update_string);
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "postgresql")) {
-
-                                                sqlForeignKey += String
-                                                        .format(
-
-                                                        // "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s%s;\n\n",
-
-                                                        "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
-
-                                                                tableName,
-
-                                                                foreign_key_field_annotation
-                                                                        .constraint_name(),
-
-                                                                column_name,
-
-                                                                foreign_key_field_annotation
-                                                                        .references()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                referenced_column,
-
-                                                                on_delete_string,
-
-                                                                on_update_string
-
-                                                        // " DEFERRABLE INITIALLY DEFERRED"
-                                                        );
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "oracle")) {
-
-                                                sqlForeignKey += String
-                                                        .format(
-
-                                                        // "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s%s;\n\n",
-
-                                                        "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
-
-                                                                tableName,
-
-                                                                foreign_key_field_annotation
-                                                                        .constraint_name(),
-
-                                                                column_name,
-
-                                                                foreign_key_field_annotation
-                                                                        .references()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                referenced_column,
-
-                                                                on_delete_string,
-
-                                                                on_update_string
-
-                                                        // " DEFERRABLE INITIALLY DEFERRED"
-                                                        );
-
+                                            if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
+                                                sqlForeignKey += String.format(
+                                                    "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
+                                                    tableName,
+                                                    foreignKeyFieldAnnotation.constraint_name(),
+                                                    columnName,
+                                                    foreignKeyFieldAnnotation.references()
+                                                    .replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    referencedColumn,
+                                                    onDeleteString,
+                                                    onUpdateString
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("postgresql") ) {
+                                                sqlForeignKey += String.format(
+                                                    "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
+                                                    tableName,
+                                                    foreignKeyFieldAnnotation.constraint_name(),
+                                                    columnName,
+                                                    foreignKeyFieldAnnotation.references()
+                                                    .replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    referencedColumn,
+                                                    onDeleteString,
+                                                    onUpdateString
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
+                                                sqlForeignKey += String.format(
+                                                    "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n\n",
+                                                    tableName,
+                                                    foreignKeyFieldAnnotation.constraint_name(),
+                                                    columnName,
+                                                    foreignKeyFieldAnnotation.references()
+                                                    .replaceAll(
+                                                        "([a-z0-9]+)([A-Z])","$1_$2"
+                                                    ).toLowerCase(),
+                                                    referencedColumn,
+                                                    onDeleteString,
+                                                    onUpdateString
+                                                );
                                             }
 
                                             sqlIndex += String.format(
-
-                                            "CREATE INDEX idx_%s_%s ON %s (%s);\n\n",
-
-                                            tableName,
-
-                                            column_name,
-
-                                            tableName,
-
-                                            column_name);
+                                                "CREATE INDEX idx_%s_%s ON %s (%s);\n\n",
+                                                tableName,
+                                                columnName,
+                                                tableName,
+                                                columnName
+                                            );
 
                                             java.io.RandomAccessFile out = null;
 
                                             try {
-
                                                 boolean generate_code = true;
-
-                                                String class_path = appModelFile
-                                                        .getAbsolutePath();
-
-                                                class_path = class_path.replace(appModelFile
-                                                        .getName(), String.format("%s.java",
-                                                        foreign_key_field_annotation.model()));
+                                                
+                                                String classPath = appModelFile.getAbsolutePath();
+                                                classPath = classPath.replace(
+                                                    appModelFile.getName(), 
+                                                    String.format(
+                                                        "%s.java",
+                                                        foreignKeyFieldAnnotation.model()
+                                                    )
+                                                );
 
                                                 // Criando arquivo de acesso
                                                 // aleatório.
-                                                out = new java.io.RandomAccessFile(class_path, "rw");
+                                                out = new java.io.RandomAccessFile(classPath, "rw");
 
                                                 // Posicionando o ponteiro de
                                                 // registro no início do
                                                 // arquivo.
                                                 out.seek(0);
 
-                                                String current_line = null;
+                                                String currentLine = null;
 
-                                                while ((current_line = out.readLine()) != null) {
+                                                while ( (currentLine = out.readLine() ) != null) {
 
-                                                    if (current_line.contains(String.format(
-                                                            "%s_set", modelClass.getSimpleName()
-                                                                    .toLowerCase()))) {
+                                                    if (currentLine.contains(
+                                                            String.format(
+                                                                "%s_set", 
+                                                                modelClass.getSimpleName().toLowerCase() 
+                                                            ) 
+                                                        ) 
+                                                    ) {
                                                         generate_code = false;
                                                     }
                                                 }
@@ -1062,38 +918,32 @@ public abstract class JediORMEngine {
                                                     out.seek(out.length());
                                                 }
 
-                                                StringBuilder method_str = new StringBuilder();
+                                                StringBuilder methodStr = new StringBuilder();
+                                                methodStr.append("\n");
+                                                methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
+                                                methodStr.append(
+                                                    String.format(
+                                                        "\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        modelClass.getSimpleName().toLowerCase()
+                                                    )
+                                                );
+                                                methodStr.append(
+                                                    String.format(
+                                                        "\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        modelClass.getSimpleName(),
+                                                        foreignKeyFieldAnnotation.model()
+                                                    )
+                                                );
 
-                                                method_str.append("\n");
-
-                                                method_str
-                                                        .append("\t@SuppressWarnings(\"rawtypes\")\n");
-
-                                                method_str
-                                                        .append(String
-                                                                .format("\tpublic jedi.db.models.QuerySet %s_set() {\n",
-                                                                        modelClass.getSimpleName()
-                                                                                .toLowerCase()));
-
-                                                method_str
-                                                        .append(String
-                                                                .format("\t\treturn %s.objects.get_set(%s.class, this.id);\n",
-                                                                        modelClass.getSimpleName(),
-                                                                        foreign_key_field_annotation
-                                                                                .model()));
-
-                                                method_str.append("\t}\n");
-
-                                                method_str.append("}");
+                                                methodStr.append("\t}\n");
+                                                methodStr.append("}");
 
                                                 if (generate_code) {
-                                                    out.writeBytes(method_str.toString());
+                                                    out.writeBytes(methodStr.toString() );
                                                 }
-
+                                                
                                             } catch (java.io.IOException e) {
-
                                                 System.err.println(e);
-
                                             } finally {
 
                                                 if (out != null) {

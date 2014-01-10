@@ -264,12 +264,18 @@ public abstract class JediORMEngine {
                                                     (
                                                         charFieldAnnotation.default_value() != null 
                                                         && !charFieldAnnotation.default_value().equals("\\0") 
-                                                    ) ? String.format(" DEFAULT '%s'", charFieldAnnotation.default_value() ) : "",
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        charFieldAnnotation.default_value() 
+                                                    ) : "",
                                                     charFieldAnnotation.unique() ? " UNIQUE" : "",
                                                     (
                                                         charFieldAnnotation.comment() != null 
                                                         && !charFieldAnnotation.comment().equals("")
-                                                    ) ? String.format(" COMMENT '%s'", charFieldAnnotation.comment() ) : ""
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        charFieldAnnotation.comment() 
+                                                    ) : ""
                                                 );
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql") ) {
                                                 sql += String.format(
@@ -282,7 +288,10 @@ public abstract class JediORMEngine {
                                                     (
                                                         charFieldAnnotation.default_value() != null 
                                                         && !charFieldAnnotation.default_value().equals("\\0")
-                                                    ) ? String.format(" DEFAULT '%s'", charFieldAnnotation.default_value() ) : "",
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        charFieldAnnotation.default_value() 
+                                                    ) : "",
                                                     charFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
 
@@ -310,7 +319,10 @@ public abstract class JediORMEngine {
                                                     (
                                                         charFieldAnnotation.default_value() != null 
                                                         && !charFieldAnnotation.default_value().equals("\\0")
-                                                    ) ? String.format(" DEFAULT '%s'", charFieldAnnotation.default_value() ) : "",
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        charFieldAnnotation.default_value() 
+                                                    ) : "",
                                                     charFieldAnnotation.required() ? " NOT NULL" : "",
                                                     charFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
@@ -340,7 +352,10 @@ public abstract class JediORMEngine {
                                                     (
                                                         charFieldAnnotation.default_value() != null 
                                                         && !charFieldAnnotation.default_value().equals("\\0")
-                                                    ) ? String.format(" DEFAULT '%s'", charFieldAnnotation.default_value() ) : "",
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        charFieldAnnotation.default_value() 
+                                                    ) : "",
                                                     charFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
                                             } else {
@@ -431,201 +446,123 @@ public abstract class JediORMEngine {
                                         }
 
                                         if (fieldAnnotation instanceof DecimalField) {
-                                            DecimalField decimal_field_annotation = (DecimalField) fieldAnnotation;
+                                            DecimalField decimalFieldAnnotation = (DecimalField) fieldAnnotation;
 
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
-
-                                                sql += String
-                                                        .format(
-
-                                                        "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                decimal_field_annotation
-                                                                        .precision(),
-
-                                                                decimal_field_annotation.scale(),
-
-                                                                decimal_field_annotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                !decimal_field_annotation
-                                                                        .default_value().trim()
-                                                                        .isEmpty()
-                                                                        ? String.format(
-                                                                                " DEFAULT %s",
-                                                                                decimal_field_annotation
-                                                                                        .default_value())
-                                                                        : "",
-
-                                                                decimal_field_annotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : "",
-
-                                                                (decimal_field_annotation.comment() != null
-                                                                        && !decimal_field_annotation
-                                                                                .comment().equals(
-                                                                                        "") && databaseEngine
-                                                                        .trim().equalsIgnoreCase(
-                                                                                "mysql"))
-                                                                        ? " COMMENT '"
-                                                                                + decimal_field_annotation
-                                                                                        .comment()
-                                                                                + "'" : "");
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "postgresql")) {
-
-                                                sql += String
-                                                        .format(
-
-                                                        "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                decimal_field_annotation
-                                                                        .precision(),
-
-                                                                decimal_field_annotation.scale(),
-
-                                                                decimal_field_annotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                !decimal_field_annotation
-                                                                        .default_value().trim()
-                                                                        .isEmpty()
-                                                                        ? String.format(
-                                                                                " DEFAULT %s",
-                                                                                decimal_field_annotation
-                                                                                        .default_value())
-                                                                        : "",
-
-                                                                decimal_field_annotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : "",
-
-                                                                (decimal_field_annotation.comment() != null
-                                                                        && !decimal_field_annotation
-                                                                                .comment().equals(
-                                                                                        "") && databaseEngine
-                                                                        .trim().equalsIgnoreCase(
-                                                                                "mysql"))
-                                                                        ? " COMMENT '"
-                                                                                + decimal_field_annotation
-                                                                                        .comment()
-                                                                                + "'" : "");
-
-                                            } else if (databaseEngine.trim().equalsIgnoreCase(
-                                                    "oracle")) {
-
-                                                sql += String
-                                                        .format(
-
-                                                        "    %s NUMERIC(%d,%d)%s%s%s%s,\n",
-
-                                                                field.getName()
-                                                                        .replaceAll(
-                                                                                "([a-z0-9]+)([A-Z])",
-                                                                                "$1_$2")
-                                                                        .toLowerCase(),
-
-                                                                decimal_field_annotation
-                                                                        .precision(),
-
-                                                                decimal_field_annotation.scale(),
-
-                                                                !decimal_field_annotation
-                                                                        .default_value().trim()
-                                                                        .isEmpty()
-                                                                        ? String.format(
-                                                                                " DEFAULT %s",
-                                                                                decimal_field_annotation
-                                                                                        .default_value())
-                                                                        : "",
-
-                                                                decimal_field_annotation.required()
-                                                                        ? " NOT NULL"
-                                                                        : "",
-
-                                                                decimal_field_annotation.unique()
-                                                                        ? " UNIQUE"
-                                                                        : "",
-
-                                                                (decimal_field_annotation.comment() != null
-                                                                        && !decimal_field_annotation
-                                                                                .comment().equals(
-                                                                                        "") && databaseEngine
-                                                                        .trim().equalsIgnoreCase(
-                                                                                "mysql"))
-                                                                        ? " COMMENT '"
-                                                                                + decimal_field_annotation
-                                                                                        .comment()
-                                                                                + "'" : "");
-
-                                            } else if (databaseEngine.trim()
-                                                    .equalsIgnoreCase("h2")) {
-
                                                 sql += String.format(
-
-                                                        "    %s DECIMAL(%d,%d)%s%s%s,\n",
-
-                                                        field.getName()
-                                                                .replaceAll("([a-z0-9]+)([A-Z])",
-                                                                        "$1_$2").toLowerCase(),
-
-                                                        decimal_field_annotation.precision(),
-
-                                                        decimal_field_annotation.scale(),
-
-                                                        decimal_field_annotation.required()
-                                                                ? " NOT NULL"
-                                                                : "",
-
-                                                        !decimal_field_annotation.default_value()
-                                                                .trim().isEmpty() ? String.format(
-                                                                " DEFAULT %s",
-                                                                decimal_field_annotation
-                                                                        .default_value()) : "",
-
-                                                        decimal_field_annotation.unique()
-                                                                ? " UNIQUE"
-                                                                : "");
-
+                                                    "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    decimalFieldAnnotation.precision(),
+                                                    decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !decimalFieldAnnotation.default_value()
+                                                    .trim()
+                                                    .isEmpty() ? String.format(
+                                                        " DEFAULT %s",
+                                                        decimalFieldAnnotation.default_value()
+                                                    ) : "",
+                                                    decimalFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        decimalFieldAnnotation.comment() != null
+                                                        && !decimalFieldAnnotation.comment().equals("") 
+                                                        && databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        decimalFieldAnnotation .comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("postgresql") ) {
+                                                sql += String.format(
+                                                    "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    decimalFieldAnnotation.precision(),
+                                                    decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !decimalFieldAnnotation.default_value()
+                                                    .trim()
+                                                    .isEmpty() ? String.format(
+                                                        " DEFAULT %s",
+                                                        decimalFieldAnnotation
+                                                        .default_value()
+                                                    ) : "",
+                                                    decimalFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        decimalFieldAnnotation.comment() != null
+                                                        && !decimalFieldAnnotation.comment().equals("") 
+                                                        && databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(" COMMENT '%s'", decimalFieldAnnotation.comment() ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
+                                                sql += String.format(
+                                                    "    %s NUMERIC(%d,%d)%s%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                                    ).toLowerCase(),
+                                                    decimalFieldAnnotation.precision(),
+                                                    decimalFieldAnnotation.scale(),
+                                                    !decimalFieldAnnotation.default_value()
+                                                    .trim()
+                                                    .isEmpty() ? String.format(
+                                                        " DEFAULT %s",
+                                                        decimalFieldAnnotation.default_value()
+                                                    ) : "",
+                                                    decimalFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    decimalFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        decimalFieldAnnotation.comment() != null
+                                                        && !decimalFieldAnnotation.comment().equals("") 
+                                                        && databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        decimalFieldAnnotation.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("h2") ) {
+                                                sql += String.format(
+                                                    "    %s DECIMAL(%d,%d)%s%s%s,\n",
+                                                    field.getName().replaceAll(
+                                                        "([a-z0-9]+)([A-Z])",
+                                                        "$1_$2"
+                                                    ).toLowerCase(),
+                                                    decimalFieldAnnotation.precision(),
+                                                    decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !decimalFieldAnnotation.default_value()
+                                                    .trim()
+                                                    .isEmpty() ? String.format(
+                                                        " DEFAULT %s",
+                                                        decimalFieldAnnotation.default_value()
+                                                    ) : "",
+                                                    decimalFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
                                             } else {
 
                                             }
                                         }
 
                                         if (fieldAnnotation instanceof DateField) {
-
-                                            DateField date_field_annotation = (DateField) fieldAnnotation;
+                                            DateField dateFieldAnnotation = (DateField) fieldAnnotation;
 
                                             String format = "    %s DATE%s%s%s%s%s,\n";
+                                            String defaultDate = dateFieldAnnotation.default_value().isEmpty() ? "" : String.format(
+                                                " DEFAULT '%s'", 
+                                                dateFieldAnnotation.default_value()
+                                                .trim()
+                                                .toUpperCase()
+                                            );
 
-                                            String default_date = date_field_annotation
-                                                    .default_value().isEmpty() ? "" : String
-                                                    .format(" DEFAULT '%s'", date_field_annotation
-                                                            .default_value().trim().toUpperCase());
+                                            defaultDate = defaultDate.replace("'NULL'", "NULL");
 
-                                            default_date = default_date.replace("'NULL'", "NULL");
-
-                                            if (default_date.contains("NULL")) {
-                                                default_date = default_date.replace("DEFAULT", "");
+                                            if (defaultDate.contains("NULL")) {
+                                                defaultDate = defaultDate.replace("DEFAULT", "");
                                             }
 
-                                            if (date_field_annotation.auto_now_add()
-                                                    || date_field_annotation.auto_now()) {
+                                            if (dateFieldAnnotation.auto_now_add()
+                                                    || dateFieldAnnotation.auto_now()) {
 
                                                 if (databaseEngine.equals("mysql")) {
 
@@ -643,10 +580,10 @@ public abstract class JediORMEngine {
                                                                     mysql_version[1]));
 
                                                     if (mysqlVersionNumber >= 56
-                                                            && date_field_annotation.auto_now_add()) {
-                                                        default_date = String.format(
+                                                            && dateFieldAnnotation.auto_now_add()) {
+                                                        defaultDate = String.format(
                                                                 " DEFAULT CURRENT_TIMESTAMP",
-                                                                date_field_annotation
+                                                                dateFieldAnnotation
                                                                         .default_value());
                                                     }
 
@@ -660,7 +597,7 @@ public abstract class JediORMEngine {
 
                                                     StringBuilder sb = null;
 
-                                                    if (date_field_annotation.auto_now_add()) {
+                                                    if (dateFieldAnnotation.auto_now_add()) {
 
                                                         sb = new StringBuilder();
 
@@ -683,7 +620,7 @@ public abstract class JediORMEngine {
                                                         mysqlDatetimeTriggers.add(sb.toString());
                                                     }
 
-                                                    if (date_field_annotation.auto_now()) {
+                                                    if (dateFieldAnnotation.auto_now()) {
 
                                                         sb = new StringBuilder();
 
@@ -725,26 +662,26 @@ public abstract class JediORMEngine {
                                                                                 "$1_$2")
                                                                         .toLowerCase(),
 
-                                                                date_field_annotation.required()
+                                                                dateFieldAnnotation.required()
                                                                         ? " NOT NULL"
                                                                         : "",
 
-                                                                default_date,
+                                                                defaultDate,
 
-                                                                date_field_annotation.auto_now()
+                                                                dateFieldAnnotation.auto_now()
                                                                         && (mysqlVersionNumber >= 56 || !databaseEngine
                                                                                 .equals("mysql"))
                                                                         ? String.format(" ON UPDATE CURRENT_TIMESTAMP")
                                                                         : "",
 
-                                                                date_field_annotation.unique()
+                                                                dateFieldAnnotation.unique()
                                                                         ? " UNIQUE"
                                                                         : "",
 
-                                                                (date_field_annotation.comment() != null && !date_field_annotation
+                                                                (dateFieldAnnotation.comment() != null && !dateFieldAnnotation
                                                                         .comment().equals(""))
                                                                         ? " COMMENT '"
-                                                                                + date_field_annotation
+                                                                                + dateFieldAnnotation
                                                                                         .comment()
                                                                                 + "'" : "");
 
@@ -762,29 +699,29 @@ public abstract class JediORMEngine {
                                                                                 "$1_$2")
                                                                         .toLowerCase(),
 
-                                                                date_field_annotation.required()
+                                                                dateFieldAnnotation.required()
                                                                         ? " NOT NULL"
                                                                         : "",
 
-                                                                date_field_annotation.unique()
+                                                                dateFieldAnnotation.unique()
                                                                         ? " UNIQUE"
                                                                         : "",
 
-                                                                (date_field_annotation
-                                                                        .default_value() != null && !date_field_annotation
+                                                                (dateFieldAnnotation
+                                                                        .default_value() != null && !dateFieldAnnotation
                                                                         .default_value().equals(
                                                                                 "\0"))
                                                                         ? " DEFAULT '"
-                                                                                + date_field_annotation
+                                                                                + dateFieldAnnotation
                                                                                         .default_value()
                                                                                 + "'"
                                                                         : ""
 
                                                         );
 
-                                                if (date_field_annotation != null
-                                                        && date_field_annotation.comment() != null
-                                                        && !date_field_annotation.comment().trim()
+                                                if (dateFieldAnnotation != null
+                                                        && dateFieldAnnotation.comment() != null
+                                                        && !dateFieldAnnotation.comment().trim()
                                                                 .isEmpty()) {
 
                                                     postgresqlOrOracleColumnsComments += String
@@ -795,7 +732,7 @@ public abstract class JediORMEngine {
                                                                                     "([a-z0-9]+)([A-Z])",
                                                                                     "$1_$2")
                                                                             .toLowerCase(),
-                                                                    date_field_annotation.comment());
+                                                                    dateFieldAnnotation.comment());
                                                 }
 
                                             } else if (databaseEngine.equalsIgnoreCase("oracle")) {
@@ -811,29 +748,29 @@ public abstract class JediORMEngine {
                                                                                 "$1_$2")
                                                                         .toLowerCase(),
 
-                                                                (date_field_annotation
-                                                                        .default_value() != null && !date_field_annotation
+                                                                (dateFieldAnnotation
+                                                                        .default_value() != null && !dateFieldAnnotation
                                                                         .default_value().equals(
                                                                                 "\0"))
                                                                         ? " DEFAULT '"
-                                                                                + date_field_annotation
+                                                                                + dateFieldAnnotation
                                                                                         .default_value()
                                                                                 + "'"
                                                                         : "",
 
-                                                                date_field_annotation.required()
+                                                                dateFieldAnnotation.required()
                                                                         ? " NOT NULL"
                                                                         : "",
 
-                                                                date_field_annotation.unique()
+                                                                dateFieldAnnotation.unique()
                                                                         ? " UNIQUE"
                                                                         : ""
 
                                                         );
 
-                                                if (date_field_annotation != null
-                                                        && date_field_annotation.comment() != null
-                                                        && !date_field_annotation.comment().trim()
+                                                if (dateFieldAnnotation != null
+                                                        && dateFieldAnnotation.comment() != null
+                                                        && !dateFieldAnnotation.comment().trim()
                                                                 .isEmpty()) {
 
                                                     postgresqlOrOracleColumnsComments += String
@@ -849,18 +786,18 @@ public abstract class JediORMEngine {
                                                                                     "$1_$2")
                                                                             .toLowerCase(),
 
-                                                                    date_field_annotation.comment());
+                                                                    dateFieldAnnotation.comment());
                                                 }
 
                                             } else if (databaseEngine.equalsIgnoreCase("h2")) {
 
                                                 format = "    %s TIMESTAMP%s%s%s,\n";
 
-                                                if (date_field_annotation.auto_now()) {
-                                                    default_date = " AS CURRENT_TIMESTAMP()";
+                                                if (dateFieldAnnotation.auto_now()) {
+                                                    defaultDate = " AS CURRENT_TIMESTAMP()";
                                                 } else {
-                                                    if (date_field_annotation.auto_now_add()) {
-                                                        default_date = " DEFAULT CURRENT_TIMESTAMP";
+                                                    if (dateFieldAnnotation.auto_now_add()) {
+                                                        defaultDate = " DEFAULT CURRENT_TIMESTAMP";
                                                     }
                                                 }
 
@@ -872,13 +809,13 @@ public abstract class JediORMEngine {
                                                                 .replaceAll("([a-z0-9]+)([A-Z])",
                                                                         "$1_$2").toLowerCase(),
 
-                                                        date_field_annotation.required()
+                                                        dateFieldAnnotation.required()
                                                                 ? " NOT NULL"
                                                                 : "",
 
-                                                        default_date,
+                                                        defaultDate,
 
-                                                        date_field_annotation.unique()
+                                                        dateFieldAnnotation.unique()
                                                                 ? " UNIQUE"
                                                                 : "");
 

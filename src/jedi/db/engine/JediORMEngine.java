@@ -494,7 +494,10 @@ public abstract class JediORMEngine {
                                                         decimalFieldAnnotation.comment() != null
                                                         && !decimalFieldAnnotation.comment().equals("") 
                                                         && databaseEngine.trim().equalsIgnoreCase("mysql")
-                                                    ) ? String.format(" COMMENT '%s'", decimalFieldAnnotation.comment() ) : ""
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        decimalFieldAnnotation.comment() 
+                                                    ) : ""
                                                 );
                                             } else if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
                                                 sql += String.format(

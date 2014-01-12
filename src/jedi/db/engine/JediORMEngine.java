@@ -236,7 +236,7 @@ public abstract class JediORMEngine {
                                         oracleSequence.toString(),
                                         tableName
                                     );
-
+                                    
                                     sqlOracleAutoIncrementTriggers.put(
                                         tableName, String.format("tgr_autoincr_%s", tableName)
                                     );
@@ -875,7 +875,7 @@ public abstract class JediORMEngine {
                                             java.io.RandomAccessFile out = null;
 
                                             try {
-                                                boolean generate_code = true;
+                                                boolean generateCode = true;
                                                 
                                                 String classPath = appModelFile.getAbsolutePath();
                                                 classPath = classPath.replace(
@@ -886,13 +886,10 @@ public abstract class JediORMEngine {
                                                     )
                                                 );
 
-                                                // Criando arquivo de acesso
-                                                // aleatório.
+                                                // Creates a random access file.
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
 
-                                                // Posicionando o ponteiro de
-                                                // registro no início do
-                                                // arquivo.
+                                                // Sets the file's pointer at the first register of the file.
                                                 out.seek(0);
 
                                                 String currentLine = null;
@@ -906,16 +903,15 @@ public abstract class JediORMEngine {
                                                             ) 
                                                         ) 
                                                     ) {
-                                                        generate_code = false;
+                                                        generateCode = false;
                                                     }
                                                 }
 
-                                                // Posicionando o ponteiro de
-                                                // registro no fim do arquivo.
+                                                // Sets the file's pointer at the last register of the file.
                                                 if (out.length() > 0) {
                                                     out.seek(out.length() - 1);
                                                 } else {
-                                                    out.seek(out.length());
+                                                    out.seek(out.length() );
                                                 }
 
                                                 StringBuilder methodStr = new StringBuilder();
@@ -938,7 +934,7 @@ public abstract class JediORMEngine {
                                                 methodStr.append("\t}\n");
                                                 methodStr.append("}");
 
-                                                if (generate_code) {
+                                                if (generateCode) {
                                                     out.writeBytes(methodStr.toString() );
                                                 }
                                                 
@@ -1013,13 +1009,21 @@ public abstract class JediORMEngine {
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
                                                 ).toLowerCase());
 
-                                            // Sequência
+                                            StringBuilder oracleSequence = new StringBuilder(); 
+                                            oracleSequence.append("CREATE SEQUENCE seq_%s_%s MINVALUE 1 ");
+                                            oracleSequence.append("MAXVALUE 999999999999999999999999999 ");
+                                            oracleSequence.append("INCREMENT BY 1 START WITH 1 CACHE 20 ");
+                                            oracleSequence.append("NOORDER NOCYCLE;");
+                                            oracleSequence.append("\n\n");
+                                            
+                                            // Sequence.
                                             sqlOracleSequences += String.format(
-                                                "CREATE SEQUENCE seq_%s_%s MINVALUE 1 MAXVALUE 999999999999999999999999999 INCREMENT BY 1 START WITH 1 CACHE 20 NOORDER NOCYCLE;\n\n",
+                                                oracleSequence.toString(),
                                                 tableName,
                                                 manyToManyFieldAnnotation.references().replaceAll(
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
-                                                ).toLowerCase() );
+                                                ).toLowerCase() 
+                                            );
 
                                             // Trigger de auto-incremento
                                             sqlOracleAutoIncrementTriggers.put(
@@ -1028,8 +1032,8 @@ public abstract class JediORMEngine {
                                                     tableName,
                                                     manyToManyFieldAnnotation.references().replaceAll(
                                                         "([a-z0-9]+)([A-Z])", "$1_$2"
-                                                    ).toLowerCase() ),
-                                            
+                                                    ).toLowerCase()
+                                                ),                                            
                                                 String.format(
                                                     "tgr_autoincr_%s_%s",
                                                     tableName,
@@ -1119,72 +1123,62 @@ public abstract class JediORMEngine {
 
                                                 String classPath = appModelFile.getAbsolutePath();
 
-                                                classPath = classPath.replace(appModelFile
-                                                        .getName(), String.format("%s.java",
-                                                        manyToManyFieldAnnotation.model()));
+                                                classPath = classPath.replace(
+                                                    appModelFile.getName(), 
+                                                    String.format(
+                                                        "%s.java", manyToManyFieldAnnotation.model()
+                                                    )
+                                                );
 
-                                                // Criando arquivo de acesso
-                                                // aleatório.
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
-
-                                                // Posicionando o ponteiro de
-                                                // registro no início do
-                                                // arquivo.
                                                 out.seek(0);
 
                                                 String current_line = null;
 
-                                                while ((current_line = out.readLine()) != null) {
+                                                while ( (current_line = out.readLine() ) != null) {
 
-                                                    if (current_line.contains(String.format(
-                                                            "%s_set", modelClass.getSimpleName()
-                                                                    .toLowerCase()))) {
+                                                    if (current_line.contains(
+                                                            String.format(
+                                                                "%s_set", 
+                                                                modelClass.getSimpleName().toLowerCase()
+                                                            )
+                                                        )
+                                                    ) {
                                                         generateCode = false;
                                                     }
                                                 }
 
-                                                // Posicionando o ponteiro de
-                                                // registro no fim do arquivo.
                                                 if (out.length() > 0) {
                                                     out.seek(out.length() - 1);
                                                 } else {
-                                                    out.seek(out.length());
+                                                    out.seek(out.length() );
                                                 }
 
-                                                StringBuilder method_str = new StringBuilder();
-
-                                                method_str.append("\n");
-
-                                                method_str
-                                                        .append("\t@SuppressWarnings(\"rawtypes\")\n");
-
-                                                method_str
-                                                        .append(String
-                                                                .format("\tpublic jedi.db.models.QuerySet %s_set() {\n",
-                                                                        modelClass.getSimpleName()
-                                                                                .toLowerCase()));
-
-                                                method_str
-                                                        .append(String
-                                                                .format("\t\treturn %s.objects.get_set(%s.class, this.id);\n",
-                                                                        modelClass.getSimpleName(),
-                                                                        manyToManyFieldAnnotation
-                                                                                .model()));
-
-                                                method_str.append("\t}\n");
-
-                                                method_str.append("}");
+                                                StringBuilder methodStr = new StringBuilder();
+                                                methodStr.append("\n");
+                                                methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
+                                                methodStr.append(
+                                                    String.format(
+                                                        "\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        modelClass.getSimpleName().toLowerCase()
+                                                    )
+                                                );
+                                                methodStr.append(
+                                                    String.format(
+                                                        "\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        modelClass.getSimpleName(),
+                                                        manyToManyFieldAnnotation.model()
+                                                    )
+                                                );
+                                                methodStr.append("\t}\n");
+                                                methodStr.append("}");
 
                                                 if (generateCode) {
-                                                    out.writeBytes(method_str.toString());
+                                                    out.writeBytes(methodStr.toString() );
                                                 }
-
                                             } catch (java.io.IOException e) {
-
                                                 System.err.println(e);
-
                                             } finally {
-
                                                 if (out != null) {
                                                     out.close();
                                                 }
@@ -1193,55 +1187,41 @@ public abstract class JediORMEngine {
                                     }
                                 }
 
-                                sql = sql.substring(0, sql.lastIndexOf(",")) + "\n";
+                                sql = sql.substring(0, sql.lastIndexOf(",") ) + "\n";
 
                                 if (tableAnnotation != null) {
 
-                                    if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
+                                    if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
+                                        sql += String.format(
+                                            ") %s %s %s;\n\n",
+                                            tableAnnotation.engine().trim().equals("") ? "" : String.format(
+                                                "ENGINE=%s", tableAnnotation.engine() 
+                                            ),
+                                            tableAnnotation.charset().trim().equals("") ? "" : String.format(
+                                                "DEFAULT CHARSET=%s", tableAnnotation.charset()
+                                            ),
+                                            tableAnnotation.comment().trim().equals("") ? "" : String.format(
+                                                "COMMENT '%s'", tableAnnotation.comment() 
+                                            )
+                                        );
+                                    } else if (databaseEngine.trim().equalsIgnoreCase("postgresql") 
+                                            || databaseEngine.trim().equalsIgnoreCase("oracle") ) {
 
                                         sql += String.format(
-
-                                        ") %s %s %s;\n\n",
-
-                                        tableAnnotation.engine().trim().equals("")
-                                                ? ""
-                                                : "ENGINE=" + tableAnnotation.engine(),
-
-                                        tableAnnotation.charset().trim().equals("")
-                                                ? ""
-                                                : "DEFAULT CHARSET=" + tableAnnotation.charset(),
-
-                                        tableAnnotation.comment().trim().equals("")
-                                                ? ""
-                                                : "COMMENT '" + tableAnnotation.comment() + "'");
-
-                                    } else if (databaseEngine.trim()
-                                            .equalsIgnoreCase("postgresql")
-                                            || databaseEngine.trim().equalsIgnoreCase("oracle")) {
-
-                                        sql += String.format(
-
-                                                ");\n\n%s",
-
-                                                tableAnnotation.comment().trim().equals("")
-                                                        ? ""
-                                                        : String.format(
-                                                                "COMMENT ON TABLE %s IS '%s';\n\n",
-                                                                tableName,
-                                                                tableAnnotation.comment()));
-
+                                            ");\n\n%s",
+                                            tableAnnotation.comment().trim().equals("") ? "" : String.format(
+                                                "COMMENT ON TABLE %s IS '%s';\n\n",
+                                                tableName,
+                                                tableAnnotation.comment()
+                                            )
+                                        );
                                         sql += postgresqlOrOracleColumnsComments;
-
                                     } else {
-
                                         sql += ");\n\n";
                                     }
-
                                 } else {
-
                                     sql += ");\n\n";
                                 }
-
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
@@ -1249,157 +1229,117 @@ public abstract class JediORMEngine {
 
                         try {
 
-                            String sql_transaction = "";
+                            String sqlTransaction = "";
 
-                            if (databaseEngine.trim().equalsIgnoreCase("mysql")
-                                    || databaseEngine.trim().equalsIgnoreCase("postgresql")) {
-                                sql_transaction = "BEGIN;\n\n";
+                            if (databaseEngine.trim().equalsIgnoreCase("mysql") 
+                                || databaseEngine.trim().equalsIgnoreCase("postgresql") ) {
+                                
+                                sqlTransaction = "BEGIN;\n\n";
+                            }
+                            
+                            sqlTransaction += sql;
+                            sqlTransaction += sqlManyToManyAssociation;
+                            sqlTransaction += sqlForeignKey;
+                            sqlTransaction += sqlIndex;
+
+                            if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
+                                sqlTransaction += sqlOracleSequences;
                             }
 
-                            sql_transaction += sql;
+                            sqlTransaction += "COMMIT";
 
-                            sql_transaction += sqlManyToManyAssociation;
-
-                            sql_transaction += sqlForeignKey;
-
-                            sql_transaction += sqlIndex;
-
-                            if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
-
-                                sql_transaction += sqlOracleSequences;
-
+                            if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
+                                sqlTransaction = sqlTransaction.toUpperCase();
                             }
 
-                            sql_transaction += "COMMIT";
-
-                            if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
-
-                                sql_transaction = sql_transaction.toUpperCase();
-                            }
-
-                            // Mostrando o SQL completo da criação da estrutura
-                            // de banco de dados da aplicação.
-
+                            // Shows the complete SQL that generates the application's database structure.
                             // System.out.println(sql_transaction);
 
-                            Scanner scanner = new Scanner(sql_transaction);
-
+                            Scanner scanner = new Scanner(sqlTransaction);
                             scanner.useDelimiter(";\n");
-
-                            // Comando atual (current statement).
-                            String current_statement = "";
-
+                            
+                            String currentStatement = "";
                             System.out.println("");
 
-                            while (scanner.hasNext()) {
-
-                                current_statement = scanner.next();
-
-                                // Mostrando o cada sendo executada do SQL da
-                                // transação.
-                                System.out.println(current_statement + ";\n");
-
-                                stmt.execute(current_statement);
-
+                            while (scanner.hasNext() ) {
+                                currentStatement = scanner.next();
+                                // Shows each SQL statement that will be executed.
+                                System.out.println(currentStatement + ";\n");
+                                stmt.execute(currentStatement);
                             }
-
                             scanner.close();
 
-                            if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
+                            if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
+                                String oracleTriggers = "";
 
-                                String oracle_triggers = "";
-
-                                for (Map.Entry<String, String> sql_oracle_auto_increment_trigger : sqlOracleAutoIncrementTriggers
-                                        .entrySet()) {
-
-                                    String table = sql_oracle_auto_increment_trigger.getKey();
-
-                                    String trigger = sql_oracle_auto_increment_trigger.getValue();
-
-                                    String oracle_trigger = "" +
-
+                                for (Map.Entry<String, String> sqlOracleAutoIncrementTrigger : sqlOracleAutoIncrementTriggers.entrySet() ) {
+                                    String table = sqlOracleAutoIncrementTrigger.getKey();
+                                    String trigger = sqlOracleAutoIncrementTrigger.getValue();
+                                    String oracleTrigger = "" +
                                     "CREATE OR REPLACE TRIGGER "
-                                            + trigger
-                                            + "\n"
-                                            + "BEFORE INSERT ON "
-                                            + table
-                                            + " FOR EACH ROW\n"
-                                            + "DECLARE\n"
-                                            + "    MAX_ID NUMBER;\n"
-                                            + "    CUR_SEQ NUMBER;\n"
-                                            + "BEGIN\n"
-                                            + "    IF :NEW.ID IS NULL THEN\n"
-                                            + "        -- No ID passed, get one from the sequence\n"
-                                            + "        SELECT seq_"
-                                            + table
-                                            + ".NEXTVAL INTO :NEW.ID FROM DUAL;\n"
-                                            + "    ELSE\n"
-                                            + "        -- ID was set via insert, so update the sequence\n"
-                                            + "        SELECT GREATEST(NVL(MAX(ID), 0), :NEW.ID) INTO MAX_ID FROM "
-                                            + table + ";\n" + "        SELECT seq_" + table
-                                            + ".NEXTVAL INTO CUR_SEQ FROM DUAL;\n"
-                                            + "        WHILE CUR_SEQ < MAX_ID\n" + "        LOOP\n"
-                                            + "            SELECT seq_" + table
-                                            + ".NEXTVAL INTO CUR_SEQ FROM DUAL;\n"
-                                            + "        END LOOP;\n" + "    END IF;\n" + "END;\n";
+                                        + trigger
+                                        + "\n"
+                                        + "BEFORE INSERT ON "
+                                        + table
+                                        + " FOR EACH ROW\n"
+                                        + "DECLARE\n"
+                                        + "    MAX_ID NUMBER;\n"
+                                        + "    CUR_SEQ NUMBER;\n"
+                                        + "BEGIN\n"
+                                        + "    IF :NEW.ID IS NULL THEN\n"
+                                        + "        -- No ID passed, get one from the sequence\n"
+                                        + "        SELECT seq_"
+                                        + table
+                                        + ".NEXTVAL INTO :NEW.ID FROM DUAL;\n"
+                                        + "    ELSE\n"
+                                        + "        -- ID was set via insert, so update the sequence\n"
+                                        + "        SELECT GREATEST(NVL(MAX(ID), 0), :NEW.ID) INTO MAX_ID FROM "
+                                        + table + ";\n" + "        SELECT seq_" + table
+                                        + ".NEXTVAL INTO CUR_SEQ FROM DUAL;\n"
+                                        + "        WHILE CUR_SEQ < MAX_ID\n" + "        LOOP\n"
+                                        + "            SELECT seq_" + table
+                                        + ".NEXTVAL INTO CUR_SEQ FROM DUAL;\n"
+                                        + "        END LOOP;\n" + "    END IF;\n" + "END;\n";
                                     // + "/";
 
-                                    oracle_triggers += oracle_trigger.toUpperCase() + "\n\n";
-
-                                    oracle_triggers += String.format("ALTER TRIGGER %s ENABLE\n\n",
-                                            trigger.toUpperCase());
-
-                                    stmt.executeUpdate(oracle_trigger);
-
+                                    oracleTriggers += oracleTrigger.toUpperCase() + "\n\n";
+                                    oracleTriggers += String.format(
+                                        "ALTER TRIGGER %s ENABLE\n\n", trigger.toUpperCase()
+                                    );
+                                    stmt.executeUpdate(oracleTrigger);
                                 }
-
-                                System.out.println(oracle_triggers);
-
-                                if (!conn.getAutoCommit()) {
-
+                                System.out.println(oracleTriggers);
+                                if (!conn.getAutoCommit() ) {
                                     conn.commit();
-
                                 }
-                            } else if (databaseEngine.trim().equalsIgnoreCase("mysql")
-                                    && mysqlVersionNumber < 56) {
-
+                            } else if (databaseEngine.trim().equalsIgnoreCase("mysql") && mysqlVersionNumber < 56) {
                                 if (mysqlDatetimeTriggers.size() > 0) {
-
                                     for (String trigger : mysqlDatetimeTriggers) {
                                         stmt.executeUpdate(trigger);
                                     }
-
-                                    System.out.println(mysqlDatetimeTriggers.toString()
-                                            .replace("[", "").replace("]", "").replace(", ", ""));
-
+                                    System.out.println(
+                                        mysqlDatetimeTriggers.toString()
+                                        .replace("[", "")
+                                        .replace("]", "")
+                                        .replace(", ", "")
+                                    );
                                     if (!conn.getAutoCommit()) {
                                         conn.commit();
-
                                         System.out.println("COMMIT;");
                                     }
                                 }
                             }
-
                         } catch (SQLException e) {
-
                             e.printStackTrace();
-
                         } finally {
-
                             try {
-
                                 stmt.close();
-
                                 conn.close();
-
                             } catch (SQLException e) {
-
                                 e.printStackTrace();
                             }
                         }
-
                     } else {
-
                         syncdb(appDirContent.getAbsolutePath());
                     }
                 }

@@ -62,8 +62,7 @@ public class Model implements Comparable<Model>, Serializable {
     private boolean auto_close_connection = true;
 
     // Constructors
-    public Model() {
-    }
+    public Model() {}
 
     public Model(Connection connection) {
         this.connection = connection;

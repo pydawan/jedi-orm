@@ -15,7 +15,6 @@
  *    Thiago Alexandre Martins Monteiro - initial API and implementation
  ************************************************************************************************/
 
-
 package jedi.tests.unittests;
 
 import java.text.ParseException;

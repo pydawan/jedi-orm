@@ -1,3 +1,20 @@
+/***********************************************************************************************
+ * @(#)Autor.java
+ * 
+ * Version: 1.0
+ * 
+ * Date: 2014/01/23
+ * 
+ * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
+ * 
+ * All rights reserved. This program and the accompanying materials are made 
+ * available under the terms of the GNU Public License v2.0 which accompanies 
+ * this distribution, and is available at http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * 
+ * Contributors:
+ *    Thiago Alexandre Martins Monteiro - initial API and implementation
+ ************************************************************************************************/
+
 package app.models;
 
 import jedi.db.annotations.Table;
@@ -7,7 +24,8 @@ import jedi.db.models.Model;
 
 @Table(name="autores")
 public class Autor extends Model {
-//	Atributos
+    
+    // Attributes
 	private static final long serialVersionUID = -8520333625577424268L;
 
 	@CharField(max_length=30)
@@ -21,7 +39,7 @@ public class Autor extends Model {
 	
 	public static Manager objects = new Manager(Autor.class);
 	
-//	Construtores
+	// Constructors
 	public Autor() {}
 	
 	public Autor(int id) {
@@ -45,7 +63,7 @@ public class Autor extends Model {
 		this.email = email;
 	}
 	
-//	Getters
+	// Getters
 	public String getNome() {
 		return nome;
 	}
@@ -70,7 +88,7 @@ public class Autor extends Model {
 		return email;
 	}
 
-//	Setters
+	// Setters
 	public void setNome(String nome) {
 		this.nome = nome;
 	}

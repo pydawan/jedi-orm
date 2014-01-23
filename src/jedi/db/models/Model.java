@@ -56,12 +56,14 @@ public class Model implements Comparable<Model>, Serializable {
     private static String _table_name;
 
     /*
-     * Indica se a conexão com o banco de dados deverá ser fechada automaticamente.
+     * Indica se a conexão com o banco de dados deverá ser fechada
+     * automaticamente.
      */
     private boolean auto_close_connection = true;
 
     // Constructors
-    public Model() {}
+    public Model() {
+    }
 
     public Model(Connection connection) {
         this.connection = connection;
@@ -75,7 +77,7 @@ public class Model implements Comparable<Model>, Serializable {
             // Verificando se a conexão existe e se ela não está fechada.
             // OBS: Dependendo da situação um SGBD pode finalizar uma conexão
             // existente.
-            if (this.connection != null && !this.connection.isValid(10) ) {
+            if (this.connection != null && !this.connection.isValid(10)) {
                 this.connection.close();
             }
         } catch (Throwable e) {
@@ -123,11 +125,11 @@ public class Model implements Comparable<Model>, Serializable {
     public Object get(String field) {
         Object object = null;
 
-        if (field != null && !field.trim().isEmpty() ) {
+        if (field != null && !field.trim().isEmpty()) {
             try {
                 Field f = null;
 
-                if (field.trim().equalsIgnoreCase("id") ) {
+                if (field.trim().equalsIgnoreCase("id")) {
                     f = this.getClass().getSuperclass().getDeclaredField(field);
                 } else {
                     f = this.getClass().getDeclaredField(field);
@@ -192,7 +194,7 @@ public class Model implements Comparable<Model>, Serializable {
     }
 
     public Model set(String field, Object value) {
-        if (field != null && !field.trim().isEmpty() ) {
+        if (field != null && !field.trim().isEmpty()) {
             try {
                 Field f = this.getClass().getDeclaredField(field);
                 f.setAccessible(true);

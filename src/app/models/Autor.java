@@ -1,5 +1,5 @@
 /***********************************************************************************************
- * @(#)Author.java
+ * @(#)Autor.java
  * 
  * Version: 1.0
  * 
@@ -22,74 +22,98 @@ import jedi.db.annotations.fields.CharField;
 import jedi.db.models.Manager;
 import jedi.db.models.Model;
 
-@Table(name="authors")
-public class Author extends Model {
+@Table(name="autores")
+public class Autor extends Model {
     // Attributes
     private static final long serialVersionUID = -8520333625577424268L;
 
     @CharField(max_length=30)
-    private String firstName;
+    private String nome;
 
     @CharField(max_length=30, required=false)
-    private String lastName;
+    private String sobrenome;
 
     @CharField(max_length=30, required=true, unique=true)
     private String email;
 
-    public static Manager objects = new Manager(Author.class);
+    public static Manager objects = new Manager(Autor.class);
 
     // Constructors
-    public Author() {}
+    public Autor() {}
 
-    public Author(int id) {
+    public Autor(int id) {
         this.id = id;
     }
 
-    public Author(String firstName) {
-        this.firstName = firstName;
+    public Autor(String nome) {
+        this.nome = nome;
     }
 
-    public Author(String firstName, String lastName, String email) {
-        this.firstName = firstName;
-        this.lastName = lastName;
+    public Autor(String nome, String sobrenome, String email) {
+        this.nome = nome;
+        this.sobrenome = sobrenome;
         this.email = email;
     }
 
-    public Author(int id, String firstName, String lastName, String email) {
+    public Autor(int id, String nome, String sobrenome, String email) {
         this.id = id;
-        this.firstName = firstName;
-        this.lastName = lastName;
+        this.nome = nome;
+        this.sobrenome = sobrenome;
         this.email = email;
     }
 
     // Getters
-    public String getFirstName() {
-        return firstName;
+    public String getNome() {
+        return nome;
+    }
+    
+    public String nome() {
+        return nome;
     }
 
-    public String getLastName() {
-        return lastName;
+    public String getSobrenome() {
+        return sobrenome;
+    }
+    
+    public String sobrenome() {
+        return sobrenome;
     }
 
     public String getEmail() {
         return email;
     }
-
-    // Setters
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
+    
+    public String email() {
+        return email;
     }
 
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
+    // Setters
+    public void setNome(String nome) {
+        this.nome = nome;
+    }
+    
+    public void nome(String nome) {
+        this.nome = nome;
+    }
+
+    public void setSobrenome(String sobrenome) {
+        this.sobrenome = sobrenome;
+    }
+    
+    public void sobrenome(String sobrenome) {
+        this.sobrenome = sobrenome;
     }
 
     public void setEmail(String email) {
         this.email = email;
     }
+    
+    public void email(String email) {
+        this.email = email;
+    }
 
     @SuppressWarnings("rawtypes")
     public jedi.db.models.QuerySet livro_set() {
-        return Livro.objects.get_set(Author.class, this.id);
+        return Livro.objects.get_set(Autor.class, this.id);
     }
 }

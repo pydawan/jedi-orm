@@ -22,8 +22,7 @@ import jedi.db.annotations.fields.CharField;
 import jedi.db.models.Manager;
 import jedi.db.models.Model;
 
-@Table(
-    name = "authors")
+@Table(name = "authors")
 public class Author extends Model {
 
     // Attributes

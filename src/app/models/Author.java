@@ -24,6 +24,7 @@ import jedi.db.models.Model;
 
 @Table(name="authors")
 public class Author extends Model {
+    
     // Attributes
     private static final long serialVersionUID = -8520333625577424268L;
 

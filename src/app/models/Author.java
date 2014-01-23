@@ -26,7 +26,7 @@ import jedi.db.models.Model;
 public class Author extends Model {
     
     // Attributes
-	private static final long serialVersionUID = -8520333625577424268L;
+    private static final long serialVersionUID = -8520333625577424268L;
 
 	@CharField(max_length=30)
 	private String firstName;

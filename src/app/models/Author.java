@@ -22,19 +22,18 @@ import jedi.db.annotations.fields.CharField;
 import jedi.db.models.Manager;
 import jedi.db.models.Model;
 
-@Table(name = "authors")
+@Table(name="authors")
 public class Author extends Model {
-
     // Attributes
     private static final long serialVersionUID = -8520333625577424268L;
 
-    @CharField(max_length = 30)
+    @CharField(max_length=30)
     private String firstName;
 
-    @CharField(max_length = 30, required = false)
+    @CharField(max_length=30, required=false)
     private String lastName;
 
-    @CharField(max_length = 30, required = true, unique = true)
+    @CharField(max_length=30, required=true, unique=true)
     private String email;
 
     public static Manager objects = new Manager(Author.class);

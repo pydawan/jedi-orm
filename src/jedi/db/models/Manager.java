@@ -97,7 +97,6 @@ public class Manager {
         if (this.connection != null) {
             try {
                 String sql = "SELECT * FROM";
-                
                 // Verifies if the model class was annotated with @Table.
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
                 String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
@@ -205,7 +204,6 @@ public class Manager {
     }
 
     /**
-     * @author Thiago Alexandre Martins Monteiro
      * @param fields
      * @return
      */

@@ -34,7 +34,6 @@ public class EditoraTest {
 
     @Test
     public void testInsert() {
-
         Editora editoraEsperada = new Editora();
         editoraEsperada.setNome("Editora Abril");
 
@@ -58,7 +57,6 @@ public class EditoraTest {
 
     @Test
     public void testUpdate() {
-
         Editora editoraEsperada = Editora.objects.get("nome", "Editora Abril");
 
         Uf uf = new Uf("São Paulo", "SP", Pais.objects.get("nome", "Brasil").as(Pais.class) );
@@ -73,7 +71,6 @@ public class EditoraTest {
 
     @Test
     public void testDelete() {
-        
         // NOTE: DELETE or UPDATE CASCADE only works with referential integrity enabled.
         int quantidadeEditorasEsperada = 0;
         int quantidadeEditorasObtida = Editora.objects.all().delete().count();
@@ -83,7 +80,6 @@ public class EditoraTest {
 
     @Test
     public void testSaveInsert() {
-
         Editora editoraEsperada = new Editora();
         editoraEsperada.setNome("McGraw Hill");
         editoraEsperada.setUf(new Uf("New York", "NY", new Pais("Unitated States of America", "US") ) );

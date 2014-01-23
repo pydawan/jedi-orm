@@ -27,7 +27,6 @@ public class PaisTest {
 
     @AfterClass
     public static void testCleanup() {
-        
         // Deletes all the rows on the table after the tests.
         // Below the foreign key constraints in MySQL are handled. 
 
@@ -42,7 +41,6 @@ public class PaisTest {
 
     @Test
     public void testInsert() {
-
         Pais paisEsperado = new Pais("Brasil", "BR");
         paisEsperado.insert();
 
@@ -53,7 +51,6 @@ public class PaisTest {
 
     @Test
     public void testUpdate() {
-
         Pais paisEsperado = Pais.objects.get("nome", "Brasil");
         paisEsperado.update("nome='Brazil'");
 
@@ -64,7 +61,6 @@ public class PaisTest {
 
     @Test
     public void testDelete() {
-
         int esperado = 0;
 
         for (Pais pais : Pais.objects.<Pais> all() ) {
@@ -78,7 +74,6 @@ public class PaisTest {
 
     @Test
     public void testSaveInsert() {
-
         Pais paisEsperado = new Pais();
         paisEsperado.setNome("Estados Unidos da América");
         paisEsperado.setSigla("UZ");
@@ -93,7 +88,6 @@ public class PaisTest {
 
     @Test
     public void testSaveUpdate() {
-
         Pais paisEsperado = Pais.objects.get("sigla", "UZ");
         paisEsperado.setSigla("US");
         paisEsperado.save();

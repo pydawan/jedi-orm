@@ -97,7 +97,7 @@ public class Manager {
         if (this.connection != null) {
             try {
                 String sql = "SELECT * FROM";
-
+                
                 // Verifies if the model class was annotated with @Table.
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
                 String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
@@ -167,50 +167,36 @@ public class Manager {
                             // References a model associated by a foreign key.
                             field.set(obj, associatedModel);
                         } else {
-                            // Configurando campos que não são instancias de
-                            // Model.
+                            // Sets the fields that aren't Model instances.
                             if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
-
                                 if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
-
                                     field.set(obj, 0);
-
                                 } else {
-
-                                    field.set(
-                                            obj,
-                                            ((java.math.BigDecimal) resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    .toLowerCase())).intValue());
+                                    field.set(obj, ((java.math.BigDecimal) resultSet.getObject(field.getName()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
-
                             } else {
-
                                 field.set(obj, resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
-
                         manager = null;
                     }
 
                     T model = (T) obj;
 
                     if (model != null) {
-
-                        model.is_persisted(true);
+                        model.isPersisted(true);
                     }
-
+                    
                     querySet.add(model);
                 }
-
                 resultSet.close();
-
+                
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return (QuerySet<T>) querySet;
     }
 

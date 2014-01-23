@@ -55,17 +55,12 @@ public class ConnectionFactory {
     }
 
     public static Connection getConnection() {
-
         Connection connection = null;
 
         if (JediORMEngine.APP_DB_CONFIG != null && (new File(JediORMEngine.APP_DB_CONFIG)).exists()) {
-
             try {
-
                 Properties database_settings = new Properties();
-
                 FileInputStream file_input_stream = new FileInputStream(JediORMEngine.APP_DB_CONFIG);
-
                 database_settings.load(file_input_stream);
 
                 String database_engine = database_settings.getProperty("database.engine") != null

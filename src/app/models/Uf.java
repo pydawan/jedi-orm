@@ -49,8 +49,7 @@ public class Uf extends Model {
     public static Manager objects = new Manager(Uf.class);
 
     // Constructors
-    public Uf() {
-    }
+    public Uf() {}
 
     public Uf(int id) {
         this.id = id;

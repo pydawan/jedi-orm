@@ -66,24 +66,12 @@ public class Autor extends Model {
     public String getNome() {
         return nome;
     }
-    
-    public String nome() {
-        return nome;
-    }
 
     public String getSobrenome() {
         return sobrenome;
     }
     
-    public String sobrenome() {
-        return sobrenome;
-    }
-
     public String getEmail() {
-        return email;
-    }
-    
-    public String email() {
         return email;
     }
 
@@ -91,24 +79,12 @@ public class Autor extends Model {
     public void setNome(String nome) {
         this.nome = nome;
     }
-    
-    public void nome(String nome) {
-        this.nome = nome;
-    }
 
     public void setSobrenome(String sobrenome) {
         this.sobrenome = sobrenome;
     }
-    
-    public void sobrenome(String sobrenome) {
-        this.sobrenome = sobrenome;
-    }
 
     public void setEmail(String email) {
-        this.email = email;
-    }
-    
-    public void email(String email) {
         this.email = email;
     }
 

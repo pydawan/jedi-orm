@@ -29,11 +29,8 @@ public class JediORM {
 	/**
 	 * @param args
 	 */
-	
 	public static void main(String[] args) {
-		
-		try {
-			
+		try {	
 			if (args.length > 0 && !args[0].trim().equals("syncdb") ) {
 				JediORMEngine.APP_ROOT_DIR = args[0];
 				JediORMEngine.APP_DB_CONFIG = String.format("%s%sconfig%sdatabase.properties", 
@@ -43,7 +40,6 @@ public class JediORM {
 				JediORMEngine.APP_DB_CONFIG = String.format("%s%sdatabase.properties", 
 				        JediORMEngine.APP_ROOT_DIR, File.separator);
 			}
-			
 			JediORMEngine.APP_SRC_DIR = String.format("%s%ssrc", 
 			        JediORMEngine.APP_ROOT_DIR, File.separator);
 			JediORMEngine.syncdb(JediORMEngine.APP_SRC_DIR);

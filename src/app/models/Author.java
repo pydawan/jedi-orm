@@ -22,75 +22,76 @@ import jedi.db.annotations.fields.CharField;
 import jedi.db.models.Manager;
 import jedi.db.models.Model;
 
-@Table(name="authors")
+@Table(
+    name = "authors")
 public class Author extends Model {
-    
+
     // Attributes
     private static final long serialVersionUID = -8520333625577424268L;
 
-	@CharField(max_length=30)
-	private String firstName;
-	
-	@CharField(max_length=30, required=false)
-	private String lastName;
-	
-	@CharField(max_length=30, required=true, unique=true)
-	private String email;
-	
-	public static Manager objects = new Manager(Author.class);
-	
-	// Constructors
-	public Author() {}
-	
-	public Author(int id) {
-		this.id = id;
-	}
-	
-	public Author(String firstName) {
-		this.firstName = firstName;
-	}
-	
-	public Author(String firstName, String lastName, String email) {
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.email = email;
-	}
-	
-	public Author(int id, String firstName, String lastName, String email) {
-		this.id = id;
-		this.firstName = firstName;
-		this.lastName = lastName;
-		this.email = email;
-	}
-	
-	// Getters
-	public String getFirstName() {
-		return firstName;
-	}
-	
-	public String getLastName() {
-		return lastName;
-	}
-	
-	public String getEmail() {
-		return email;
-	}
+    @CharField(max_length = 30)
+    private String firstName;
 
-	// Setters
-	public void setFirstName(String firstName) {
-		this.firstName = firstName;
-	}
+    @CharField(max_length = 30, required = false)
+    private String lastName;
 
-	public void setLastName(String lastName) {
-		this.lastName = lastName;
-	}
-	
-	public void setEmail(String email) {
-		this.email = email;
-	}
+    @CharField(max_length = 30, required = true, unique = true)
+    private String email;
 
-	@SuppressWarnings("rawtypes")
-	public jedi.db.models.QuerySet livro_set() {
-		return Livro.objects.get_set(Author.class, this.id);
-	}
+    public static Manager objects = new Manager(Author.class);
+
+    // Constructors
+    public Author() {}
+
+    public Author(int id) {
+        this.id = id;
+    }
+
+    public Author(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public Author(String firstName, String lastName, String email) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
+
+    public Author(int id, String firstName, String lastName, String email) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+    }
+
+    // Getters
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    // Setters
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public jedi.db.models.QuerySet livro_set() {
+        return Livro.objects.get_set(Author.class, this.id);
+    }
 }

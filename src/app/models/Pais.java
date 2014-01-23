@@ -112,10 +112,6 @@ public class Pais extends Model {
     }
 
     // Setters
-    public Pais id(int id) {
-        return (Pais) super.id(id);
-    }
-
     public void setNome(String nome) {
         this.nome = nome;
     }

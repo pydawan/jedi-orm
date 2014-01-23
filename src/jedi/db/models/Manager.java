@@ -208,49 +208,33 @@ public class Manager {
      * @return
      */
     public <T extends Model> QuerySet<T> filter(Class<T> model_class, String... fields) {
-
-        QuerySet<T> query_set = null;
+        QuerySet<T> querySet = null;
 
         if (this.connection != null && fields != null && !fields.equals("")) {
-
             try {
+                String tableName = String.format("%ss", entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
-                String table_name = String.format("%ss", entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-                Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-                if (table_annotation != null) {
-
-                    if (!table_annotation.name().trim().isEmpty()) {
-
-                        table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().isEmpty()) {
+                        tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     }
-
-                } else if (tableName != null && !tableName.isEmpty()) {
-
-                    table_name = tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
+                } else if (this.tableName != null && !this.tableName.isEmpty()) {
+                    tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                 }
 
-                String sql = String.format("SELECT * FROM %s WHERE", table_name);
-
+                String sql = String.format("SELECT * FROM %s WHERE", tableName);
                 String where = "";
 
-                // Percorrendo os pares campo=valor informados.
+                // Iterates through the pairs field=value passed.
                 for (int i = 0; i < fields.length; i++) {
-
-                    // Alterando o nome do campo para refletir o padrão de nome
-                    // para colunas de tabelas.
+                    // Changes the name of the field to the corresponding pattern name on the database.
                     if (fields[i].contains("=")) {
-
                         fields[i] = String.format(
-
-                        "%s%s",
-
-                        fields[i].substring(0, fields[i].lastIndexOf("=")).replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                        fields[i].substring(fields[i].lastIndexOf("=")));
+                            "%s%s",
+                            fields[i].substring(0, fields[i].lastIndexOf("=")).replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                            fields[i].substring(fields[i].lastIndexOf("="))
+                        );
                     }
 
                     // Acrescentando espaço em branco entre o nome do campo e o
@@ -382,9 +366,9 @@ public class Manager {
 
                 ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
 
-                query_set = new QuerySet<T>();
+                querySet = new QuerySet<T>();
 
-                query_set.setEntity(this.entity);
+                querySet.setEntity(this.entity);
 
                 while (result_set.next()) {
 
@@ -441,7 +425,7 @@ public class Manager {
 
                             many_to_many_annotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
 
-                            table_name,
+                            tableName,
 
                             many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
 
@@ -526,11 +510,11 @@ public class Manager {
                         model.is_persisted(true);
                     }
 
-                    query_set.add(model);
+                    querySet.add(model);
                 }
 
-                if (query_set != null) {
-                    query_set.is_persisted(true);
+                if (querySet != null) {
+                    querySet.is_persisted(true);
                 }
 
                 result_set.close();
@@ -541,7 +525,7 @@ public class Manager {
             }
         }
 
-        return (QuerySet<T>) query_set;
+        return (QuerySet<T>) querySet;
     }
 
     public <T extends Model> T create(String... list) {

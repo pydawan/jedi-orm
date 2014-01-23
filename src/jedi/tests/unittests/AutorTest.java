@@ -34,7 +34,6 @@ public class AutorTest {
 
     @Test
     public void testInsert() {
-        
         Autor autorEsperado = new Autor();
         autorEsperado.setNome("Paulo");
         autorEsperado.setSobrenome("Coelhoo");
@@ -48,7 +47,6 @@ public class AutorTest {
 
     @Test
     public void testUpdate() {
-        
         Autor autorEsperado = Autor.objects.get("email", "paulocoelho@gmail.com");
         autorEsperado.update("sobrenome='Coelho'");
         
@@ -59,7 +57,6 @@ public class AutorTest {
 
     @Test
     public void testDelete() {
-        
         int esperado = 0;
         
         Autor.objects.all().delete();
@@ -71,7 +68,6 @@ public class AutorTest {
 
     @Test
     public void testSaveInsert() {
-        
         Autor autorEsperado = new Autor();
         autorEsperado.setNome("John Ronald");
         autorEsperado.setSobrenome("Reuel Tolkienn");
@@ -85,7 +81,6 @@ public class AutorTest {
 
     @Test
     public void testSaveUpdate() {
-        
         Autor autorEsperado = Autor.objects.get("email", "jrrtolkien@gmail.com");
         autorEsperado.setSobrenome("Reuel Tolkien");
         autorEsperado.save();

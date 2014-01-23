@@ -19,10 +19,10 @@ package jedi.tests.unittests;
 
 import java.sql.Connection;
 
-import jedi.db.ConnectionFactory;
-
 import org.junit.Assert;
 import org.junit.Test;
+
+import jedi.db.ConnectionFactory;
 
 public class ConnectionFactoryTest {
 

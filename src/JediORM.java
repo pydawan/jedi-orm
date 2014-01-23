@@ -1,9 +1,26 @@
+/***********************************************************************************************
+ * @(#)JediORMEngine.java
+ * 
+ * Version: 1.0
+ * 
+ * Date: 2014/01/23
+ * 
+ * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
+ * 
+ * All rights reserved. This program and the accompanying materials are made 
+ * available under the terms of the GNU Public License v2.0 which accompanies 
+ * this distribution, and is available at http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
+ * 
+ * Contributors:
+ *    Thiago Alexandre Martins Monteiro - initial API and implementation
+ ************************************************************************************************/
+
 import java.io.File;
 
 import jedi.db.engine.JediORMEngine;
 
 /**
- * Classe de execução do framework Jedi.
+ * Main class of the framework.
  * 
  * @author thiago.monteiro
  *
@@ -17,38 +34,20 @@ public class JediORM {
 		
 		try {
 			
-			// Para teste.
-			//args = new String[1];
-			
-			//args[0] = "syncdb";
-			
 			if (args.length > 0 && !args[0].trim().equals("syncdb") ) {
-				
-				JediORMEngine.app_root_dir = args[0];
-				
-				JediORMEngine.app_db_config = String.format("%s%sconfig%sdatabase.properties", JediORMEngine.app_root_dir, File.separator, File.separator);
-
-				
+				JediORMEngine.APP_ROOT_DIR = args[0];
+				JediORMEngine.APP_DB_CONFIG = String.format("%s%sconfig%sdatabase.properties", 
+				        JediORMEngine.APP_ROOT_DIR, File.separator, File.separator);
 			} else {
-			
-				/* Diretório onde o framework foi invocado.
-				 * Geralmente o diretório de um aplicação mas também pode ser o diretório 
-				 * do próprio framework.
-				 */
-				JediORMEngine.app_root_dir = System.getProperty("user.dir");
-				
-				JediORMEngine.app_db_config = String.format("%s%sdatabase.properties", JediORMEngine.app_root_dir, File.separator);
+				JediORMEngine.APP_ROOT_DIR = System.getProperty("user.dir");
+				JediORMEngine.APP_DB_CONFIG = String.format("%s%sdatabase.properties", 
+				        JediORMEngine.APP_ROOT_DIR, File.separator);
 			}
-
-			/*
-			 * Diretório onde estão localizados os códigos fonte da aplicação.
-			 */
-			JediORMEngine.app_src_dir = String.format("%s%ssrc", JediORMEngine.app_root_dir, File.separator);
 			
-			JediORMEngine.syncdb(JediORMEngine.app_src_dir);
-			
+			JediORMEngine.APP_SRC_DIR = String.format("%s%ssrc", 
+			        JediORMEngine.APP_ROOT_DIR, File.separator);
+			JediORMEngine.syncdb(JediORMEngine.APP_SRC_DIR);
 		} catch (Exception e) {
-			
 			e.printStackTrace();			
 		}
 	}

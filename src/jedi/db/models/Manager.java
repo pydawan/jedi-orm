@@ -502,7 +502,7 @@ public class Manager {
                     if (f.getName().equalsIgnoreCase("objects"))
                         continue;
 
-                    // Converts the data to the appropriate types.
+                    // Converts the data to the appropriate type.
                     if (value.matches("\\d+")) {
                         if (foreignKeyAnnotation != null) {
                             Manager manager = new Manager(f.getType());

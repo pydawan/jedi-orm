@@ -122,20 +122,12 @@ public class Manager {
 
                     // Oracle returns BigDecimal object.
                     if (this.connection.toString().startsWith("oracle")) {
-                        id.set(
-                            obj, 
-                            ((java.math.BigDecimal) resultSet.getObject(
-                                id.toString().substring(id.toString().lastIndexOf('.') + 1))
-                            ).intValue()
-                        );
+                        id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.toString()
+                                .substring(id.toString().lastIndexOf('.') + 1))).intValue());
                     } else {
                         // MySQL and PostgreSQL returns a Integer object.
-                        id.set(
-                            obj, 
-                            resultSet.getObject(
-                                id.toString().substring(id.toString().lastIndexOf('.') + 1)
-                            )
-                        );
+                        id.set(obj, resultSet.getObject(id.toString().substring(id.toString()
+                                .lastIndexOf('.') + 1)));
                     }
 
                     for (Field field : entity.getDeclaredFields()) {
@@ -154,22 +146,22 @@ public class Manager {
 
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
                             Class associatedModelClass = Class.forName(
-                                String.format(
-                                    "app.models.%s", 
-                                    manyToManyAnnotation.model()
-                                )
+                                String.format("app.models.%s", manyToManyAnnotation.model())
                             );
                             manager = new Manager(associatedModelClass);
                             QuerySet querySetAssociatedModels = manager.raw(
                                 String.format(
                                     "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
-                                    manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                    manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                    tableName,
-                                    manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                    obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                    manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(), 
+                                    manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(), 
+                                    tableName, manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(), 
+                                    obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
                                     ((Model) obj).getId()
-                                ),
+                                ), 
                                 associatedModelClass
                             );
                             field.set(obj, querySetAssociatedModels);

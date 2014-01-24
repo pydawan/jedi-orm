@@ -276,7 +276,7 @@ public class Manager {
 
                     // Checks if the current pair contains __startswith, __contains or __endswith.
                     if (fields[i].indexOf("__startswith") > -1 || fields[i].indexOf("__contains") > -1 
-                            || fields[i].indexOf("__endswith") > -1) {
+                        || fields[i].indexOf("__endswith") > -1) {
                         // Creates a LIKE statement in SQL.
                         if (fields[i].indexOf("__startswith") > -1) {
                             fields[i] = fields[i].replace("__startswith = ", " LIKE ");

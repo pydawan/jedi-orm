@@ -651,14 +651,17 @@ public class Manager {
 
         if (this.connection != null) {
             try {
-                String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                String tableName = String.format("%ss", this.entity.getSimpleName()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
                 if (tableAnnotation != null) {
                     if (!tableAnnotation.name().trim().equals("")) {
-                        tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                        tableName = tableAnnotation.name().trim()
+                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     } else if (this.tableName != null && !this.tableName.trim().equals("")) {
-                        tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                        tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                            .toLowerCase();
                     }
                 }
                 String sql = String.format("SELECT COUNT(id) AS \"rows\" FROM %s", tableName);

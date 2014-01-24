@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/01/24
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -237,114 +237,80 @@ public class Manager {
                         );
                     }
 
-                    // Acrescentando espaço em branco entre o nome do campo e o
-                    // valor.
+                    // Adds a blank space between the field name and value.
                     fields[i] = fields[i].replace("=", " = ");
-
-                    // Substituindo % por \%
+                    // Replaces % by \%
                     fields[i] = fields[i].replace("%", "\\%");
-
-                    // Acrescentando espaço em branco entre valores separados
-                    // por vírgula.
+                    // Adds a blank space between the values separated by commas.
                     fields[i] = fields[i].replace(",", ", ");
 
-                    // Verificando se o par atual possui um dos textos:
-                    // __startswith, __contains ou __endswith.
+                    // Checks if the current pair contains __startswith, __contains or __endswith.
                     if (fields[i].indexOf("__startswith") > -1 || fields[i].indexOf("__contains") > -1 || fields[i].indexOf("__endswith") > -1) {
-
-                        // Criando a instrução LIKE do SQL.
-
+                        // Creates a LIKE statement in SQL.
                         if (fields[i].indexOf("__startswith") > -1) {
-
                             fields[i] = fields[i].replace("__startswith = ", " LIKE ");
-
-                            // Substituindo 'valor' por 'valor%'.
+                            // Replaces 'value' by 'value%'.
                             fields[i] = fields[i].substring(0, fields[i].lastIndexOf("\'"));
-
                             fields[i] = fields[i] + "%\'";
-
                         } else if (fields[i].indexOf("__contains") > -1) {
-
                             fields[i] = fields[i].replace("__contains = ", " LIKE ");
-
-                            // Substituindo 'valor' por '%valor%'.
+                            // Replaces 'value' by '%value%'.
                             fields[i] = fields[i].replaceFirst("\'", "\'%");
-
                             fields[i] = fields[i].substring(0, fields[i].lastIndexOf("\'"));
-
                             fields[i] = fields[i] + "%\'";
-
                         } else if (fields[i].indexOf("__endswith") > -1) {
-
                             fields[i] = fields[i].replace("__endswith = ", " LIKE ");
-
-                            // Substituindo 'valor' por '%valor'.
+                            // Replaces 'value' by '%value'.
                             fields[i] = fields[i].replaceFirst("\'", "\'%");
-
                         }
                     }
 
                     if (fields[i].indexOf("__in") > -1) {
-
-                        // Criando a instrução IN do SQL.
+                        // Creates a IN statement in SQL.
                         fields[i] = fields[i].replace("__in = ", " IN ");
-
-                        // Substituindo os caracteres [] por ().
+                        // Replaces [] by ()
                         fields[i] = fields[i].replace("[", "(");
-
                         fields[i] = fields[i].replace("]", ")");
                     }
 
                     if (fields[i].indexOf("__range") > -1) {
-
-                        // Criando a instrução BETWEEN do SQL.
+                        // Creates a BETWEEN statement in SQL.
                         fields[i] = fields[i].replace("__range = ", " BETWEEN ");
-
-                        // Substituindo o caracter [ ou ] por string vazia.
+                        // Removes [ or ] characters.
                         fields[i] = fields[i].replace("[", "");
-
                         fields[i] = fields[i].replace("]", "");
-
-                        // Substituindo o caracter , por AND.
+                        // Replaces , (comma character) by AND.
                         fields[i] = fields[i].replace(", ", " AND ");
                     }
 
                     if (fields[i].indexOf("__lt") > -1) {
-
                         fields[i] = fields[i].replace("__lt = ", " < ");
                     }
 
                     if (fields[i].indexOf("__lte") > -1) {
-
                         fields[i] = fields[i].replace("__lte = ", " <= ");
                     }
 
                     if (fields[i].indexOf("__gt") > -1) {
-
                         fields[i] = fields[i].replace("__gt = ", " > ");
                     }
 
                     if (fields[i].indexOf("__gte") > -1) {
-
                         fields[i] = fields[i].replace("__gte = ", " >= ");
                     }
 
                     if (fields[i].indexOf("__exact") > -1) {
-
                         fields[i] = fields[i].replace("__exact = ", " = ");
                     }
 
                     if (fields[i].indexOf("__isnull") > -1) {
-
                         String bool = fields[i].substring(fields[i].indexOf("=") + 1, fields[i].length()).trim();
 
                         if (bool.equalsIgnoreCase("true")) {
-
                             fields[i] = fields[i].replace("__isnull = ", " IS NULL ");
                         }
 
                         if (bool.equalsIgnoreCase("false")) {
-
                             fields[i] = fields[i].replace("__isnull = ", " IS NOT NULL ");
                         }
 
@@ -352,179 +318,128 @@ public class Manager {
                     }
 
                     where += fields[i] + " AND ";
-
                     where = where.replace(" AND OR AND", " OR");
-
                     where = where.replace(" AND AND AND", " AND");
                 }
 
                 where = where.substring(0, where.lastIndexOf("AND"));
-
                 sql = String.format("%s %s", sql, where);
 
+                // Shows the generated SQL statement.
                 // System.out.println(sql);
 
-                ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
-
+                ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
                 querySet = new QuerySet<T>();
-
                 querySet.setEntity(this.entity);
 
-                while (result_set.next()) {
-
+                while (resultSet.next()) {
                     Object obj = entity.newInstance();
 
-                    if (result_set.getObject("id") != null) {
-
+                    if (resultSet.getObject("id") != null) {
                         Field id = entity.getSuperclass().getDeclaredField("id");
 
                         if (this.connection.toString().startsWith("oracle")) {
-
-                            id.set(obj, ((java.math.BigDecimal) result_set.getObject(id.getName())).intValue());
-
+                            id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.getName())).intValue());
                         } else {
-
-                            id.set(obj, result_set.getObject(id.getName()));
-
+                            id.set(obj, resultSet.getObject(id.getName()));
                         }
                     }
 
-                    // Percorrendo os atributos declarados no modelo.
+                    // Iterates through the fields of the model.
                     for (Field field : entity.getDeclaredFields()) {
-
+                        // Sets private or protected fields as accessible.
                         field.setAccessible(true);
 
+                        // Discards the serialVersionUID field.
                         if (field.getName().equals("serialVersionUID"))
                             continue;
 
+                        // Discards the objects field.
                         if (field.getName().equalsIgnoreCase("objects"))
                             continue;
 
-                        // Abaixo é verificado se o atributo é anotado como
-                        // ForeignKeyField ou ManyToManyField.
-
-                        ForeignKeyField foreign_key_annotation = field.getAnnotation(ForeignKeyField.class);
-
-                        ManyToManyField many_to_many_annotation = field.getAnnotation(ManyToManyField.class);
-
+                        // Checks if the field are annotated as ForeignKeyField or ManyToManyField.
+                        ForeignKeyField foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
+                        ManyToManyField manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
                         Manager manager = null;
 
-                        if (many_to_many_annotation != null && !many_to_many_annotation.references().isEmpty()) {
+                        if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
+                            Class associatedModelClass = Class.forName(String.format("app.models.%s", manyToManyAnnotation.model()));
+                            manager = new Manager(associatedModelClass);
+                            List<List<HashMap<String, Object>>> recordSet = null;
+                            // Performs a SQL query.
+                            recordSet = manager.raw(
+                                String.format(
+                                    "SELECT %s_id FROM %s_%s WHERE %s_id = %d",
+                                    manyToManyAnnotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                    tableName,
+                                    manyToManyAnnotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                    this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                    ((Model) obj).id()
+                                )
+                            );
 
-                            Class associated_model_class = Class.forName(String.format("app.models.%s", many_to_many_annotation.model()));
-
-                            manager = new Manager(associated_model_class);
-
-                            List<List<HashMap<String, Object>>> record_set = null;
-
-                            record_set = manager.raw(
-
-                            String.format(
-
-                            "SELECT %s_id FROM %s_%s WHERE %s_id = %d",
-
-                            many_to_many_annotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            tableName,
-
-                            many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            ((Model) obj).id()));
-
-                            String args = record_set.toString();
-
+                            String args = recordSet.toString();
                             args = args.replace("[", "");
-
                             args = args.replace("{", "");
-
                             args = args.replace("]", "");
-
                             args = args.replace("}", "");
-
                             args = args.replace("=", "");
-
                             args = args.replace(", ", ",");
-
-                            args = args.replace(
-                                    String.format("%s_id", many_to_many_annotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()), "");
-
+                            args = args.replace(String.format("%s_id", manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                    .toLowerCase()), "");
                             args = String.format("id__in=[%s]", args);
-
-                            QuerySet query_set_associated_models = manager.filter(args);
-
-                            field.set(obj, query_set_associated_models);
-
-                        } else if (foreign_key_annotation != null && !foreign_key_annotation.references().isEmpty()) {
-
-                            // Caso seja recupera a classe do atributo.
-                            Class associated_model_class = Class.forName(field.getType().getName());
-
-                            // Instanciando um model manager.
-                            manager = new Manager(associated_model_class);
-
-                            // Chamando o método esse método (get)
-                            // recursivamente.
-                            Model associated_model = manager.get(
-                                    "id",
-                                    result_set.getObject(String.format("%s_id", field.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            .toLowerCase())));
-
-                            // Referenciando o modelo associado por foreign key.
-                            field.set(obj, associated_model);
-
+                            
+                            QuerySet querySetAssociatedModels = manager.filter(args);
+                            field.set(obj, querySetAssociatedModels);
+                        } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty()) {
+                            // If it's recovers the field's class.
+                            Class associatedModelClass = Class.forName(field.getType().getName());
+                            // Instanciates a Model Manager.
+                            manager = new Manager(associatedModelClass);
+                            // Calls the get method recursivelly.
+                            Model associatedModel = manager.get(
+                                "id",
+                                resultSet.getObject(
+                                    String.format("%s_id", field.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())
+                                )
+                            );
+                            // References the model associated by foreign key annotation.
+                            field.set(obj, associatedModel);
                         } else {
-
-                            // Configurando campos que não são instancias de
-                            // Model.
+                            // Sets fields the aren't Model's instances.
                             if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
-
-                                if (result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
-
+                                if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
                                     field.set(obj, 0);
-
                                 } else {
-
                                     field.set(
-                                            obj,
-                                            ((java.math.BigDecimal) result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    .toLowerCase())).intValue());
-
+                                        obj,
+                                        ((java.math.BigDecimal) resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase())).intValue()
+                                    );
                                 }
-
                             } else {
-
-                                field.set(obj, result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
+                                field.set(obj, resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
-
                         manager = null;
                     }
-
                     T model = (T) obj;
 
                     if (model != null) {
-
                         model.is_persisted(true);
                     }
-
                     querySet.add(model);
                 }
-
                 if (querySet != null) {
                     querySet.is_persisted(true);
                 }
-
-                result_set.close();
-
+                resultSet.close();
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return (QuerySet<T>) querySet;
     }
 

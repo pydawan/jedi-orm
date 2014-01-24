@@ -147,8 +147,8 @@ public class Manager {
                         Manager manager = null;
 
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
-                            Class associatedModelClass = Class.forName(String.format("app.models.%s", 
-                                    manyToManyAnnotation.model()));
+                            String className = String.format("app.models.%s", manyToManyAnnotation.model());
+                            Class associatedModelClass = Class.forName(className);
                             manager = new Manager(associatedModelClass);
                             QuerySet querySetAssociatedModels = manager.raw(
                                 String.format(

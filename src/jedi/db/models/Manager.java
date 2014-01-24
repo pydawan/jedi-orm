@@ -485,62 +485,49 @@ public class Manager {
                         f = this.entity.getDeclaredField(field);
                     }
 
-                    // Alterando o nome do campo para refletir o padrão de nome
-                    // para colunas de tabelas.
+                    // Changes the field name to reflect the pattern to the table column names.
                     field = String.format("%s", field.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                    
+                    // Handles the insertion the the ForeignKeyField and ManyToManyField.
+                    ForeignKeyField foreignKeyAnnotation = f.getAnnotation(ForeignKeyField.class);
 
-                    // Tratar inserção para ForeignKeyField e ManyToManyField.
-                    ForeignKeyField foreign_key_annotation = f.getAnnotation(ForeignKeyField.class);
-
-                    // Permitindo o acesso aos atributos privados ou protegidos.
+                    // Allows access to the private and protected fields (attributes).
                     f.setAccessible(true);
 
+                    // Discards serialVersionUID field.
                     if (f.getName().equals("serialVersionUID"))
                         continue;
 
+                    // Discards objects field.
                     if (f.getName().equalsIgnoreCase("objects"))
                         continue;
 
-                    // Convertendo para os tipos apropriados
+                    // Converts the data to the appropriate types.
                     if (value.matches("\\d+")) {
-
-                        if (foreign_key_annotation != null) {
-
+                        if (foreignKeyAnnotation != null) {
                             Manager manager = new Manager(f.getType());
-
                             f.set(obj, manager.get("id", value));
-
                         } else {
                             f.set(obj, Integer.parseInt(value)); // Integer
                         }
-
                     } else if (value.matches("\\d+f")) { // Float
-
                         f.set(obj, Float.parseFloat(value));
-
                     } else if (value.matches("\\d+.d+")) { // Double
-
                         f.set(obj, Double.parseDouble(value));
-
                     } else { // String
                         f.set(obj, list[i].split("=")[1]);
                     }
-
                     fields += field + ", ";
-
                     values += value + ", ";
                 }
-
                 fields = fields.substring(0, fields.lastIndexOf(","));
-
                 values = values.substring(0, values.lastIndexOf(","));
-
                 sql = String.format("%s (%s) VALUES (%s)", sql, fields, values);
 
-                // Mostrando a instrução SQL gerada.
+                // Shows the generated SQL statement on the STDOUT (Standard Output).
                 // System.out.println(sql);
 
-                // Executando a instrução SQL.
+                // Executes the SQL statement.
                 this.connection.prepareStatement(sql).execute();
 
                 Field f = this.entity.getSuperclass().getDeclaredField("id");

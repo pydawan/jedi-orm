@@ -598,7 +598,8 @@ public class Manager {
 
         if (this.connection != null) {
             try {
-                String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                String tableName = String.format("%ss", this.entity.getSimpleName()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
                 if (tableAnnotation != null) {
@@ -617,8 +618,9 @@ public class Manager {
                 String databaseEngine = databaseSettings.getProperty("database.engine");
 
                 if (databaseEngine != null) {
-                    if (databaseEngine.trim().equalsIgnoreCase("mysql") || databaseEngine.trim().equalsIgnoreCase("postgresql")
-                            || databaseEngine.trim().equalsIgnoreCase("h2")) {
+                    if (databaseEngine.trim().equalsIgnoreCase("mysql") 
+                        || databaseEngine.trim().equalsIgnoreCase("postgresql")
+                        || databaseEngine.trim().equalsIgnoreCase("h2")) {
                         sql = String.format("SELECT id FROM %s ORDER BY id DESC LIMIT 1", tableName);
                     } else if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
                         sql = String.format("SELECT MAX(id) AS id FROM %s", tableName);

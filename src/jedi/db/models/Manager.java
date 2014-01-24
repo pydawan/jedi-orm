@@ -150,22 +150,34 @@ public class Manager {
                             Class associatedModelClass = Class.forName(String.format("app.models.%s", 
                                     manyToManyAnnotation.model()));
                             manager = new Manager(associatedModelClass);
-                            QuerySet querySetAssociatedModels = manager.raw(String.format("SELECT * FROM %s " +
-                            		"WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)", 
-                            		manyToManyAnnotation.references().trim()
-                            		    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                            		    .toLowerCase(), 
-                                    manyToManyAnnotation.model().trim()
+                            QuerySet querySetAssociatedModels = manager.raw(
+                                String.format(
+                                    "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)", 
+                                    manyToManyAnnotation
+                                        .references()
+                                        .trim()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(), 
+                                    manyToManyAnnotation
+                                        .model()
+                                        .trim()
                                         .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase(), 
                                     tableName, 
-                                    manyToManyAnnotation.references().trim()
+                                    manyToManyAnnotation
+                                        .references()
+                                        .trim()
                                         .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase(), 
-                                    obj.getClass().getSimpleName()
+                                    obj
+                                        .getClass()
+                                        .getSimpleName()
                                         .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase(),
-                                    ((Model) obj).getId()), associatedModelClass);
+                                    ((Model) obj).getId()
+                                ), 
+                                associatedModelClass
+                            );
                             field.set(obj, querySetAssociatedModels);
                         } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty()) {
                             // Recovers the attribute class.

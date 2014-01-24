@@ -98,8 +98,11 @@ public class Manager {
                 String sql = "SELECT * FROM";
                 // Verifies if the model class was annotated with @Table.
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
-                String tableName = String.format("%ss", this.entity.getSimpleName()
-                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                String tableName = String.format(
+                    "%ss", 
+                    this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                        .toLowerCase()
+                );
 
                 if (tableAnnotation != null && !tableAnnotation.name().trim().equals("")) {
                     tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
@@ -177,9 +180,8 @@ public class Manager {
                             field.set(obj, associatedModel);
                         } else {
                             // Sets the fields that aren't Model instances.
-                            if ((field.getType().getSimpleName().equals("int") 
-                                    || field.getType().getSimpleName().equals("Integer"))
-                                    && this.connection.toString().startsWith("oracle")) {
+                            if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName()
+                                    .equals("Integer")) && this.connection.toString().startsWith("oracle")) {
                                 if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase()) == null) {
                                     field.set(obj, 0);

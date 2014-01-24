@@ -181,17 +181,14 @@ public class Manager {
                         }
                         manager = null;
                     }
-
                     T model = (T) obj;
 
                     if (model != null) {
                         model.isPersisted(true);
                     }
-                    
                     querySet.add(model);
                 }
                 resultSet.close();
-                
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -313,10 +310,8 @@ public class Manager {
                         if (bool.equalsIgnoreCase("false")) {
                             fields[i] = fields[i].replace("__isnull = ", " IS NOT NULL ");
                         }
-
                         fields[i] = fields[i].replace(bool, "");
                     }
-
                     where += fields[i] + " AND ";
                     where = where.replace(" AND OR AND", " OR");
                     where = where.replace(" AND AND AND", " AND");

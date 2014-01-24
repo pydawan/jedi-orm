@@ -532,24 +532,19 @@ public class Manager {
 
                 Field f = this.entity.getSuperclass().getDeclaredField("id");
 
-                // Obtendo a chave primária do último registro inserido e
-                // atribuindo para o objeto.
-                // Dessa forma a referência retornada será de alguma utilidade.
+                /* Gets the primary key (pk) of the last row inserted and 
+                 * assigns it to the model.
+                 */
                 f.set(obj, this.last_inserted_id());
-
                 T model = (T) obj;
 
                 if (model != null) {
-
                     model.is_persisted(true);
                 }
-
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return (T) obj;
     }
 

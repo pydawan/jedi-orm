@@ -156,8 +156,8 @@ public class Manager {
                                         .toLowerCase(), 
                                     manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase(), 
-                                    tableName, manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase(), 
+                                    tableName, manyToManyAnnotation.references().trim()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(), 
                                     obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase(),
                                     ((Model) obj).getId()
@@ -177,7 +177,8 @@ public class Manager {
                             field.set(obj, associatedModel);
                         } else {
                             // Sets the fields that aren't Model instances.
-                            if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName().equals("Integer"))
+                            if ((field.getType().getSimpleName().equals("int") 
+                                    || field.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
                                 if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                         .toLowerCase()) == null) {
@@ -187,8 +188,8 @@ public class Manager {
                                             .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
                             } else {
-                                field.set(obj, resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase()));
+                                field.set(obj, resultSet.getObject(field.getName()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
                         manager = null;

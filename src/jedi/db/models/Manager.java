@@ -535,7 +535,7 @@ public class Manager {
                 /* Gets the primary key (pk) of the last row inserted and 
                  * assigns it to the model.
                  */
-                f.set(obj, this.last_inserted_id());
+                f.set(obj, this.lastInsertedID());
                 T model = (T) obj;
 
                 if (model != null) {
@@ -549,81 +549,53 @@ public class Manager {
     }
 
     /**
-     * Método que retorna o número identificador (id) do último registro
-     * inserido.
-     * 
-     * @author Thiago Alexandre Martins Monteiro
+     * Returns the id of the last inserted row.
      * @return int
      */
-    public int last_inserted_id() {
-
+    public int lastInsertedID() {
         int id = 0;
 
         if (this.connection != null) {
-
             try {
+                String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
-                String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-                Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-                if (table_annotation != null) {
-
-                    if (!table_annotation.name().trim().equals("")) {
-
-                        table_name = table_annotation.name().toLowerCase();
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().equals("")) {
+                        tableName = tableAnnotation.name().toLowerCase();
                     }
-
-                } else if (tableName != null && !tableName.trim().equals("")) {
-
-                    table_name = tableName;
+                } else if (this.tableName != null && !this.tableName.trim().equals("")) {
+                    tableName = this.tableName;
                 }
-
                 String sql = "";
+                Properties databaseSettings = new Properties();
+                FileInputStream fileInputStream = new FileInputStream(JediORMEngine.APP_DB_CONFIG);
 
-                Properties database_settings = new Properties();
+                databaseSettings.load(fileInputStream);
 
-                FileInputStream file_input_stream = new FileInputStream(JediORMEngine.APP_DB_CONFIG);
+                String databaseEngine = databaseSettings.getProperty("database.engine");
 
-                database_settings.load(file_input_stream);
-
-                String database_engine = database_settings.getProperty("database.engine");
-
-                if (database_engine != null) {
-
-                    if (database_engine.trim().equalsIgnoreCase("mysql") || database_engine.trim().equalsIgnoreCase("postgresql")
-                            || database_engine.trim().equalsIgnoreCase("h2")) {
-
-                        sql = String.format("SELECT id FROM %s ORDER BY id DESC LIMIT 1", table_name);
-
-                    } else if (database_engine.trim().equalsIgnoreCase("oracle")) {
-
-                        sql = String.format("SELECT MAX(id) AS id FROM %s", table_name);
-
+                if (databaseEngine != null) {
+                    if (databaseEngine.trim().equalsIgnoreCase("mysql") || databaseEngine.trim().equalsIgnoreCase("postgresql")
+                            || databaseEngine.trim().equalsIgnoreCase("h2")) {
+                        sql = String.format("SELECT id FROM %s ORDER BY id DESC LIMIT 1", tableName);
+                    } else if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
+                        sql = String.format("SELECT MAX(id) AS id FROM %s", tableName);
                     } else {
-
                     }
-
                 } else {
-
                     return id;
                 }
+                ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
 
-                ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
-
-                while (result_set.next()) {
-
-                    id = result_set.getInt("id");
+                while (resultSet.next()) {
+                    id = resultSet.getInt("id");
                 }
-
-                result_set.close();
-
+                resultSet.close();
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return id;
     }
 

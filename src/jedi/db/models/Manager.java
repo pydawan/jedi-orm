@@ -438,7 +438,8 @@ public class Manager {
                             manager = new Manager(associatedModelClass);
                             // Calls the get method recursivelly.
                             Model associatedModel = manager.get("id", resultSet.getObject(String.format("%s_id", 
-                                field.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())));
+                                field.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                .toLowerCase())));
                             // References the model associated by foreign key annotation.
                             field.set(obj, associatedModel);
                         } else {

@@ -122,12 +122,20 @@ public class Manager {
 
                     // Oracle returns BigDecimal object.
                     if (this.connection.toString().startsWith("oracle")) {
-                        id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.toString()
-                                .substring(id.toString().lastIndexOf('.') + 1))).intValue());
+                        id.set(
+                            obj, 
+                            ((java.math.BigDecimal) resultSet.getObject(
+                                id.toString().substring(id.toString().lastIndexOf('.') + 1))
+                            ).intValue()
+                        );
                     } else {
                         // MySQL and PostgreSQL returns a Integer object.
-                        id.set(obj, resultSet.getObject(id.toString().substring(id.toString()
-                                .lastIndexOf('.') + 1)));
+                        id.set(
+                            obj, 
+                            resultSet.getObject(
+                                id.toString().substring(id.toString().lastIndexOf('.') + 1)
+                            )
+                        );
                     }
 
                     for (Field field : entity.getDeclaredFields()) {
@@ -145,7 +153,12 @@ public class Manager {
                         Manager manager = null;
 
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
-                            Class associatedModelClass = Class.forName(String.format("app.models.%s", manyToManyAnnotation.model()));
+                            Class associatedModelClass = Class.forName(
+                                String.format(
+                                    "app.models.%s", 
+                                    manyToManyAnnotation.model()
+                                )
+                            );
                             manager = new Manager(associatedModelClass);
                             QuerySet querySetAssociatedModels = manager.raw(
                                 String.format(

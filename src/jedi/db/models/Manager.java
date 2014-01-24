@@ -42,6 +42,26 @@ import jedi.db.engine.JediORMEngine;
  * @version 1.0
  * 
  */
+/**
+ * @author neo
+ *
+ */
+/**
+ * @author neo
+ *
+ */
+/**
+ * @author neo
+ *
+ */
+/**
+ * @author neo
+ *
+ */
+/**
+ * @author neo
+ *
+ */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Manager {
     private Connection connection;
@@ -200,11 +220,13 @@ public class Manager {
         return (QuerySet<T>) this.filter(this.entity, fields);
     }
 
+
     /**
+     * @param modelClass
      * @param fields
      * @return
      */
-    public <T extends Model> QuerySet<T> filter(Class<T> model_class, String... fields) {
+    public <T extends Model> QuerySet<T> filter(Class<T> modelClass, String... fields) {
         QuerySet<T> querySet = null;
 
         if (this.connection != null && fields != null && !fields.equals("")) {
@@ -442,67 +464,47 @@ public class Manager {
         return (T) this.create(entity, list);
     }
 
+    
     /**
-     * @author Thiago Alexandre Martins Monteiro
+     * @param modelClass
      * @param list
      * @return
      */
     public <T extends Model> T create(Class<T> modelClass, String... list) {
-
         Object obj = null;
 
-        // Verificando se existe uma conexão com o banco de dados e se foram
-        // passados argumentos para o método.
         if (this.connection != null && list != null && !list.equals("")) {
-
             try {
+                // Defines the name of the table associated with the model.
+                String tableName = this.entity.getName().replace(this.entity.getPackage().getName() + ".", "") + "s";
+                tableName = tableName.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
-                // Definindo o nome da tabela associada ao modelo.
-                String table_name = this.entity.getName().replace(this.entity.getPackage().getName() + ".", "") + "s";
-
-                table_name = table_name.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
-                Table tb_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-                if (tb_annotation != null) {
-
-                    if (!tb_annotation.name().trim().equals("")) {
-
-                        table_name = tb_annotation.name().toLowerCase();
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().equals("")) {
+                        tableName = tableAnnotation.name().toLowerCase();
                     }
-
-                } else if (tableName != null && !tableName.equals("")) {
-
-                    table_name = tableName;
+                } else if (this.tableName != null && !this.tableName.equals("")) {
+                    tableName = this.tableName;
                 }
 
-                String sql = String.format("INSERT INTO %s", table_name);
-
+                String sql = String.format("INSERT INTO %s", tableName);
                 String fields = "";
-
                 String field = "";
-
                 String values = "";
-
                 String value = "";
 
-                // Instanciando um objeto do modelo gerenciado por esse manager.
+                // Instanciates a model object managed by this Manager.
                 obj = this.entity.newInstance();
 
                 for (int i = 0; i < list.length; i++) {
-
                     field = list[i].split("=")[0];
-
                     value = list[i].split("=")[1];
-
                     Field f = null;
 
                     if (field.endsWith("_id")) {
-
                         f = this.entity.getDeclaredField(field.replace("_id", ""));
-
                     } else {
-
                         f = this.entity.getDeclaredField(field);
                     }
 

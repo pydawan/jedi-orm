@@ -103,7 +103,7 @@ public class Manager {
 
                 if (tableAnnotation != null && !tableAnnotation.name().trim().equals("")) {
                     tableName = tableAnnotation.name().trim()
-                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                 }
 
                 sql = String.format("%s %s", sql, tableName);

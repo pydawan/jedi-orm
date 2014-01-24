@@ -98,11 +98,8 @@ public class Manager {
                 String sql = "SELECT * FROM";
                 // Verifies if the model class was annotated with @Table.
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
-                String tableName = String.format(
-                    "%ss", 
-                    this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                        .toLowerCase()
-                );
+                String tableName = String.format("%ss", this.entity.getSimpleName()
+                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
 
                 if (tableAnnotation != null && !tableAnnotation.name().trim().equals("")) {
                     tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
@@ -136,37 +133,35 @@ public class Manager {
                     for (Field field : entity.getDeclaredFields()) {
                         field.setAccessible(true);
 
-                        if (field.toString().substring(field.toString()
-                                .lastIndexOf('.') + 1).equals("serialVersionUID"))
+                        if (field.toString().substring(field.toString().lastIndexOf('.') + 1)
+                                .equals("serialVersionUID")) {
                             continue;
+                        }
 
-                        if (field.getName().equalsIgnoreCase("objects"))
+                        if (field.getName().equalsIgnoreCase("objects")) {
                             continue;
+                        }
 
                         ForeignKeyField foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
                         ManyToManyField manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
                         Manager manager = null;
 
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
-                            Class associatedModelClass = Class.forName(
-                                String.format("app.models.%s", manyToManyAnnotation.model())
-                            );
+                            Class associatedModelClass = Class.forName(String
+                                    .format("app.models.%s", manyToManyAnnotation.model()));
                             manager = new Manager(associatedModelClass);
-                            QuerySet querySetAssociatedModels = manager.raw(
-                                String.format(
-                                    "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
-                                    manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase(), 
-                                    manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase(), 
-                                    tableName, manyToManyAnnotation.references().trim()
-                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(), 
-                                    obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase(),
-                                    ((Model) obj).getId()
-                                ), 
-                                associatedModelClass
-                            );
+                            QuerySet querySetAssociatedModels = manager.raw(String
+                                    .format("SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)", 
+                                            manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(), 
+                                            manyToManyAnnotation.model().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(), 
+                                            tableName, 
+                                            manyToManyAnnotation.references().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(), 
+                                            obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(), 
+                                            ((Model) obj).getId()), associatedModelClass);
                             field.set(obj, querySetAssociatedModels);
                         } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty()) {
                             // Recovers the attribute class.

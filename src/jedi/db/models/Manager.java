@@ -42,26 +42,6 @@ import jedi.db.engine.JediORMEngine;
  * @version 1.0
  * 
  */
-/**
- * @author neo
- *
- */
-/**
- * @author neo
- *
- */
-/**
- * @author neo
- *
- */
-/**
- * @author neo
- *
- */
-/**
- * @author neo
- *
- */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Manager {
     private Connection connection;

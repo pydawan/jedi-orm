@@ -738,183 +738,133 @@ public class Manager {
     }
 
     public <T extends Model> QuerySet<T> exclude(String... fields) {
-
-        QuerySet<T> query_set = null;
+        QuerySet<T> querySet = null;
 
         if (this.connection != null && fields != null && !fields.equals("")) {
-
             try {
+                String tableName = String.format("%ss", this.entity.getSimpleName()
+                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
-                String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-                Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-                if (table_annotation != null) {
-
-                    if (!table_annotation.name().trim().equals("")) {
-
-                        table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
-                    } else if (tableName != null && !tableName.trim().equals("")) {
-
-                        table_name = tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().equals("")) {
+                        tableName = tableAnnotation.name().trim()
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                    } else if (this.tableName != null && !this.tableName.trim().equals("")) {
+                        tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     }
                 }
-
-                String sql = String.format("SELECT * FROM %s WHERE", table_name);
-
+                String sql = String.format("SELECT * FROM %s WHERE", tableName);
                 String where = "";
 
-                // Percorrendo os pares campo=valor informados.
+                // Iterates through the pairs field=value.
                 for (int i = 0; i < fields.length; i++) {
-
-                    // Alterando o nome do campo para refletir o padrão de nome
-                    // para colunas de tabelas.
+                    // Creates the column name.
                     if (fields[i].contains("=")) {
-
                         fields[i] = String.format(
-
-                        "%s%s",
-
-                        fields[i].substring(0, fields[i].lastIndexOf("=")).replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                        fields[i].substring(fields[i].lastIndexOf("=")));
+                            "%s%s",
+                            fields[i].substring(0, fields[i].lastIndexOf("="))
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                            fields[i].substring(fields[i].lastIndexOf("="))
+                        );
                     }
-
-                    // Acrescentando espaço em branco entre o nome do campo e o
-                    // valor.
+                    // Adds a blank space between the field name and value.
                     fields[i] = fields[i].replace("=", " = ");
-
-                    // Substituindo % por \%
+                    // Replaces % by \%
                     fields[i] = fields[i].replace("%", "\\%");
-
-                    // Acrescentando espaço em branco entre valores separados
-                    // por vírgula.
+                    // Adds a blank space between the values separated by comma character.
                     fields[i] = fields[i].replace(",", ", ");
 
-                    // Verificando se o par atual possui um dos textos:
-                    // __startswith, __contains ou __endswith.
-                    if (fields[i].indexOf("__startswith") > -1 || fields[i].indexOf("__contains") > -1 || fields[i].indexOf("__endswith") > -1) {
-
-                        // Criando a instrução LIKE do SQL.
-
+                    // Checks if the current pair contains __startswith, __contains ou __endswith.
+                    if (fields[i].indexOf("__startswith") > -1 || fields[i].indexOf("__contains") > -1 
+                            || fields[i].indexOf("__endswith") > -1) {
+                        // Creates a LIKE SQL statement.
                         if (fields[i].indexOf("__startswith") > -1) {
-
                             fields[i] = fields[i].replace("__startswith = ", " LIKE ");
-
-                            // Substituindo 'valor' por 'valor%'.
+                            // Replaces 'value' by 'value%'.
                             fields[i] = fields[i].substring(0, fields[i].lastIndexOf("\'"));
-
                             fields[i] = fields[i] + "%\'";
-
                         } else if (fields[i].indexOf("__contains") > -1) {
-
                             fields[i] = fields[i].replace("__contains = ", " LIKE ");
-
-                            // Substituindo 'valor' por '%valor%'.
+                            // Replaces 'value' by '%value%'.
                             fields[i] = fields[i].replaceFirst("\'", "\'%");
-
                             fields[i] = fields[i].substring(0, fields[i].lastIndexOf("\'"));
-
                             fields[i] = fields[i] + "%\'";
-
                         } else if (fields[i].indexOf("__endswith") > -1) {
-
                             fields[i] = fields[i].replace("__endswith = ", " LIKE ");
-
-                            // Substituindo 'valor' por '%valor'.
+                            // Replaces 'value' by '%value'.
                             fields[i] = fields[i].replaceFirst("\'", "\'%");
                         }
                     }
 
                     if (fields[i].indexOf("__in") > -1) {
-
-                        // Criando a instrução IN do SQL.
+                        // Creates a IN SQL statement.
                         fields[i] = fields[i].replace("__in = ", " IN ");
-
-                        // Substituindo os caracteres [] por ().
+                        // Replaces [] characters by () characters.
                         fields[i] = fields[i].replace("[", "(");
-
                         fields[i] = fields[i].replace("]", ")");
                     }
 
                     if (fields[i].indexOf("__range") > -1) {
-
-                        // Criando a instrução BETWEEN do SQL.
+                        // Creates a BETWEEN SQL statement.
                         fields[i] = fields[i].replace("__range = ", " BETWEEN ");
-
-                        // Substituindo o caracter [ ou ] por string vazia.
+                        // Removes the [ character.
                         fields[i] = fields[i].replace("[", "");
-
+                        // Removes the ] character.
                         fields[i] = fields[i].replace("]", "");
-
                         // Substituindo o caracter , por AND.
                         fields[i] = fields[i].replace(", ", " AND ");
                     }
 
                     if (fields[i].indexOf("__lt") > -1) {
-
                         fields[i] = fields[i].replace("__lt = ", " < ");
                     }
 
                     if (fields[i].indexOf("__lte") > -1) {
-
                         fields[i] = fields[i].replace("__lte = ", " <= ");
                     }
 
                     if (fields[i].indexOf("__gt") > -1) {
-
                         fields[i] = fields[i].replace("__gt = ", " > ");
                     }
 
                     if (fields[i].indexOf("__gte") > -1) {
-
                         fields[i] = fields[i].replace("__gte = ", " >= ");
                     }
 
                     if (fields[i].indexOf("__exact") > -1) {
-
                         fields[i] = fields[i].replace("__exact = ", " = ");
                     }
-
                     where += fields[i] + " AND ";
                 }
 
                 where = where.substring(0, where.lastIndexOf("AND"));
-
                 sql = String.format("%s NOT (%s)", sql, where);
 
-                // Mostrando a instrução SQL gerada na saída padrão.
+                // Shows the generated SQL statement on the STDOUT (STANDARD OUTPUT).
                 // System.out.println(sql);
 
-                // Executando a instrução SQL.
-                ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
+                // Executes the SQL statement.
+                ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
+                querySet = new QuerySet();
+                querySet.setEntity(this.entity);
 
-                query_set = new QuerySet();
-
-                query_set.setEntity(this.entity);
-
-                while (result_set.next()) {
-
+                while (resultSet.next()) {
                     Object obj = entity.newInstance();
 
-                    if (result_set.getObject("id") != null) {
-
+                    if (resultSet.getObject("id") != null) {
                         Field id = entity.getSuperclass().getDeclaredField("id");
 
                         if (this.connection.toString().startsWith("oracle")) {
-
-                            id.set(obj, ((java.math.BigDecimal) result_set.getObject(id.toString().substring(id.toString().lastIndexOf('.') + 1))).intValue());
-
+                            id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.toString()
+                                    .substring(id.toString().lastIndexOf('.') + 1))).intValue());
                         } else {
-
-                            id.set(obj, result_set.getObject(id.toString().substring(id.toString().lastIndexOf('.') + 1)));
-
+                            id.set(obj, resultSet.getObject(id.toString()
+                                    .substring(id.toString().lastIndexOf('.') + 1)));
                         }
                     }
 
                     for (Field field : entity.getDeclaredFields()) {
-
                         field.setAccessible(true);
 
                         if (field.getName().equals("serialVersionUID"))
@@ -923,102 +873,67 @@ public class Manager {
                         if (field.getName().equals("objects"))
                             continue;
 
-                        // Abaixo é verificado se o atributo é anotado como
-                        // ForeignKeyField ou ManyToManyField.
-                        ForeignKeyField foreign_key_annotation = field.getAnnotation(ForeignKeyField.class);
-
-                        ManyToManyField many_to_many_annotation = field.getAnnotation(ManyToManyField.class);
-
+                        ForeignKeyField foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
+                        ManyToManyField manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
                         Manager manager = null;
 
-                        if (many_to_many_annotation != null && !many_to_many_annotation.references().isEmpty()) {
-
-                            Class associated_model_class = Class.forName(String.format("app.models.%s", many_to_many_annotation.model()));
-
-                            manager = new Manager(associated_model_class);
-
-                            QuerySet query_set_associated_models = manager.raw(
+                        if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
+                            Class associatedModelClass = Class.forName(String.format("app.models.%s", manyToManyAnnotation.model()));
+                            manager = new Manager(associatedModelClass);
+                            QuerySet querySet_associated_models = manager.raw(
 
                             String.format(
-
-                            "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
-
-                            many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            many_to_many_annotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            table_name,
-
-                            many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            ((Model) obj).getId()),
-
-                            associated_model_class);
-
-                            field.set(obj, query_set_associated_models);
-
-                        } else if (foreign_key_annotation != null && !foreign_key_annotation.references().isEmpty()) {
-
-                            // Caso seja recupera a classe do atributo.
-                            Class associated_model_class = Class.forName(field.getType().getName());
-
-                            // Instanciando um model manager.
-                            manager = new Manager(associated_model_class);
-
-                            // Chamando o método esse método (get)
-                            // recursivamente.
-                            Model associated_model = manager.get(String.format("id"),
-                                    result_set.getObject(String.format("%s_id", field.getType().getSimpleName().toLowerCase())));
-
-                            // Referenciando o modelo associado por foreign key.
-                            field.set(obj, associated_model);
-
+                                "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
+                                manyToManyAnnotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                manyToManyAnnotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                tableName,
+                                manyToManyAnnotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                ((Model) obj).getId()),
+                                associatedModelClass
+                            );
+                            field.set(obj, querySet_associated_models);
+                        } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty()) {
+                            Class associatedModelClass = Class.forName(field.getType().getName());
+                            manager = new Manager(associatedModelClass);
+                            Model associatedModel = manager.get(
+                                String.format("id"),
+                                resultSet.getObject(String.format("%s_id", field.getType().getSimpleName().toLowerCase()))
+                            );
+                            field.set(obj, associatedModel);
                         } else {
-
                             if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
-
-                                if (result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
-
+                                if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
                                     field.set(obj, 0);
-
                                 } else {
-
                                     field.set(
-                                            obj,
-                                            ((java.math.BigDecimal) result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    .toLowerCase())).intValue());
-
+                                        obj,
+                                        ((java.math.BigDecimal) resultSet.getObject(
+                                            field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())
+                                        ).intValue()
+                                    );
                                 }
-
                             } else {
-
-                                field.set(obj, result_set.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
+                                field.set(obj, resultSet.getObject(
+                                    field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())
+                                );
                             }
                         }
                     }
-
                     T model = (T) obj;
 
                     if (model != null) {
-
-                        model.is_persisted(true);
+                        model.isPersisted(true);
                     }
-
-                    query_set.add(model);
+                    querySet.add(model);
                 }
-
-                result_set.close();
-
+                resultSet.close();
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
-        return query_set;
+        return querySet;
     }
 
     public List<List<HashMap<String, Object>>> raw(String sql) {

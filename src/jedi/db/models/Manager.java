@@ -40,7 +40,6 @@ import jedi.db.engine.JediORMEngine;
  * 
  * @author Thiago Alexandre Martins Monteiro
  * @version 1.0
- * 
  */
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class Manager {
@@ -199,7 +198,6 @@ public class Manager {
     public <T extends Model> QuerySet<T> filter(String... fields) {
         return (QuerySet<T>) this.filter(this.entity, fields);
     }
-
 
     /**
      * @param modelClass
@@ -443,7 +441,6 @@ public class Manager {
     public <T extends Model> T create(String... list) {
         return (T) this.create(entity, list);
     }
-
     
     /**
      * @param modelClass

@@ -535,7 +535,7 @@ public class Manager {
                 /* Gets the primary key (pk) of the last row inserted and 
                  * assigns it to the model.
                  */
-                f.set(obj, this.lastInsertedID());
+                f.set(obj, this.getLastInsertedID());
                 T model = (T) obj;
 
                 if (model != null) {
@@ -552,7 +552,7 @@ public class Manager {
      * Returns the id of the last inserted row.
      * @return int
      */
-    public int lastInsertedID() {
+    public int getLastInsertedID() {
         int id = 0;
 
         if (this.connection != null) {
@@ -600,136 +600,89 @@ public class Manager {
     }
 
     /**
-     * @author Thiago Alexandre Martins Monteiro
-     * @param PythonString
-     *            conditions
+     * @param conditions
      * @return int
      */
     public int count(String... conditions) {
-
         int rows = 0;
 
-        // Verificando se existe conexão com o banco de dados.
         if (this.connection != null) {
-
             try {
+                String tableName = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
-                String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-                Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-                if (table_annotation != null) {
-
-                    if (!table_annotation.name().trim().equals("")) {
-
-                        table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
-                    } else if (tableName != null && !tableName.trim().equals("")) {
-
-                        table_name = tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().equals("")) {
+                        tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                    } else if (this.tableName != null && !this.tableName.trim().equals("")) {
+                        tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     }
                 }
-
-                String sql = String.format("SELECT COUNT(id) AS \"rows\" FROM %s", table_name);
+                String sql = String.format("SELECT COUNT(id) AS \"rows\" FROM %s", tableName);
 
                 if (conditions != null && conditions.length > 0) {
-
                     String where = "WHERE";
 
                     for (int i = 0; i < conditions.length; i++) {
-
                         if (!conditions[i].equals("")) {
-
-                            // Alterando o nome do campo para refletir o padrão
-                            // de nome para colunas de tabelas.
+                            /* Changes the name of the field to reflect the name 
+                             * pattern of the table columns.
+                             */
                             if (conditions[i].contains("=")) {
-
                                 conditions[i] = String.format(
-
-                                "%s%s",
-
-                                conditions[i].substring(0, conditions[i].lastIndexOf("=")).replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                                conditions[i].substring(conditions[i].lastIndexOf("=")));
+                                    "%s%s",
+                                    conditions[i].substring(0, conditions[i].lastIndexOf("=")).replaceAll(
+                                        "([a-z0-9]+)([A-Z])", "$1_$2"
+                                    ).toLowerCase(),
+                                    conditions[i].substring(conditions[i].lastIndexOf("="))
+                                );
                             }
-
-                            // Acrescentando espaço em branco entre o nome do
-                            // campo e o valor.
+                            // Adds a blank space between the field's name and value.
                             conditions[i] = conditions[i].replace("=", " = ");
-
-                            // Substituindo % por \%
+                            // Replaces % by \%
                             conditions[i] = conditions[i].replace("%", "\\%");
-
-                            // Acrescentando espaço em branco entre valores
-                            // separados por vírgula.
+                            // Adds a blank space between the values separated by comma character.
                             conditions[i] = conditions[i].replace(",", ", ");
-
-                            // Verificando se o par atual possui um dos textos:
-                            // __startswith, __contains ou __endswith.
+                            // Checks if the current pair contains __startswith, __contains or __endswith.
                             if (conditions[i].indexOf("__startswith") > -1 || conditions[i].indexOf("__contains") > -1
                                     || conditions[i].indexOf("__endswith") > -1) {
-
-                                // Criando a instrução LIKE do SQL.
-
+                                // Creates the LIKE SQL statement.
                                 if (conditions[i].indexOf("__startswith") > -1) {
-
                                     conditions[i] = conditions[i].replace("__startswith = ", " LIKE ");
-
-                                    // Substituindo 'valor' por 'valor%'.
+                                    // Replaces 'value' by 'value%'.
                                     conditions[i] = conditions[i].substring(0, conditions[i].lastIndexOf("\'"));
-
                                     conditions[i] = conditions[i] + "%\'";
-
                                 } else if (conditions[i].indexOf("__contains") > -1) {
-
                                     conditions[i] = conditions[i].replace("__contains = ", " LIKE ");
-
-                                    // Substituindo 'valor' por '%valor%'.
+                                    // Replaces 'value' by '%value%'.
                                     conditions[i] = conditions[i].replaceFirst("\'", "\'%");
-
                                     conditions[i] = conditions[i].substring(0, conditions[i].lastIndexOf("\'"));
-
                                     conditions[i] = conditions[i] + "%\'";
-
                                 } else if (conditions[i].indexOf("__endswith") > -1) {
-
                                     conditions[i] = conditions[i].replace("__endswith = ", " LIKE ");
-
-                                    // Substituindo 'valor' por '%valor'.
+                                    // Replaces 'value' by '%value'.
                                     conditions[i] = conditions[i].replaceFirst("\'", "\'%");
-
                                 }
                             }
 
                             if (conditions[i].indexOf("__in") > -1) {
-
-                                // Criando a instrução IN do SQL.
+                                // Creates the IN SQL statement.
                                 conditions[i] = conditions[i].replace("__in = ", " IN ");
-
-                                // Substituindo os caracteres [] por ().
+                                // Replaces the [] characters by ().
                                 conditions[i] = conditions[i].replace("[", "(");
-
                                 conditions[i] = conditions[i].replace("]", ")");
-
                             } else
-
                             if (conditions[i].indexOf("__range") > -1) {
-
-                                // Criando a instrução BETWEEN do SQL.
+                                // Creates the BETWEEN SQL statement.
                                 conditions[i] = conditions[i].replace("__range = ", " BETWEEN ");
-
-                                // Substituindo o caracter [ ou ] por string
-                                // vazia.
+                                // Removes the [ or ] characters.
                                 conditions[i] = conditions[i].replace("[", "");
-
                                 conditions[i] = conditions[i].replace("]", "");
-
-                                // Substituindo o caracter , por AND.
+                                // Replaces the comma character by AND.
                                 conditions[i] = conditions[i].replace(", ", " AND ");
                             }
 
                             if (conditions[i].indexOf("__lt") > -1) {
-
                                 conditions[i] = conditions[i].replace("__lt = ", " < ");
                             }
 
@@ -738,58 +691,48 @@ public class Manager {
                             }
 
                             if (conditions[i].indexOf("__gt") > -1) {
-
                                 conditions[i] = conditions[i].replace("__gt = ", " > ");
                             }
 
                             if (conditions[i].indexOf("__gte") > -1) {
-
                                 conditions[i] = conditions[i].replace("__gte = ", " >= ");
                             }
 
                             if (conditions[i].indexOf("__exact") > -1) {
-
                                 conditions[i] = conditions[i].replace("__exact = ", " = ");
                             }
-
                             where += " " + conditions[i] + " AND";
-
                             where = where.replace(" AND OR AND", " OR");
-
                             where = where.replace(" AND AND AND", " AND");
                         }
                     }
 
                     if (where.indexOf(" AND") > -1) {
-
                         where = where.substring(0, where.lastIndexOf("AND"));
-
                         sql = String.format("%s %s", sql, where);
                     }
                 }
 
-                // Mostrando a instrução SQL gerada.
+                // Shows the generated SQL statement on the STDOUT (STANDARD OUTPUT).
                 // System.out.println(sql);
 
-                // Executando a instrução SQL.
-                ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
+                // Executes the SQL statement.
+                ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
 
-                while (result_set.next()) {
-
-                    rows = result_set.getInt("rows");
+                while (resultSet.next()) {
+                    rows = resultSet.getInt("rows");
                 }
-
-                result_set.close();
-
+                resultSet.close();
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return rows;
     }
 
+    /**
+     * @return int
+     */
     public int count() {
         return count("");
     }

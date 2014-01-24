@@ -99,11 +99,11 @@ public class Manager {
                 // Verifies if the model class was annotated with @Table.
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
                 String tableName = String.format("%ss", this.entity.getSimpleName()
-                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
 
                 if (tableAnnotation != null && !tableAnnotation.name().trim().equals("")) {
-                    tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                        .toLowerCase();
+                    tableName = tableAnnotation.name().trim()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                 }
 
                 sql = String.format("%s %s", sql, tableName);
@@ -123,18 +123,18 @@ public class Manager {
                     // Oracle returns BigDecimal object.
                     if (this.connection.toString().startsWith("oracle")) {
                         id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.toString()
-                                .substring(id.toString().lastIndexOf('.') + 1))).intValue());
+                            .substring(id.toString().lastIndexOf('.') + 1))).intValue());
                     } else {
                         // MySQL and PostgreSQL returns a Integer object.
                         id.set(obj, resultSet.getObject(id.toString().substring(id.toString()
-                                .lastIndexOf('.') + 1)));
+                            .lastIndexOf('.') + 1)));
                     }
 
                     for (Field field : entity.getDeclaredFields()) {
                         field.setAccessible(true);
 
-                        if (field.toString().substring(field.toString().lastIndexOf('.') + 1)
-                                .equals("serialVersionUID")) {
+                        if (field.toString().substring(field.toString()
+                            .lastIndexOf('.') + 1).equals("serialVersionUID")) {
                             continue;
                         }
 
@@ -184,7 +184,7 @@ public class Manager {
                             Class associatedModelClass = Class.forName(field.getType().getName());
                             manager = new Manager(associatedModelClass);
                             String s = String.format("%s_id", field.getType().getSimpleName()
-                                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                             Object o = resultSet.getObject(s);
                             Model associatedModel = manager.get("id", o);
                             // References a model associated by a foreign key.
@@ -192,17 +192,17 @@ public class Manager {
                         } else {
                             // Sets the fields that aren't Model instances.
                             if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName()
-                                    .equals("Integer")) && this.connection.toString().startsWith("oracle")) {
+                                .equals("Integer")) && this.connection.toString().startsWith("oracle")) {
                                 if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase()) == null) {
+                                    .toLowerCase()) == null) {
                                     field.set(obj, 0);
                                 } else {
                                     field.set(obj, ((java.math.BigDecimal) resultSet.getObject(field.getName()
-                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
                             } else {
                                 field.set(obj, resultSet.getObject(field.getName()
-                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
+                                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
                         manager = null;

@@ -790,13 +790,13 @@ public class Manager {
         if (this.connection != null && fields != null && !fields.equals("")) {
             try {
                 String tableName = String.format("%ss", this.entity.getSimpleName()
-                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                 Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
 
                 if (tableAnnotation != null) {
                     if (!tableAnnotation.name().trim().equals("")) {
                         tableName = tableAnnotation.name().trim()
-                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     } else if (this.tableName != null && !this.tableName.trim().equals("")) {
                         tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
                     }
@@ -810,8 +810,10 @@ public class Manager {
                     if (fields[i].contains("=")) {
                         fields[i] = String.format(
                             "%s%s",
-                            fields[i].substring(0, fields[i].lastIndexOf("="))
-                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                            fields[i]
+                                .substring(0, fields[i].lastIndexOf("="))
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                .toLowerCase(),
                             fields[i].substring(fields[i].lastIndexOf("="))
                         );
                     }
@@ -823,8 +825,9 @@ public class Manager {
                     fields[i] = fields[i].replace(",", ", ");
 
                     // Checks if the current pair contains __startswith, __contains ou __endswith.
-                    if (fields[i].indexOf("__startswith") > -1 || fields[i].indexOf("__contains") > -1 
-                            || fields[i].indexOf("__endswith") > -1) {
+                    if (fields[i].indexOf("__startswith") > -1 
+                        || fields[i].indexOf("__contains") > -1 
+                        || fields[i].indexOf("__endswith") > -1) {
                         // Creates a LIKE SQL statement.
                         if (fields[i].indexOf("__startswith") > -1) {
                             fields[i] = fields[i].replace("__startswith = ", " LIKE ");
@@ -904,38 +907,53 @@ public class Manager {
 
                         if (this.connection.toString().startsWith("oracle")) {
                             id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.toString()
-                                    .substring(id.toString().lastIndexOf('.') + 1))).intValue());
+                                .substring(id.toString().lastIndexOf('.') + 1))).intValue());
                         } else {
                             id.set(obj, resultSet.getObject(id.toString()
-                                    .substring(id.toString().lastIndexOf('.') + 1)));
+                                .substring(id.toString().lastIndexOf('.') + 1)));
                         }
                     }
 
                     for (Field field : entity.getDeclaredFields()) {
                         field.setAccessible(true);
 
-                        if (field.getName().equals("serialVersionUID"))
+                        if (field.getName().equals("serialVersionUID")) {
                             continue;
+                        }
 
-                        if (field.getName().equals("objects"))
+                        if (field.getName().equals("objects")) {
                             continue;
+                        }
 
                         ForeignKeyField foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
                         ManyToManyField manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
                         Manager manager = null;
 
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.references().isEmpty()) {
-                            Class associatedModelClass = Class.forName(String.format("app.models.%s", manyToManyAnnotation.model()));
+                            Class associatedModelClass = Class.forName(String.format("app.models.%s", 
+                                manyToManyAnnotation.model()));
                             manager = new Manager(associatedModelClass);
                             QuerySet querySet_associated_models = manager.raw(
-
-                            String.format(
-                                "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
-                                manyToManyAnnotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                manyToManyAnnotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                tableName,
-                                manyToManyAnnotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-                                obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
+                                String.format(
+                                    "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)", 
+                                    manyToManyAnnotation
+                                        .references()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    manyToManyAnnotation
+                                        .model()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    tableName,
+                                    manyToManyAnnotation
+                                        .references()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    obj
+                                        .getClass()
+                                        .getSimpleName()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
                                 ((Model) obj).getId()),
                                 associatedModelClass
                             );
@@ -945,25 +963,37 @@ public class Manager {
                             manager = new Manager(associatedModelClass);
                             Model associatedModel = manager.get(
                                 String.format("id"),
-                                resultSet.getObject(String.format("%s_id", field.getType().getSimpleName().toLowerCase()))
+                                resultSet.getObject(
+                                    String.format("%s_id", field.getType().getSimpleName().toLowerCase())
+                                )
                             );
                             field.set(obj, associatedModel);
                         } else {
-                            if ((field.getType().getSimpleName().equals("int") || field.getType().getSimpleName().equals("Integer"))
-                                    && this.connection.toString().startsWith("oracle")) {
-                                if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
+                            if ((field.getType().getSimpleName().equals("int") 
+                                || field.getType().getSimpleName().equals("Integer"))
+                                && this.connection.toString().startsWith("oracle")) {
+                                if (resultSet.getObject(field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                    .toLowerCase()) == null) {
                                     field.set(obj, 0);
                                 } else {
                                     field.set(
                                         obj,
                                         ((java.math.BigDecimal) resultSet.getObject(
-                                            field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())
-                                        ).intValue()
+                                            field
+                                                .getName()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase()
+                                        )).intValue()
                                     );
                                 }
                             } else {
-                                field.set(obj, resultSet.getObject(
-                                    field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())
+                                field.set(
+                                    obj, 
+                                    resultSet.getObject(
+                                        field.getName()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                            .toLowerCase()
+                                    )
                                 );
                             }
                         }

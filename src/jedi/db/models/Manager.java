@@ -1462,57 +1462,63 @@ public class Manager {
         return (T) this.get(field, value, this.entity);
     }
 
+    /**
+     * @param field
+     * @param model_class
+     * @return
+     */
     public <T extends Model> T latest(String field, Class<T> model_class) {
-
-        // Model model = null;
-
         T model = null;
 
         if (this.connection != null && field != null && !field.trim().isEmpty()) {
-
             // Renomeando o atributo para ficar no mesmo padrão do nome da
             // coluna na tabela associada ao modelo.
             field = field.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+            Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
+            String tableName = String.format(
+                "%ss", 
+                this
+                    .entity
+                    .getSimpleName()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase()
+            );
 
-            Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-            String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-            if (table_annotation != null) {
-
-                table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+            if (tableAnnotation != null) {
+                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase();
 
             }
-
-            String sql = String.format("SELECT * FROM %s ORDER BY %s DESC LIMIT 1", table_name, field);
+            String sql = String.format("SELECT * FROM %s ORDER BY %s DESC LIMIT 1", tableName, field);
 
             if (this.connection.toString().startsWith("oracle")) {
-
-                sql = String.format("SELECT * FROM %s WHERE ROWNUM < 2 ORDER BY %s DESC", table_name, field);
+                sql = String.format("SELECT * FROM %s WHERE ROWNUM < 2 ORDER BY %s DESC", tableName, field);
             }
 
-            QuerySet query_set = this.raw(sql, entity);
+            QuerySet querySet = this.raw(sql, entity);
 
-            if (query_set != null) {
-
-                // model = (Model) query_set.get(0);
-
-                model = (T) query_set.get(0);
+            if (querySet != null) {
+                model = (T) querySet.get(0);
 
                 if (model != null) {
-
-                    model.is_persisted(true);
+                    model.isPersisted(true);
                 }
             }
         }
-
         return model;
     }
 
+    /**
+     * @param field
+     * @return
+     */
     public <T extends Model> T latest(String field) {
         return (T) latest(field, entity);
     }
 
+    /**
+     * @return
+     */
     public <T extends Model> T latest() {
         return (T) latest("id", entity);
     }

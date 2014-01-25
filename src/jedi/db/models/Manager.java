@@ -677,9 +677,10 @@ public class Manager {
                             if (conditions[i].contains("=")) {
                                 conditions[i] = String.format(
                                     "%s%s",
-                                    conditions[i].substring(0, conditions[i].lastIndexOf("=")).replaceAll(
-                                        "([a-z0-9]+)([A-Z])", "$1_$2"
-                                    ).toLowerCase(),
+                                    conditions[i]
+                                        .substring(0, conditions[i].lastIndexOf("="))
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
                                     conditions[i].substring(conditions[i].lastIndexOf("="))
                                 );
                             }

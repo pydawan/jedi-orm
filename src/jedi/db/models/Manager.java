@@ -1290,68 +1290,51 @@ public class Manager {
     }
 
     // DEVE SER ALTERADO POIS PODE RETORNAR MAIS DE UM OBJETO.
-    public <T extends Model> T get(String field, Object value, Class<T> model_class) {
-
-        // Model obj = null;
-
+    /**
+     * @param field
+     * @param value
+     * @param modelClass
+     * @return
+     */
+    public <T extends Model> T get(String field, Object value, Class<T> modelClass) {
         T obj = null;
-
-        // 1 - Verificando a existência da conexão.
-        // 2 - Verificando se o campo da tabela foi informado.
-        // 3 - Verificando se o campo não é uma string vazia.
-
-        // Verificando se existe conexão com o banco de dados e se um campo foi
-        // informado.
+      
         if (this.connection != null && field != null && !field.trim().isEmpty()) {
-
             try {
-
                 field = field.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
                 String sql = "SELECT * FROM";
+                String tableName = String.format("%ss", this.entity.getSimpleName()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
+                Table tableAnnotation = (Table) entity.getAnnotation(Table.class);
 
-                String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-                Table table_annotation = (Table) entity.getAnnotation(Table.class);
-
-                if (table_annotation != null) {
-
-                    if (!table_annotation.name().trim().equals("")) {
-
-                        table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                if (tableAnnotation != null) {
+                    if (!tableAnnotation.name().trim().equals("")) {
+                        tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                            .toLowerCase();
                     }
-
-                } else if (tableName != null && !tableName.trim().equals("")) {
-
-                    table_name = tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+                } else if (this.tableName != null && !this.tableName.trim().equals("")) {
+                    tableName = this.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                        .toLowerCase();
                 }
 
                 if (value != null) {
-
-                    sql = String.format("%s %s WHERE %s = '%s'", sql, table_name, field, value.toString());
-
+                    sql = String.format("%s %s WHERE %s = '%s'", sql, tableName, field, value.toString());
                 } else {
-
-                    sql = String.format("%s %s WHERE %s IS NULL", sql, table_name, field);
+                    sql = String.format("%s %s WHERE %s IS NULL", sql, tableName, field);
                 }
 
                 // Caso o valor passado seja de um tipo de dados numérico retira
                 // a apóstofre.
                 if (Integer.class.isInstance(value) || Float.class.isInstance(value) || Double.class.isInstance(value)) {
-
                     sql = sql.replaceAll("\'", "");
                 }
 
-                ResultSet result_set = this.connection.prepareStatement(sql).executeQuery();
+                ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
 
-                while (result_set.next()) {
-
-                    // obj = (Model) entity.newInstance();
-
+                while (resultSet.next()) {
                     obj = (T) entity.newInstance();
 
-                    if (result_set.getObject("id") != null) {
-
+                    if (resultSet.getObject("id") != null) {
                         Field id = entity.getSuperclass().getDeclaredField("id");
 
                         // Tratando o tipo de dado BigDecimal que é retornado
@@ -1360,17 +1343,13 @@ public class Manager {
                         // Integer.
 
                         if (this.connection.toString().startsWith("oracle")) {
-
-                            id.set(obj, ((java.math.BigDecimal) result_set.getObject(id.getName())).intValue());
-
+                            id.set(obj, ((java.math.BigDecimal) resultSet.getObject(id.getName())).intValue());
                         } else {
-                            id.set(obj, result_set.getObject(id.getName()));
+                            id.set(obj, resultSet.getObject(id.getName()));
                         }
-
                     }
 
                     for (Field f : entity.getDeclaredFields()) {
-
                         f.setAccessible(true);
 
                         if (f.getName().equals("serialVersionUID"))
@@ -1381,60 +1360,58 @@ public class Manager {
 
                         // Verificando se o atributo é anotado com a anotação
                         // ForeignKeyField.
-                        ForeignKeyField foreign_key_annotation = f.getAnnotation(ForeignKeyField.class);
-
-                        ManyToManyField many_to_many_annotation = f.getAnnotation(ManyToManyField.class);
-
+                        ForeignKeyField foreignKeyAnnotation = f.getAnnotation(ForeignKeyField.class);
+                        ManyToManyField manyToManyAnnotation = f.getAnnotation(ManyToManyField.class);
                         Manager manager = null;
 
-                        if (many_to_many_annotation != null && !many_to_many_annotation.references().trim().isEmpty()) {
-
-                            Class associated_model_class = Class.forName(String.format("app.models.%s", many_to_many_annotation.model()));
-
-                            manager = new Manager(associated_model_class);
-
-                            QuerySet associated_models_query_set = manager.raw(
-
-                            String.format(
-
-                            "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
-
-                            many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            many_to_many_annotation.model().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            table_name,
-
-                            many_to_many_annotation.references().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            obj.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                            obj.getId()),
-
-                            associated_model_class);
-
+                        if (manyToManyAnnotation != null && !manyToManyAnnotation.references().trim().isEmpty()) {
+                            Class associatedModelClass = Class.forName(
+                                String.format("app.models.%s", manyToManyAnnotation.model())
+                            );
+                            manager = new Manager(associatedModelClass);
+                            QuerySet associatedModelsQuerySet = manager.raw(
+                                String.format(
+                                    "SELECT * FROM %s WHERE id IN (SELECT %s_id FROM %s_%s WHERE %s_id = %d)",
+                                    manyToManyAnnotation
+                                        .references()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    manyToManyAnnotation
+                                        .model()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    tableName,
+                                    manyToManyAnnotation
+                                        .references()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    obj
+                                        .getClass()
+                                        .getSimpleName()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase(),
+                                    obj.getId()
+                                ),
+                                associatedModelClass
+                            );
                             // Configurando o campo (atributo) com a referência
                             // para o queryset criado anteriormente.
-                            f.set(obj, associated_models_query_set);
-
-                        } else if (foreign_key_annotation != null && !foreign_key_annotation.references().trim().isEmpty()) {
-
+                            f.set(obj, associatedModelsQuerySet);
+                        } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().trim().isEmpty()) {
                             // Caso seja recupera a classe do atributo.
-                            Class associated_model_class = Class.forName(f.getType().getName());
-
+                            Class associatedModelClass = Class.forName(f.getType().getName());
                             // Instanciando um model manager.
-                            manager = new Manager(associated_model_class);
-
+                            manager = new Manager(associatedModelClass);
                             // Chamando o método esse método (get)
                             // recursivamente.
-                            Model associated_model = manager.get(
+                            Model associatedModel = manager.get(
                                     String.format("id"),
-                                    result_set.getObject(String.format("%s_id", f.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                    resultSet.getObject(String.format("%s_id", f.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                             .toLowerCase())));
 
                             // Atributo (campo) referenciando o modelo anotado
                             // como ForeignKeyField.
-                            f.set(obj, associated_model);
+                            f.set(obj, associatedModel);
 
                         } else {
 
@@ -1443,17 +1420,17 @@ public class Manager {
                             if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
 
-                                if (result_set.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
+                                if (resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
 
                                     f.set(obj, 0);
 
                                 } else {
-                                    f.set(obj, ((java.math.BigDecimal) result_set
+                                    f.set(obj, ((java.math.BigDecimal) resultSet
                                             .getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
 
                             } else {
-                                f.set(obj, result_set.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
+                                f.set(obj, resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
 
@@ -1466,7 +1443,7 @@ public class Manager {
                     obj.is_persisted(true);
                 }
 
-                result_set.close();
+                resultSet.close();
 
             } catch (Exception e) {
 

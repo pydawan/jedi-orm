@@ -1425,8 +1425,8 @@ public class Manager {
                         } else {
                             // Configurando campos que não são instancias de
                             // Model.
-                            if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName().equals("Integer")) 
-                                && this.connection.toString().startsWith("oracle")) {
+                            if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName()
+                                .equals("Integer")) && this.connection.toString().startsWith("oracle")) {
                                 if (resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                     .toLowerCase()) == null) {
                                     f.set(obj, 0);

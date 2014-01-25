@@ -1070,8 +1070,7 @@ public class Manager {
                     }
 
                 } else {
-                    // DML - Data Manipulation Language (INSERT, UPDATE and
-                    // DELETE).
+                    // DML - Data Manipulation Language (INSERT, UPDATE or DELETE).
                     this.connection.prepareStatement(sql).executeUpdate();
 
                     if (!this.connection.getAutoCommit()) {

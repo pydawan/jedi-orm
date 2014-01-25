@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/24
+ * Date: 2014/01/25
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -1411,11 +1411,10 @@ public class Manager {
                                 resultSet.getObject(
                                     String.format(
                                         "%s_id", 
-                                        f
-                                            .getType()
-                                            .getSimpleName()
-                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            .toLowerCase()
+                                        f.getType()
+                                        .getSimpleName()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                        .toLowerCase()
                                     )
                                 )
                             );
@@ -1425,15 +1424,18 @@ public class Manager {
                         } else {
                             // Configurando campos que não são instancias de
                             // Model.
-                            if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName().equals("Integer"))
-                                    && this.connection.toString().startsWith("oracle")) {
-                                if (resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
+                            if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName().equals("Integer")) 
+                                && this.connection.toString().startsWith("oracle")) {
+                                if (resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                    .toLowerCase()) == null) {
                                     f.set(obj, 0);
                                 } else {
-                                    f.set(obj, ((java.math.BigDecimal) resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
+                                    f.set(obj, ((java.math.BigDecimal) resultSet.getObject(f.getName()
+                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
                             } else {
-                                f.set(obj, resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
+                                f.set(obj, resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                    .toLowerCase()));
                             }
                         }
                         manager = null;
@@ -1451,6 +1453,11 @@ public class Manager {
         return (T) obj;
     }
 
+    /**
+     * @param field
+     * @param value
+     * @return
+     */
     public <T extends Model> T get(String field, Object value) {
         return (T) this.get(field, value, this.entity);
     }

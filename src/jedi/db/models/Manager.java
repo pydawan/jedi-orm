@@ -1325,7 +1325,8 @@ public class Manager {
 
                 // Caso o valor passado seja de um tipo de dados numérico retira
                 // a apóstofre.
-                if (Integer.class.isInstance(value) || Float.class.isInstance(value) || Double.class.isInstance(value)) {
+                if (Integer.class.isInstance(value) || Float.class.isInstance(value) 
+                    || Double.class.isInstance(value)) {
                     sql = sql.replaceAll("\'", "");
                 }
 
@@ -1397,7 +1398,8 @@ public class Manager {
                             // Configurando o campo (atributo) com a referência
                             // para o queryset criado anteriormente.
                             f.set(obj, associatedModelsQuerySet);
-                        } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().trim().isEmpty()) {
+                        } else if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references()
+                            .trim().isEmpty()) {
                             // Caso seja recupera a classe do atributo.
                             Class associatedModelClass = Class.forName(f.getType().getName());
                             // Instanciando um model manager.
@@ -1405,52 +1407,47 @@ public class Manager {
                             // Chamando o método esse método (get)
                             // recursivamente.
                             Model associatedModel = manager.get(
-                                    String.format("id"),
-                                    resultSet.getObject(String.format("%s_id", f.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            .toLowerCase())));
-
+                                String.format("id"),
+                                resultSet.getObject(
+                                    String.format(
+                                        "%s_id", 
+                                        f
+                                            .getType()
+                                            .getSimpleName()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                            .toLowerCase()
+                                    )
+                                )
+                            );
                             // Atributo (campo) referenciando o modelo anotado
                             // como ForeignKeyField.
                             f.set(obj, associatedModel);
-
                         } else {
-
                             // Configurando campos que não são instancias de
                             // Model.
                             if ((f.getType().getSimpleName().equals("int") || f.getType().getSimpleName().equals("Integer"))
                                     && this.connection.toString().startsWith("oracle")) {
-
                                 if (resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()) == null) {
-
                                     f.set(obj, 0);
-
                                 } else {
-                                    f.set(obj, ((java.math.BigDecimal) resultSet
-                                            .getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
+                                    f.set(obj, ((java.math.BigDecimal) resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase())).intValue());
                                 }
-
                             } else {
                                 f.set(obj, resultSet.getObject(f.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()));
                             }
                         }
-
                         manager = null;
                     }
                 }
 
                 if (obj != null) {
-
                     obj.is_persisted(true);
                 }
-
                 resultSet.close();
-
             } catch (Exception e) {
-
                 e.printStackTrace();
             }
         }
-
         return (T) obj;
     }
 

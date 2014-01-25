@@ -990,7 +990,8 @@ public class Manager {
                                 field.set(
                                     obj, 
                                     resultSet.getObject(
-                                        field.getName()
+                                        field
+                                            .getName()
                                             .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
                                             .toLowerCase()
                                     )

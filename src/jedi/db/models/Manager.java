@@ -1251,14 +1251,12 @@ public class Manager {
                                 } else {
                                     field.set(
                                         obj,
-                                        ((java.math.BigDecimal) 
-                                            resultSet.getObject(
-                                                field
-                                                    .getName()
-                                                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    .toLowerCase()
-                                            )
-                                        ).intValue()
+                                        ((java.math.BigDecimal) resultSet.getObject(
+                                            field
+                                                .getName()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase()
+                                        )).intValue()
                                     );
                                 }
                             } else {

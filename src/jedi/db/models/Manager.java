@@ -1015,40 +1015,30 @@ public class Manager {
     }
 
     public List<List<HashMap<String, Object>>> raw(String sql) {
-
-        // Cria uma lista de lista de mapa, no Python seria uma lista de lista
-        // de dicionario.
-        // A primeira lista representa o conjunto de registros.
-        // A segunda lista representa um registro.
-        // O mapa representa um campo do registro.
-
-        List<List<HashMap<String, Object>>> record_set = null;
+        // Creates a list of list of maps.
+        // The first list represents a set of rows.
+        // The second list represents a row (set of columns).
+        // The map represents a pair of key value (the column and its value).
+        List<List<HashMap<String, Object>>> recordSet = null;
 
         if (this.connection != null && sql != null && !sql.trim().equals("")) {
-
             try {
-
-                ResultSet result_set = null;
+                ResultSet resultSet = null;
 
                 // DQL - Data Query Language (SELECT).
                 if (sql.startsWith("select") || sql.startsWith("SELECT")) {
+                    // Returns a navigable ResultSet.
+                    resultSet = this.connection.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, 
+                        ResultSet.CONCUR_READ_ONLY).executeQuery();
+                    ResultSetMetaData tableMetadata = null;
 
-                    // Retornando um result set navegável.
-                    result_set = this.connection.prepareStatement(sql, ResultSet.TYPE_SCROLL_SENSITIVE, ResultSet.CONCUR_READ_ONLY).executeQuery();
+                    if (resultSet != null) {
+                        tableMetadata = resultSet.getMetaData();
 
-                    ResultSetMetaData table_metadata = null;
-
-                    if (result_set != null) {
-
-                        table_metadata = result_set.getMetaData();
-
-                        if (table_metadata != null) {
-
+                        if (tableMetadata != null) {
                             // Deslocando o cursor até o último registro.
                             // result_set.last();
-
-                            record_set = new ArrayList<List<HashMap<String, Object>>>();
-
+                            recordSet = new ArrayList<List<HashMap<String, Object>>>();
                             // O método getFetchSize() retorna o número de
                             // registros que o SGBD recupera por vez no banco de
                             // dados. Por padrão é 10.
@@ -1062,29 +1052,24 @@ public class Manager {
                             // Reposicionando o ponteiro de registros
                             // result_set.beforeFirst();
 
-                            while (result_set.next()) {
+                            while (resultSet.next()) {
+                                List<HashMap<String, Object>> tableRow = new ArrayList<HashMap<String, Object>>();
+                                HashMap<String, Object> tableColumn = new HashMap<String, Object>();
 
-                                List<HashMap<String, Object>> table_row = new ArrayList<HashMap<String, Object>>();
-
-                                HashMap<String, Object> table_column = new HashMap<String, Object>();
-
-                                for (int i = 1; i <= table_metadata.getColumnCount(); i++) {
-
-                                    table_column.put(table_metadata.getColumnLabel(i), result_set.getObject(table_metadata.getColumnLabel(i)));
+                                for (int i = 1; i <= tableMetadata.getColumnCount(); i++) {
+                                    tableColumn.put(
+                                        tableMetadata.getColumnLabel(i), 
+                                        resultSet.getObject(tableMetadata.getColumnLabel(i))
+                                    );
                                 }
-
-                                table_row.add(table_column);
-
-                                record_set.add(table_row);
-
+                                tableRow.add(tableColumn);
+                                recordSet.add(tableRow);
                             }
-
-                            result_set.close();
+                            resultSet.close();
                         }
                     }
 
                 } else {
-
                     // DML - Data Manipulation Language (INSERT, UPDATE and
                     // DELETE).
                     this.connection.prepareStatement(sql).executeUpdate();
@@ -1093,25 +1078,18 @@ public class Manager {
                         this.connection.commit();
                     }
                 }
-
             } catch (Exception e) {
-
                 e.printStackTrace();
-
                 try {
-
                     if (!this.connection.getAutoCommit()) {
                         this.connection.rollback();
                     }
-
                 } catch (SQLException e1) {
-
                     e1.printStackTrace();
                 }
             }
         }
-
-        return record_set;
+        return recordSet;
     }
 
     public <T extends Model> QuerySet<T> raw(String sql, Class<T> model_class) {

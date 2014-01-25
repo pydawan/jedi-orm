@@ -1411,10 +1411,11 @@ public class Manager {
                                 resultSet.getObject(
                                     String.format(
                                         "%s_id", 
-                                        f.getType()
-                                        .getSimpleName()
-                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                        .toLowerCase()
+                                        f
+                                            .getType()
+                                            .getSimpleName()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                            .toLowerCase()
                                     )
                                 )
                             );
@@ -1464,10 +1465,10 @@ public class Manager {
 
     /**
      * @param field
-     * @param model_class
+     * @param modelClass
      * @return
      */
-    public <T extends Model> T latest(String field, Class<T> model_class) {
+    public <T extends Model> T latest(String field, Class<T> modelClass) {
         T model = null;
 
         if (this.connection != null && field != null && !field.trim().isEmpty()) {
@@ -1523,137 +1524,133 @@ public class Manager {
         return (T) latest("id", entity);
     }
 
-    public <T extends Model> T earliest(String field, Class<T> model_class) {
-
-        // Model model = null;
-
+    /**
+     * @param field
+     * @param modelClass
+     * @return
+     */
+    public <T extends Model> T earliest(String field, Class<T> modelClass) {
         T model = null;
 
         if (this.connection != null && field != null && !field.trim().isEmpty()) {
+            Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
+            String tableName = String.format(
+                "%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()
+            );
 
-            Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
-
-            String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-            if (table_annotation != null) {
-
-                table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-
+            if (tableAnnotation != null) {
+                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase();
             }
-
-            String sql = String.format("SELECT * FROM %s ORDER BY %s ASC LIMIT 1", table_name, field);
+            String sql = String.format("SELECT * FROM %s ORDER BY %s ASC LIMIT 1", tableName, field);
 
             if (this.connection.toString().startsWith("oracle")) {
-
-                sql = String.format("SELECT * FROM %s WHERE ROWNUM < 2 ORDER BY %s ASC", table_name, field);
+                sql = String.format("SELECT * FROM %s WHERE ROWNUM < 2 ORDER BY %s ASC", tableName, field);
             }
+            QuerySet querySet = this.raw(sql, entity);
 
-            QuerySet query_set = this.raw(sql, entity);
-
-            if (query_set != null) {
-
-                // model = (Model) query_set.get(0);
-
-                model = (T) query_set.get(0);
+            if (querySet != null) {
+                model = (T) querySet.get(0);
 
                 if (model != null) {
-
-                    model.is_persisted(true);
+                    model.isPersisted(true);
                 }
             }
         }
-
-        // return (T) model;
-
         return model;
     }
 
+    /**
+     * @param field
+     * @return
+     */
     public <T extends Model> T earliest(String field) {
         return (T) earliest(field, entity);
     }
 
+    /**
+     * @return
+     */
     public <T extends Model> T earliest() {
         return (T) earliest("id", entity);
     }
 
-    public <T extends Model> QuerySet<T> get_set(Class<T> associated_model_class, int obj_id) {
+    /**
+     * @param associatedModelClass
+     * @param id
+     * @return
+     */
+    public <T extends Model> QuerySet<T> getSet(Class<T> associatedModelClass, int id) {
+        QuerySet querySet = null;
 
-        QuerySet query_set = null;
-
-        if (associated_model_class != null && associated_model_class.getSuperclass().getName().equals("jedi.db.models.Model")) {
-
+        if (associatedModelClass != null && associatedModelClass.getSuperclass().getName()
+            .equals("jedi.db.models.Model")) {
             String sql = "";
 
-            Table table_annotation = (Table) this.entity.getAnnotation(Table.class);
+            Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
+            Table tableAnnotationAssociatedModel = (Table) associatedModelClass.getAnnotation(Table.class);
+            String tableName = String.format(
+                "%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()
+            );
+            String tableNameAssociatedModel = String.format(
+                "%ss", associatedModelClass.getSimpleName().toLowerCase()
+            );
 
-            Table table_annotation_associated_model = (Table) associated_model_class.getAnnotation(Table.class);
-
-            String table_name = String.format("%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
-
-            String table_name_associated_model = String.format("%ss", associated_model_class.getSimpleName().toLowerCase());
-
-            if (table_annotation != null && !table_annotation.name().trim().isEmpty()) {
-
-                table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+            if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty()) {
+                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase();
             }
 
-            if (table_annotation_associated_model != null && !table_annotation_associated_model.name().trim().isEmpty()) {
-
-                table_name_associated_model = table_annotation_associated_model.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+            if (tableAnnotationAssociatedModel != null && !tableAnnotationAssociatedModel.name()
+                .trim().isEmpty()) {
+                tableNameAssociatedModel = tableAnnotationAssociatedModel.name().trim().
+                    replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
             }
 
             // SELECT livros.* FROM livros, livros_autores WHERE livros.id =
             // livros_autores.livro_id AND livros_autores.autor_id = 1;
 
-            ForeignKeyField foreign_key_annotation = null;
+            ForeignKeyField foreignKeyAnnotation = null;
 
             for (Field field : this.entity.getDeclaredFields()) {
+                foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
 
-                foreign_key_annotation = field.getAnnotation(ForeignKeyField.class);
-
-                if (foreign_key_annotation != null && foreign_key_annotation.model().equals(associated_model_class.getSimpleName())) {
-
-                    query_set = this.filter(String.format("%s_id=%d", associated_model_class.getSimpleName().toLowerCase(), obj_id));
+                if (foreignKeyAnnotation != null && foreignKeyAnnotation.model()
+                    .equals(associatedModelClass.getSimpleName())) {
+                    querySet = this.filter(
+                        String.format("%s_id=%d", associatedModelClass.getSimpleName().toLowerCase(), id)
+                    );
                 }
             }
 
-            if (query_set == null) {
-
+            if (querySet == null) {
                 sql = String.format(
-
-                "SELECT %s.* FROM %s, %s_%s WHERE %s.id = %s_%s.%s_id AND %s_%s.%s_id = %d",
-
-                table_name,
-
-                table_name,
-
-                table_name,
-
-                table_name_associated_model,
-
-                table_name,
-
-                table_name,
-
-                table_name_associated_model,
-
-                this.entity.getSimpleName().toLowerCase().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                table_name,
-
-                table_name_associated_model,
-
-                associated_model_class.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase(),
-
-                obj_id);
-
-                query_set = this.raw(sql, this.entity);
-
-                // query_set.setEntity(this.entity);
+                    "SELECT %s.* FROM %s, %s_%s WHERE %s.id = %s_%s.%s_id AND %s_%s.%s_id = %d",
+                    tableName,
+                    tableName,
+                    tableName,
+                    tableNameAssociatedModel,
+                    tableName,
+                    tableName,
+                    tableNameAssociatedModel,
+                    this
+                        .entity
+                        .getSimpleName()
+                        .toLowerCase()
+                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                        .toLowerCase(),
+                    tableName,
+                    tableNameAssociatedModel,
+                    associatedModelClass
+                        .getSimpleName()
+                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                        .toLowerCase(),
+                    id
+                );
+                querySet = this.raw(sql, this.entity);
             }
         }
-
-        return query_set;
+        return querySet;
     }
 
     /**
@@ -1696,5 +1693,4 @@ public class Manager {
      * return query_set;
      * }
      */
-
 }

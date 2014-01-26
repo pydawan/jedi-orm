@@ -164,7 +164,6 @@ public class Model implements Comparable<Model>, Serializable {
     }
     
     public Model set(String field, Object value) {
-        
         if (field != null && !field.trim().isEmpty() ) {
             try {
                 Field f = this.getClass().getDeclaredField(field);
@@ -187,7 +186,6 @@ public class Model implements Comparable<Model>, Serializable {
      */
     
     public void insert() {
-        
         if (this.connection == null) {      
             this.connection = ConnectionFactory.getConnection();    
         }
@@ -449,7 +447,6 @@ public class Model implements Comparable<Model>, Serializable {
      * @throws - java.lang.Exception
      */
     public void update(String... args) {
-        
         if (this.connection == null) {
             this.connection = ConnectionFactory.getConnection();    
         }

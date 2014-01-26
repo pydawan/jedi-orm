@@ -266,7 +266,6 @@ public class Manager {
                             fields[i].substring(fields[i].lastIndexOf("="))
                         );
                     }
-
                     // Adds a blank space between the field name and value.
                     fields[i] = fields[i].replace("=", " = ");
                     // Replaces % by \%
@@ -350,13 +349,10 @@ public class Manager {
                     where = where.replace(" AND OR AND", " OR");
                     where = where.replace(" AND AND AND", " AND");
                 }
-
                 where = where.substring(0, where.lastIndexOf("AND"));
                 sql = String.format("%s %s", sql, where);
-
                 // Shows the generated SQL statement.
                 // System.out.println(sql);
-
                 ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
                 querySet = new QuerySet<T>();
                 querySet.setEntity(this.entity);
@@ -464,7 +460,7 @@ public class Manager {
                     T model = (T) obj;
 
                     if (model != null) {
-                        model.is_persisted(true);
+                        model.isPersisted(true);
                     }
                     querySet.add(model);
                 }
@@ -505,13 +501,11 @@ public class Manager {
                 } else if (this.tableName != null && !this.tableName.equals("")) {
                     tableName = this.tableName;
                 }
-
                 String sql = String.format("INSERT INTO %s", tableName);
                 String fields = "";
                 String field = "";
                 String values = "";
                 String value = "";
-
                 // Instanciates a model object managed by this Manager.
                 obj = this.entity.newInstance();
 
@@ -525,7 +519,6 @@ public class Manager {
                     } else {
                         f = this.entity.getDeclaredField(field);
                     }
-
                     // Changes the field name to reflect the pattern to the table column names.
                     field = String.format("%s", field.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                     
@@ -580,7 +573,7 @@ public class Manager {
                 T model = (T) obj;
 
                 if (model != null) {
-                    model.is_persisted(true);
+                    model.isPersisted(true);
                 }
             } catch (Exception e) {
                 e.printStackTrace();
@@ -891,13 +884,11 @@ public class Manager {
                     }
                     where += fields[i] + " AND ";
                 }
-
                 where = where.substring(0, where.lastIndexOf("AND"));
                 sql = String.format("%s NOT (%s)", sql, where);
-
                 // Shows the generated SQL statement on the STDOUT (STANDARD OUTPUT).
                 // System.out.println(sql);
-
+                
                 // Executes the SQL statement.
                 ResultSet resultSet = this.connection.prepareStatement(sql).executeQuery();
                 querySet = new QuerySet();
@@ -1076,7 +1067,6 @@ public class Manager {
                             resultSet.close();
                         }
                     }
-
                 } else {
                     // DML - Data Manipulation Language (INSERT, UPDATE or DELETE).
                     this.connection.prepareStatement(sql).executeUpdate();
@@ -1276,7 +1266,7 @@ public class Manager {
                     T model = (T) obj;
 
                     if (model != null) {
-                        model.is_persisted(true);
+                        model.isPersisted(true);
                     }
                     querySet.add(model);
                 }
@@ -1444,7 +1434,7 @@ public class Manager {
                 }
 
                 if (obj != null) {
-                    obj.is_persisted(true);
+                    obj.isPersisted(true);
                 }
                 resultSet.close();
             } catch (Exception e) {

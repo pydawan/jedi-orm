@@ -656,7 +656,6 @@ public class Model implements Comparable<Model>, Serializable {
         if (this.id < model.id) {
             return -1;
         }
-        
         if (this.id > model.id) {
             return 1;
         }

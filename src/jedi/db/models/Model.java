@@ -298,7 +298,7 @@ public class Model implements Comparable<Model>, Serializable {
                             } else {                                    
                                 values += String.format(dateFieldAnnotation.default_value()
                                     .trim().equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", dateFieldAnnotation
-                                    .default_value().trim() );
+                                        .default_value().trim() );
                             }
                         } else {
                             values += String.format("'', ", field.get(this) );
@@ -450,40 +450,30 @@ public class Model implements Comparable<Model>, Serializable {
      * @return - nenhum 
      * @throws - java.lang.Exception
      */
-    public void update(String ... args) {
+    public void update(String... args) {
         
-        // Verificando se há conexão com o banco de dados.      
         if (this.connection == null) {
             this.connection = ConnectionFactory.getConnection();    
         }
             
         try {
-            
             String sql = "UPDATE";
+            String tableName = String.format("%ss", this.getClass().getSimpleName()
+                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+            Table tableAnnotation = (Table) this.getClass().getAnnotation(Table.class);
             
-            // String table_name = this.getClass().getName().substring(this.getClass().getName().lastIndexOf('.') + 1).toLowerCase() + "s";
-            
-            String table_name = String.format("%ss", this.getClass().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
-            
-            Table table_annotation = (Table) this.getClass().getAnnotation(Table.class);
-            
-            if (table_annotation != null && !table_annotation.name().trim().isEmpty() ) {
-                
-                table_name = table_annotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
-                
-            } else if (tableName != null && !tableName.trim().equals("") ) {
-                
-                table_name = tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
+            if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
+                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase();
+            } else if (Model.tableName != null && !Model.tableName.trim().equals("") ) {
+                tableName = Model.tableName.trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase();
             }
-            
-            sql = String.format("%s %s SET", sql, table_name);
-            
-            String fields_and_values = "";
+            sql = String.format("%s %s SET", sql, tableName);
+            String fieldsAndValues = "";
             
             if (args.length == 0) {
-                
                 for (Field field : this.getClass().getDeclaredFields() ) {
-                    
                     field.setAccessible(true);
                     
                     if (field.getName().equals("serialVersionUID") )
@@ -492,40 +482,32 @@ public class Model implements Comparable<Model>, Serializable {
                     if (field.getName().equals("objects") )
                         continue;
                     
-                    ForeignKeyField foreign_key_annotation = null;
+                    ForeignKeyField foreignKeyAnnotation = null;
                     
-                    if (field.getType().getSuperclass() != null && field.getType().getSuperclass().getSimpleName().equals("Model") ) {  
+                    if (field.getType().getSuperclass() != null && field.getType().getSuperclass()
+                        .getSimpleName().equals("Model") ) {  
+                        foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
                         
-                        foreign_key_annotation = field.getAnnotation(ForeignKeyField.class);
-                        
-                        if (foreign_key_annotation != null && !foreign_key_annotation.references().isEmpty() ) {
-                            
-                            fields_and_values += String.format("%s_id = ", field.getType().getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+                        if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty() ) {
+                            fieldsAndValues += String.format("%s_id = ", field.getType().getSimpleName()
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
                         }
-                        
                     } else {
-                        
-                        // fields_and_values += String.format("%s = ", field.toString().substring(field.toString().lastIndexOf('.') + 1).toLowerCase() );
-                        
-                        fields_and_values += String.format("%s = ", field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+                        fieldsAndValues += String.format("%s = ", field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                            .toLowerCase() );
                     }
                                             
                     if (field.getType().toString().endsWith("String") ) {
-                        
                         if (field.get(this) != null) {
-                            
-                            fields_and_values += String.format("'%s', ", ( (String) field.get(this) ).replaceAll("'", "\\\\'") );
-                            
+                            fieldsAndValues += String.format("'%s', ", ( (String) field.get(this) )
+                                .replaceAll("'", "\\\\'") );
                         } else {
-                            fields_and_values += "'', ";
+                            fieldsAndValues += "'', ";
                         }
-                        
-                    } else if (field.getType().toString().endsWith("Date") || field.getType().toString().endsWith("PyDate") ) {
-                        
+                    } else if (field.getType().toString().endsWith("Date") || field.getType().toString()
+                        .endsWith("PyDate") ) {
                         Date date = (Date) field.get(this);
-                        
-                        fields_and_values += String.format(
-                            
+                        fieldsAndValues += String.format(
                             "'%d-%02d-%02d %02d:%02d:%02d', ", 
                             date.getYear() + 1900, 
                             date.getMonth() + 1, 
@@ -534,122 +516,78 @@ public class Model implements Comparable<Model>, Serializable {
                             date.getMinutes(), 
                             date.getSeconds() 
                         );
-                        
                     } else {
-                        
-                        //  Verificando se o campo foi anotado como chave estrangeira (fk - foreign key).                       
-                        if (foreign_key_annotation != null) {
-                            
+                        if (foreignKeyAnnotation != null) {
                             Object id = ( (Model) field.get(this) ).id;
-                            
-                            fields_and_values += String.format("%s, ", id);
-                            
+                            fieldsAndValues += String.format("%s, ", id);
                         } else {
-                            fields_and_values += String.format("%s, ", field.get(this) );
+                            fieldsAndValues += String.format("%s, ", field.get(this) );
                         }
                     }
                 }
-                
-                fields_and_values = fields_and_values.substring(0, fields_and_values.lastIndexOf(',') );
-                
+                fieldsAndValues = fieldsAndValues.substring(0, fieldsAndValues.lastIndexOf(',') );
             } else {
-                
                 if (args.length > 0) {
-                    
                     Field field = null;                 
-                    
                     String fieldName = "";
                     String fieldValue = "";
                     
                     for (int i = 0; i < args.length; i++) {
-                        
                         fieldName = args[i].split("=")[0];
                         
                         if (fieldName.endsWith("_id") ) {
                             fieldName = fieldName.replace("_id", "");
                         }
-                        
                         fieldValue = args[i].split("=")[1];
-                        //fieldValue = fieldValue.substring(1, fieldValue.length() - 1);
                         
                         if (fieldValue.startsWith("'") && fieldValue.endsWith("'") ) {
                             fieldValue = fieldValue.substring(1, fieldValue.length() - 1);
                         }
-                        
                         field = this.getClass().getDeclaredField(fieldName);
-                        
                         field.setAccessible(true);
                         
                         if (field.getType() == String.class) {
-                            
                             field.set(this, fieldValue);
-                            
                         } else if (field.getType() == Integer.class) {
-                            
                             field.set(this, Integer.parseInt(fieldValue) );
-                            
                         } else if (field.getType() == Float.class) {
-                            
                             field.set(this, Float.parseFloat(fieldValue) );
-                            
                         } else if (field.getType() == Double.class) {
-                            
                             field.set(this, Double.parseDouble(fieldValue) );
-                            
                         } else if (field.getType() == Date.class) {
-                            
                             field.set(this, Date.parse(fieldValue) );
-                            
                         } else if (field.getType() == Boolean.class) {
-                            
                             field.set(this, Boolean.parseBoolean(fieldValue) );
-                            
                         } else if (field.getAnnotation(ForeignKeyField.class) != null) {
-                        
                             if (field.get(this) != null) {
-                            
                                 ( (Model) field.get(this) ).setId(Integer.parseInt(fieldValue) );
                             }
-                            
                         } else {
-                            
                         }
-                        
-                        fields_and_values += args[i] + ", ";
+                        fieldsAndValues += args[i] + ", ";
                     }
-                    
-                    fields_and_values = fields_and_values.substring(0, fields_and_values.lastIndexOf(",") );
+                    fieldsAndValues = fieldsAndValues.substring(0, fieldsAndValues.lastIndexOf(",") );
                 }
-                
             }
-            
-            sql = String.format("%s %s WHERE id = %s", sql, fields_and_values, this.getClass().getSuperclass().getDeclaredField("id").get(this) );
-            
+            sql = String.format("%s %s WHERE id = %s", sql, fieldsAndValues, this.getClass().getSuperclass()
+                .getDeclaredField("id").get(this) );
             // System.out.println(sql);
-            
             this.connection.prepareStatement(sql).execute();
             
             if (!this.connection.getAutoCommit() ) {
                 this.connection.commit();
             }
-            
         } catch (Exception e) {
             e.printStackTrace();
-            
             try {
-                
                 if (!this.connection.getAutoCommit() ) {
                     this.connection.rollback();
                 }
-                
             } catch (SQLException e1) {
                 e1.printStackTrace();                   
             }
-            
         } finally {
-            
             if (autoCloseConnection) {
-            
                 try {
                     this.connection.close();
                 } catch (SQLException e) {
@@ -659,104 +597,68 @@ public class Model implements Comparable<Model>, Serializable {
         }
     }
     
-    
     public void save() {
-
-        // Depois se necessario tratar desativacao do recurso de auto-incremento.       
         try {
-            
-            // Inserção.
             if (!this.isPersisted) {               
                 this.insert();
-                //this.is_persisted(true);
             } else {                
-                // Atualizando.             
                 this.update();
             }
-            
             this.isPersisted(true);
-            
         } catch (Exception e) {         
             e.printStackTrace();
         }
     }
     
-    
-    public <T extends Model> T save(Class<T> model_class) {     
+    public <T extends Model> T save(Class<T> modelClass) {     
         this.save();        
-        return this.as(model_class);
+        return this.as(modelClass);
     }
     
-    
     public void delete() {
-        
-        // Verificando se há conexão com o banco de dados.      
         if (this.connection == null) {      
             this.connection = ConnectionFactory.getConnection();    
         }
             
         try {
-            
             String sql = "DELETE FROM";
+            String tableName = String.format("%ss", this.getClass().getSimpleName().toLowerCase() );
+            Table tableAnnotation = (Table) this.getClass().getAnnotation(Table.class);
             
-            String table_name = String.format("%ss", this.getClass().getSimpleName().toLowerCase() );
-            
-            Table table_annotation = (Table) this.getClass().getAnnotation(Table.class);
-            
-            if (table_annotation != null && !table_annotation.name().trim().isEmpty() ) {
-                
-                table_name = table_annotation.name().trim().toLowerCase();
-                
-            } else if (tableName != null && !tableName.trim().equals("") ) {
-                
-                table_name = tableName;
+            if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
+                tableName = tableAnnotation.name().trim().toLowerCase();
+            } else if (Model.tableName != null && !Model.tableName.trim().equals("") ) {
+                tableName = Model.tableName;
             }
-                            
-            sql = String.format("%s %s WHERE", sql, table_name);
-            
+            sql = String.format("%s %s WHERE", sql, tableName);
             sql = String.format("%s id = %s", sql, this.getClass().getSuperclass().getDeclaredField("id").get(this) );
-            
             this.connection.prepareStatement(sql).execute();
             
             if (!this.connection.getAutoCommit() ) {
                 this.connection.commit();
             }
-            
-            // Informando que o modelo não se encontra persistido no banco de dados.            
             this.isPersisted(false);
-            
         } catch (Exception e) {
-            
             e.printStackTrace();
-            
             try {
-                
                 if (!this.connection.getAutoCommit() ) {
                     this.connection.rollback();
                 }
-                
             } catch (SQLException e1) {
                 e1.printStackTrace();
             }
-            
         } finally {
-            
             if (this.autoCloseConnection) {
-            
                 try {
-                    
                     this.connection.close();
-                    
                 } catch (SQLException e) {
                     e.printStackTrace();
                 }
             }
         }
     }
-    
 
     public int compareTo(Model model) {
-        
         if (this.id < model.id) {
             return -1;
         }
@@ -764,24 +666,27 @@ public class Model implements Comparable<Model>, Serializable {
         if (this.id > model.id) {
             return 1;
         }
-        
         return 0;
     }
     
     public String toString() {
-        
         String s = "";
 
         try {
-            
-            // s = String.format("<%s: id = %s, ", this.getClass().getSimpleName(), this.getClass().getSuperclass().getDeclaredField("id").get(this) );
-            
-            s = String.format("{%s: id = %s, ", this.getClass().getSimpleName(), this.getClass().getSuperclass().getDeclaredField("id").get(this) );
-            
+            s = String.format(
+                "{%s: id = %s, ", 
+                this
+                    .getClass()
+                    .getSimpleName(), 
+                this.
+                    getClass()
+                    .getSuperclass()
+                    .getDeclaredField("id")
+                    .get(this) 
+            );
             Field[] fields = this.getClass().getDeclaredFields();
             
             for (Field f : fields) {
-                
                 f.setAccessible(true);
                 
                 if (f.getName().equals("serialVersionUID") )
@@ -792,17 +697,11 @@ public class Model implements Comparable<Model>, Serializable {
                 
                 s += String.format("%s = %s, ", f.getName(), f.get(this) );
             }
-            
             s = s.substring(0, s.lastIndexOf(",") );
-            
-            // s += ">";
-            
             s += "}";
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
         return s;
     }
     
@@ -813,44 +712,43 @@ public class Model implements Comparable<Model>, Serializable {
         if (this.id == ( (Model)o ).id) {
             r = true;
         }
-        
         return r;
     }
     
-    public String to_json(int i) {
-        
-        // i - nivel de identacao       
-        String json_string = "";        
-        String identation_to_class = "";        
-        String identation_to_fields = "    ";       
-        String identation_to_list_items = "        ";
+    /**
+     * @param i int
+     * @return String
+     */
+    public String toJSON(int i) {
+        // i - identation level       
+        String json = "";        
+        String identationToClass = "";        
+        String identationToFields = "    ";       
+        String identationToListItems = "        ";
         
         for (int j = 0; j < i; j++) {       
-            identation_to_class += "    ";          
-            identation_to_fields += "    ";         
-            identation_to_list_items += "    ";     
+            identationToClass += "    ";          
+            identationToFields += "    ";         
+            identationToListItems += "    ";     
         }
         
         try {
-            
-            json_string = String.format(
-                    
+            json = String.format(
                 "%s%s {\n%sid: %s,",
-                
-                identation_to_class,
-                
-                this.getClass().getSimpleName(),
-                
-                identation_to_fields,
-                
-                this.getClass().getSuperclass().getDeclaredField("id").get(this)
-                
+                identationToClass,
+                this
+                    .getClass()
+                    .getSimpleName(),
+                identationToFields,
+                this
+                    .getClass()
+                    .getSuperclass()
+                    .getDeclaredField("id")
+                    .get(this)
             );
-            
             Field[] fields = this.getClass().getDeclaredFields();
             
             for (Field f : fields) {
-                
                 f.setAccessible(true);
                 
                 if (f.getName().equals("serialVersionUID") )
@@ -859,80 +757,71 @@ public class Model implements Comparable<Model>, Serializable {
                 if (f.getName().equalsIgnoreCase("objects") )
                     continue;
                 
-                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName().equals("jedi.db.models.Model") ) {
-                    
+                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName()
+                    .equals("jedi.db.models.Model") ) {
                     if (f.get(this) != null) {
-                    
-                        json_string += String.format("\n%s,", ( (Model) f.get(this) ).to_json(i + 1) );
+                        json += String.format("\n%s,", ( (Model) f.get(this) ).toJSON(i + 1) );
                     }
-                    
-                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName().equals("jedi.db.models.QuerySet") ) {
-                    
-                    String str_items = "";
+                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName()
+                    .equals("jedi.db.models.QuerySet") ) {
+                    String strItems = "";
                     
                     for (Object item : (List) f.get(this) ) {
-                        str_items += String.format("\n%s,", ( (Model) item ).to_json( (i + 2) ) );
+                        strItems += String.format("\n%s,", ( (Model) item ).toJSON( (i + 2) ) );
                     }
                     
-                    if (str_items.lastIndexOf(",") >= 0) {
-                        str_items = str_items.substring(0, str_items.lastIndexOf(",") );
+                    if (strItems.lastIndexOf(",") >= 0) {
+                        strItems = strItems.substring(0, strItems.lastIndexOf(",") );
                     }
                     
-                    json_string += String.format("\n%s%s: [%s\n%s],", identation_to_fields, f.getName(), str_items, identation_to_fields);
-                    
+                    json += String.format("\n%s%s: [%s\n%s],", identationToFields, f.getName(), 
+                        strItems, identationToFields);
                 } else {
-                    json_string += String.format("\n%s%s: %s,", identation_to_fields, f.getName(), f.get(this) );
+                    json += String.format("\n%s%s: %s,", identationToFields, f.getName(), f.get(this) );
                 }
             }
             
-            if (json_string.lastIndexOf(",") >= 0) {
-                json_string = json_string.substring(0, json_string.lastIndexOf(",") );
+            if (json.lastIndexOf(",") >= 0) {
+                json = json.substring(0, json.lastIndexOf(",") );
             }
-            
-            json_string += String.format("\n%s}", identation_to_class);
-            
+            json += String.format("\n%s}", identationToClass);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        return json_string;
+        return json;
     }
     
-    public String to_json() {
-        return to_json(0);
+    /**
+     * @return String
+     */
+    public String toJSON() {
+        return toJSON(0);
     }
     
-    public String to_xml(int i) {
-        
-        // i - nivel de identacao
-        
-        String xml_element = this.getClass().getSimpleName().toLowerCase();
-        
-        StringBuilder xml_string = new StringBuilder();
-        StringBuilder xml_element_attributes = new StringBuilder();
-        StringBuilder xml_child_elements = new StringBuilder();
-        
-        xml_element_attributes.append("");
-        
-        String xml_element_string = "";     
-        String identation_to_element = "";      
-        // String identation_to_attributes = "    ";    
-        String identation_to_child_elements = "    ";
+    public String toXML(int i) {
+        // i - identation level
+        String xmlElement = this.getClass().getSimpleName().toLowerCase();
+        StringBuilder xml = new StringBuilder();
+        StringBuilder xmlElementAttributes = new StringBuilder();
+        StringBuilder xmlChildElements = new StringBuilder();
+        xmlElementAttributes.append("");
+        String xmlElementString = "";     
+        String identationToElement = "";      
+        // String identationToAttributes = "    ";    
+        String identationToChildElements = "    ";
         
         for (int j = 0; j < i; j++) {       
-            identation_to_element += "    ";    
-            // identation_to_attributes += "    ";          
-            identation_to_child_elements += "    ";     
+            identationToElement += "    ";    
+            // identationToAttributes += "    ";          
+            identationToChildElements += "    ";     
         }
         
         try {
-                        
-            xml_element_attributes.append(String.format("id=\"%d\"", this.getClass().getSuperclass().getDeclaredField("id").getInt(this) ) );
-
+            xmlElementAttributes.append(String.format("id=\"%d\"", this.getClass().getSuperclass().getDeclaredField("id")
+                .getInt(this) ) );
             Field[] fields = this.getClass().getDeclaredFields();
             
             for (Field f : fields) {
-                
                 f.setAccessible(true);
                 
                 if (f.getName().equals("serialVersionUID") )
@@ -941,137 +830,104 @@ public class Model implements Comparable<Model>, Serializable {
                 if (f.getName().equalsIgnoreCase("objects") )
                     continue;
                 
-                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName().equals("jedi.db.models.Model") ) {
-                    
-                    xml_child_elements.append(String.format("\n%s\n", ( (Model) f.get(this) ).to_xml(i + 1) ) );
-                    
-                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName().equals("jedi.db.models.QuerySet") ) {
-                    
-                    String xml_child_open_tag = "";
-                    
-                    String xml_child_close_tag = "";
-                    
-                    Table table_annotation = null;
+                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName()
+                    .equals("jedi.db.models.Model") ) {
+                    xmlChildElements.append(String.format("\n%s\n", ( (Model) f.get(this) ).toXML(i + 1) ) );
+                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName()
+                    .equals("jedi.db.models.QuerySet") ) {
+                    String xmlChildOpenTag = "";
+                    String xmlChildCloseTag = "";
+                    Table tableAnnotation = null;
                     
                     if ( !( (List) f.get(this) ).isEmpty() ) {
+                        tableAnnotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
                         
-                        table_annotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
-                        
-                        if (table_annotation != null && !table_annotation.name().trim().isEmpty() ) {
-                            
-                            xml_child_open_tag = String.format("\n%s<%s>", identation_to_child_elements, table_annotation.name().trim().toLowerCase() );
-                            
-                            xml_child_close_tag = String.format("\n%s</%s>", identation_to_child_elements, table_annotation.name().trim().toLowerCase() );
-                            
+                        if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
+                            xmlChildOpenTag = String.format("\n%s<%s>", identationToChildElements, tableAnnotation.name()
+                                .trim().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%s>", identationToChildElements, tableAnnotation.name().trim()
+                                .toLowerCase() );
                         } else {
-                            
-                            xml_child_open_tag = String.format("\n%s<%ss>", identation_to_child_elements, ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
-                            
-                            xml_child_close_tag = String.format("\n%s</%ss>", identation_to_child_elements, ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
-                            
+                            xmlChildOpenTag = String.format("\n%s<%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
+                                .getClass().getSimpleName().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
+                                .getClass().getSimpleName().toLowerCase() );
                         }
-                        
-                        xml_child_elements.append(xml_child_open_tag);
+                        xmlChildElements.append(xmlChildOpenTag);
                         
                         for (Object item : (List) f.get(this) ) {                       
-                            xml_child_elements.append(String.format("\n%s", ( (Model) item ).to_xml(i + 2) ) );                         
+                            xmlChildElements.append(String.format("\n%s", ( (Model) item ).toXML(i + 2) ) );                         
                         }
-                        
-                        xml_child_elements.append(xml_child_close_tag);
+                        xmlChildElements.append(xmlChildCloseTag);
                     }
-                    
                 } else {
-                    xml_element_attributes.append(String.format(" %s=\"%s\"", f.getName(), f.get(this) ) );
+                    xmlElementAttributes.append(String.format(" %s=\"%s\"", f.getName(), f.get(this) ) );
                 }
             }
                         
-            if (xml_child_elements.toString().isEmpty() ) {
-                
-                xml_string.append(String.format("%s<%s %s />", identation_to_element, xml_element, xml_element_attributes.toString() ) );
-                
+            if (xmlChildElements.toString().isEmpty() ) {
+                xml.append(String.format("%s<%s %s />", identationToElement, xmlElement, xmlElementAttributes.toString() ) );
             } else {
-                
-                xml_string.append(
-                    
+                xml.append(
                     String.format(
-                        
                         "%s<%s %s>%s%s</%s>", 
-                        
-                        identation_to_element, 
-                        
-                        xml_element, 
-                        
-                        xml_element_attributes.toString(), 
-                        
-                        xml_child_elements, 
-                        
-                        identation_to_element, 
-                        
-                        xml_element
+                        identationToElement, 
+                        xmlElement, 
+                        xmlElementAttributes.toString(), 
+                        xmlChildElements, 
+                        identationToElement, 
+                        xmlElement
                     ) 
                 );              
             }
-            
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
-        return xml_string.toString();
+        return xml.toString();
     }
     
-    public String to_xml() {        
-        StringBuilder xml_string = new StringBuilder();     
-        xml_string.append(to_xml(0) );
-        
-        return xml_string.toString();
+    public String toXML() {        
+        StringBuilder xmlString = new StringBuilder();     
+        xmlString.append(toXML(0) );
+        return xmlString.toString();
     }
     
     
-    public String to_extense_xml(int i) {
-        
+    public String toExtenseXML(int i) {
         // A IMPLEMENTAR: Fazer o tratamento de caracteres especiais como < ou > no conteudo dos atributos
         // ao produzir o xml de retorno.
-        
         // i - nivel de identacao
-        
-        String xml_element = this.getClass().getSimpleName().toLowerCase();
-        
-        
-        StringBuilder xml_string = new StringBuilder();     
-        StringBuilder xml_element_attributes = new StringBuilder();     
-        StringBuilder xml_child_elements = new StringBuilder();     
-        
-        xml_element_attributes.append("");
-        
-        String xml_element_string = "";     
-        String identation_to_element = "";      
-        String identation_to_attributes = "    ";       
-        String identation_to_child_elements = "    ";
+        String xmlElement = this.getClass().getSimpleName().toLowerCase();
+        StringBuilder xml = new StringBuilder();     
+        StringBuilder xmlElementAttributes = new StringBuilder();     
+        StringBuilder xmlChildElements = new StringBuilder();     
+        xmlElementAttributes.append("");
+        String xmlElementString = "";     
+        String identationToElement = "";      
+        String identationToAttributes = "    ";       
+        String identationToChildElements = "    ";
         
         for (int j = 0; j < i; j++) {       
-            identation_to_element += "    ";            
-            identation_to_attributes += "    ";         
-            identation_to_child_elements += "    ";     
+            identationToElement += "    ";            
+            identationToAttributes += "    ";         
+            identationToChildElements += "    ";     
         }
         
         try {
-            
-            xml_element_attributes.append(
-                
+            xmlElementAttributes.append(
                 String.format(
-                    
                     "\n%s<id>%d</id>\n", 
-                    
-                    identation_to_attributes, 
-                    
-                    this.getClass().getSuperclass().getDeclaredField("id").getInt(this) 
+                    identationToAttributes, 
+                    this
+                        .getClass()
+                        .getSuperclass()
+                        .getDeclaredField("id")
+                        .getInt(this) 
                 ) 
             );
-
             Field[] fields = this.getClass().getDeclaredFields();
             
             for (Field f : fields) {
-                
                 f.setAccessible(true);
                 
                 if (f.getName().equals("serialVersionUID") )
@@ -1080,110 +936,76 @@ public class Model implements Comparable<Model>, Serializable {
                 if (f.getName().equalsIgnoreCase("objects") )
                     continue;
                 
-                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName().equals("jedi.db.models.Model") ) {
-                                        
-                    xml_child_elements.append(String.format("%s\n", ( (Model) f.get(this) ).to_xml(i + 1) ) );
-                    
-                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName().equals("jedi.db.models.QuerySet") ) {
-                    
-                    String xml_child_open_tag = "";
-                    
-                    String xml_child_close_tag = "";
-                    
-                    Table table_annotation = null;
+                if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName()
+                    .equals("jedi.db.models.Model") ) {
+                    xmlChildElements.append(String.format("%s\n", ( (Model) f.get(this) ).toXML(i + 1) ) );
+                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName()
+                    .equals("jedi.db.models.QuerySet") ) {
+                    String xmlChildOpenTag = "";
+                    String xmlChildCloseTag = "";
+                    Table tableAnnotation = null;
                     
                     if ( !( (List) f.get(this) ).isEmpty() ) {
+                        tableAnnotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
                         
-                        table_annotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
-                        
-                        if (table_annotation != null && !table_annotation.name().trim().isEmpty() ) {
-                                                        
-                            xml_child_open_tag = String.format("%s<%s>", identation_to_child_elements, table_annotation.name().trim().toLowerCase() );
-                            
-                            xml_child_close_tag = String.format("\n%s</%s>\n", identation_to_child_elements, table_annotation.name().trim().toLowerCase() );
-                            
+                        if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
+                            xmlChildOpenTag = String.format("%s<%s>", identationToChildElements, tableAnnotation.name()
+                                .trim().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%s>\n", identationToChildElements, tableAnnotation.name()
+                                .trim().toLowerCase() );
                         } else {
-                                                        
-                            xml_child_open_tag = String.format("%s<%ss>", identation_to_child_elements, ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
-                            
-                            xml_child_close_tag = String.format("\n%s</%ss>\n", identation_to_child_elements, ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
-                            
+                            xmlChildOpenTag = String.format("%s<%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
+                                .getClass().getSimpleName().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%ss>\n", identationToChildElements, ( (List) f.get(this) ).get(0)
+                                .getClass().getSimpleName().toLowerCase() );
                         }
-                        
-                        xml_child_elements.append(xml_child_open_tag);
+                        xmlChildElements.append(xmlChildOpenTag);
                         
                         for (Object item : (List) f.get(this) ) {
-                        
-                            xml_child_elements.append(String.format("\n%s", ( (Model) item ).to_xml(i + 2) ) );
-                            
+                            xmlChildElements.append(String.format("\n%s", ( (Model) item ).toXML(i + 2) ) );
                         }
-                        
-                        xml_child_elements.append(xml_child_close_tag);
+                        xmlChildElements.append(xmlChildCloseTag);
                     }
-                    
                 } else {
-                    
-                    xml_element_attributes.append(String.format("%s<%s>%s</%s>\n", identation_to_attributes, f.getName(), f.get(this), f.getName() ) );
+                    xmlElementAttributes.append(String.format("%s<%s>%s</%s>\n", identationToAttributes, 
+                        f.getName(), f.get(this), f.getName() ) );
                 }
             }
                         
-            if (xml_child_elements.toString().isEmpty() ) {
-                                
-                xml_string.append(
-                    
+            if (xmlChildElements.toString().isEmpty() ) {
+                xml.append(
                     String.format(
-                    
                         "%s<%s>%s%s</%s>", 
-                        
-                        identation_to_element, 
-                        
-                        xml_element, 
-                        
-                        xml_element_attributes.toString(),
-                        
-                        identation_to_element,
-                        
-                        xml_element
+                        identationToElement, 
+                        xmlElement, 
+                        xmlElementAttributes.toString(),
+                        identationToElement,
+                        xmlElement
                     ) 
                 );
-                
             } else {
-                
-                xml_string.append(
-                    
+                xml.append(
                     String.format(
-                    
                         "%s<%s>%s%s%s</%s>", 
-                        
-                        identation_to_element, 
-                        
-                        xml_element, 
-                        
-                        xml_element_attributes.toString(), 
-                        
-                        xml_child_elements,
-                        
-                        identation_to_element, 
-                        
-                        xml_element
+                        identationToElement, 
+                        xmlElement, 
+                        xmlElementAttributes.toString(), 
+                        xmlChildElements,
+                        identationToElement, 
+                        xmlElement
                     ) 
                 );  
             }
-            
         } catch (Exception e) {
-            
             e.printStackTrace();
         }
-        
-        return xml_string.toString();
+        return xml.toString();
     }
     
-    public String to_extense_xml() {
-        
-        StringBuilder xml_string = new StringBuilder();     
-        xml_string.append(to_extense_xml(0) );
-        
-        return xml_string.toString();
+    public String toExtenseXML() {
+        StringBuilder xml = new StringBuilder();     
+        xml.append(toExtenseXML(0) );
+        return xml.toString();
     }
     
     public <T extends Model> T as(Class<T> c) {

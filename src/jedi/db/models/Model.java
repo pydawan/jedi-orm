@@ -940,15 +940,15 @@ public class Model implements Comparable<Model>, Serializable {
                         tableAnnotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
                         
                         if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
-                            xmlChildOpenTag = String.format("%s<%s>", identationToChildElements, tableAnnotation.name()
-                                .trim().toLowerCase() );
-                            xmlChildCloseTag = String.format("\n%s</%s>\n", identationToChildElements, tableAnnotation.name()
-                                .trim().toLowerCase() );
+                            xmlChildOpenTag = String.format("%s<%s>", identationToChildElements, 
+                                tableAnnotation.name().trim().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%s>\n", identationToChildElements, 
+                                tableAnnotation.name().trim().toLowerCase() );
                         } else {
-                            xmlChildOpenTag = String.format("%s<%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
-                                .getClass().getSimpleName().toLowerCase() );
-                            xmlChildCloseTag = String.format("\n%s</%ss>\n", identationToChildElements, ( (List) f.get(this) ).get(0)
-                                .getClass().getSimpleName().toLowerCase() );
+                            xmlChildOpenTag = String.format("%s<%ss>", identationToChildElements, 
+                                ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%ss>\n", identationToChildElements, 
+                                ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
                         }
                         xmlChildElements.append(xmlChildOpenTag);
                         

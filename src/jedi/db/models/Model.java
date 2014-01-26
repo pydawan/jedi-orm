@@ -269,7 +269,8 @@ public class Model implements Comparable<Model>, Serializable {
                         }
                     }
                     
-                } else if (field.getType().toString().endsWith("Date") || field.getType().toString().endsWith("PyDate") ) {
+                } else if (field.getType().toString().endsWith("Date") || field.getType().toString()
+                    .endsWith("PyDate") ) {
                     Date date = (Date) field.get(this);
                                         
                     if (date != null) {
@@ -295,8 +296,9 @@ public class Model implements Comparable<Model>, Serializable {
                                         replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() ), "");
                                 }
                             } else {                                    
-                                values += String.format(dateFieldAnnotation.default_value().trim().equalsIgnoreCase("NULL") 
-                                    ? "%s, " : "'%s', ", dateFieldAnnotation.default_value().trim() );
+                                values += String.format(dateFieldAnnotation.default_value()
+                                    .trim().equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", dateFieldAnnotation
+                                    .default_value().trim() );
                             }
                         } else {
                             values += String.format("'', ", field.get(this) );

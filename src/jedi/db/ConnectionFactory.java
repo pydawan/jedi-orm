@@ -29,7 +29,7 @@ import java.util.Properties;
 import jedi.db.engine.JediORMEngine;
 
 /**
- * Database connection Factory.
+ * Database Connection Factory.
  * 
  * @author Thiago Alexandre Martins Monteiro
  * @version 1.0
@@ -39,16 +39,22 @@ public class ConnectionFactory {
 
     private static String databasePropertiesPath;
 
+    /**
+     * @return String The path to the database properties.
+     */
     public String getDatabasePropertiesPath() {
         return databasePropertiesPath;
     }
 
+    /**
+     * @param databasePropertiesPath
+     */
     public void setDatabasePropertiesPath(String databasePropertiesPath) {
         ConnectionFactory.databasePropertiesPath = databasePropertiesPath;
     }
 
     /**
-     * @return
+     * @return Connection Returns a connection to a database.
      */
     public static Connection connect() {
         return getConnection();
@@ -238,14 +244,10 @@ public class ConnectionFactory {
                 String databaseOptionsAutocommit = "";
 
                 for (int i = 0; i < args.length; i++) {
-                    // Convertendo o texto para letras minúsculas.
                     args[i] = args[i].toLowerCase();
-                    // Retirando os espaços em branco que possam estar
-                    // envolvendo o sinal de igualdade.
                     args[i] = args[i].replace(" = ", "=");
 
-                    // Carregando o driver adequado e memorizando o engine
-                    // escolhido pelo usuário.
+                    // Engine
                     if (args[i].equals("engine=mysql")) {
                         Class.forName("com.mysql.jdbc.Driver");
                         databaseEngine = "mysql";
@@ -263,8 +265,7 @@ public class ConnectionFactory {
                         Class.forName("org.h2.Driver");
                     }
 
-                    // Configurando o host ou máquina hospedeira ou servidor de
-                    // banco de dados.
+                    // Host
                     if (args[i].startsWith("host=")) {
                         if (args[i].split("=").length > 1) {
                             databaseHost = args[i].split("=")[1];
@@ -276,7 +277,7 @@ public class ConnectionFactory {
                         databaseHost = "localhost";
                     }
 
-                    // Configurando a porta de conexão.
+                    // Port
                     if (args[i].matches("port=\\d+")) {
                         databasePort = args[i].split("=")[1];
                     }
@@ -291,7 +292,7 @@ public class ConnectionFactory {
                         }
                     }
 
-                    // Definindo o banco de dados.
+                    // Database
                     if (args[i].startsWith("database=")) {
                         if (args[i].split("=").length > 1) {
                             databaseName = args[i].split("=")[1];
@@ -310,7 +311,7 @@ public class ConnectionFactory {
                         }
                     }
 
-                    // Definindo o usuário.
+                    // User
                     if (args[i].startsWith("user=")) {
                         if (args[i].split("=").length > 1) {
                             databaseUser = args[i].split("=")[1];
@@ -329,7 +330,7 @@ public class ConnectionFactory {
                         }
                     }
 
-                    // Definindo a senha.
+                    // Password
                     if (args[i].startsWith("password=")) {
                         if (args[i].split("=").length > 1) {
                             databasePassword = args[i].split("=")[1];

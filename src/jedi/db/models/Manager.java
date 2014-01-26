@@ -1476,8 +1476,8 @@ public class Manager {
             );
 
             if (tableAnnotation != null) {
-                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                    .toLowerCase();
+                tableName = tableAnnotation.name().trim()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
 
             }
             String sql = String.format("SELECT * FROM %s ORDER BY %s DESC LIMIT 1", tableName, field);
@@ -1525,12 +1525,17 @@ public class Manager {
         if (this.connection != null && field != null && !field.trim().isEmpty()) {
             Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
             String tableName = String.format(
-                "%ss", this.entity.getSimpleName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase()
+                "%ss", 
+                this
+                    .entity
+                    .getSimpleName()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                    .toLowerCase()
             );
 
             if (tableAnnotation != null) {
-                tableName = tableAnnotation.name().trim().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                    .toLowerCase();
+                tableName = tableAnnotation.name().trim()
+                    .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase();
             }
             String sql = String.format("SELECT * FROM %s ORDER BY %s ASC LIMIT 1", tableName, field);
 

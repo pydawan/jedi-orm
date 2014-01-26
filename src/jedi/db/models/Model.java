@@ -810,8 +810,8 @@ public class Model implements Comparable<Model>, Serializable {
         }
         
         try {
-            xmlElementAttributes.append(String.format("id=\"%d\"", this.getClass().getSuperclass().getDeclaredField("id")
-                .getInt(this) ) );
+            xmlElementAttributes.append(String.format("id=\"%d\"", this.getClass().getSuperclass()
+                .getDeclaredField("id").getInt(this) ) );
             Field[] fields = this.getClass().getDeclaredFields();
             
             for (Field f : fields) {
@@ -826,8 +826,8 @@ public class Model implements Comparable<Model>, Serializable {
                 if (f.getType().getSuperclass() != null && f.getType().getSuperclass().getName()
                     .equals("jedi.db.models.Model") ) {
                     xmlChildElements.append(String.format("\n%s\n", ( (Model) f.get(this) ).toXML(i + 1) ) );
-                } else if (f.getType().getName().equals("java.util.List") || f.getType().getName()
-                    .equals("jedi.db.models.QuerySet") ) {
+                } else if (f.getType().getName().equals("java.util.List") || f.getType()
+                    .getName().equals("jedi.db.models.QuerySet") ) {
                     String xmlChildOpenTag = "";
                     String xmlChildCloseTag = "";
                     Table tableAnnotation = null;
@@ -836,15 +836,15 @@ public class Model implements Comparable<Model>, Serializable {
                         tableAnnotation = ( (List) f.get(this) ).get(0).getClass().getAnnotation(Table.class);
                         
                         if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
-                            xmlChildOpenTag = String.format("\n%s<%s>", identationToChildElements, tableAnnotation.name()
-                                .trim().toLowerCase() );
-                            xmlChildCloseTag = String.format("\n%s</%s>", identationToChildElements, tableAnnotation.name().trim()
-                                .toLowerCase() );
+                            xmlChildOpenTag = String.format("\n%s<%s>", identationToChildElements, 
+                                tableAnnotation.name().trim().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%s>", identationToChildElements, 
+                                tableAnnotation.name().trim().toLowerCase() );
                         } else {
-                            xmlChildOpenTag = String.format("\n%s<%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
-                                .getClass().getSimpleName().toLowerCase() );
-                            xmlChildCloseTag = String.format("\n%s</%ss>", identationToChildElements, ( (List) f.get(this) ).get(0)
-                                .getClass().getSimpleName().toLowerCase() );
+                            xmlChildOpenTag = String.format("\n%s<%ss>", identationToChildElements, 
+                                ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
+                            xmlChildCloseTag = String.format("\n%s</%ss>", identationToChildElements, 
+                                ( (List) f.get(this) ).get(0).getClass().getSimpleName().toLowerCase() );
                         }
                         xmlChildElements.append(xmlChildOpenTag);
                         
@@ -859,7 +859,8 @@ public class Model implements Comparable<Model>, Serializable {
             }
                         
             if (xmlChildElements.toString().isEmpty() ) {
-                xml.append(String.format("%s<%s %s />", identationToElement, xmlElement, xmlElementAttributes.toString() ) );
+                xml.append(String.format("%s<%s %s />", identationToElement, xmlElement, 
+                    xmlElementAttributes.toString() ) );
             } else {
                 xml.append(
                     String.format(

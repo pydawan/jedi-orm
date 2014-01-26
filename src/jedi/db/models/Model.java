@@ -135,7 +135,6 @@ public class Model implements Comparable<Model>, Serializable {
         Model.tableName = tableName.toLowerCase();
     }
     
-    
     public Model table_name(String tableName) {
         Model.tableName = tableName.toLowerCase();
         return this;
@@ -887,11 +886,8 @@ public class Model implements Comparable<Model>, Serializable {
         return xmlString.toString();
     }
     
-    
     public String toExtenseXML(int i) {
-        // A IMPLEMENTAR: Fazer o tratamento de caracteres especiais como < ou > no conteudo dos atributos
-        // ao produzir o xml de retorno.
-        // i - nivel de identacao
+        // i - identation level
         String xmlElement = this.getClass().getSimpleName().toLowerCase();
         StringBuilder xml = new StringBuilder();     
         StringBuilder xmlElementAttributes = new StringBuilder();     

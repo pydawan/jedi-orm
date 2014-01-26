@@ -625,7 +625,8 @@ public class Model implements Comparable<Model>, Serializable {
                 tableName = Model.tableName;
             }
             sql = String.format("%s %s WHERE", sql, tableName);
-            sql = String.format("%s id = %s", sql, this.getClass().getSuperclass().getDeclaredField("id").get(this) );
+            sql = String.format("%s id = %s", sql, this.getClass().getSuperclass()
+                .getDeclaredField("id").get(this) );
             this.connection.prepareStatement(sql).execute();
             
             if (!this.connection.getAutoCommit() ) {

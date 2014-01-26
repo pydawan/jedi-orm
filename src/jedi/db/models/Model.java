@@ -487,8 +487,8 @@ public class Model implements Comparable<Model>, Serializable {
                                 .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
                         }
                     } else {
-                        fieldsAndValues += String.format("%s = ", field.getName().replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                            .toLowerCase() );
+                        fieldsAndValues += String.format("%s = ", field.getName()
+                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
                     }
                                             
                     if (field.getType().toString().endsWith("String") ) {

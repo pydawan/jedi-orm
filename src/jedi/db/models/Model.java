@@ -38,7 +38,6 @@ import jedi.db.annotations.fields.ManyToManyField;
  * @version 1.0
  *
  */
-
 @SuppressWarnings({"rawtypes", "unused", "unchecked", "deprecation"})
 public class Model implements Comparable<Model>, Serializable {
     //  Attributes   

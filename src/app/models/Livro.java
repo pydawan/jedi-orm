@@ -114,5 +114,4 @@ public class Livro extends Model {
     public void setDataPublicacao(String dataPublicacao) {
         this.dataPublicacao = dataPublicacao;
     }
-
 }

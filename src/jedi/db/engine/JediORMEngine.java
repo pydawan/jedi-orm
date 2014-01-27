@@ -911,34 +911,33 @@ public abstract class JediORMEngine {
 
                                                 StringBuilder methodStr = new StringBuilder();
                                                 methodStr.append("\n");
-                                                methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
+                                                methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
                                                         //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
-                                                        "\tpublic jedi.db.models.QuerySet %sSet() {\n",
+                                                        "    public jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
                                                         //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
-                                                        "\t\treturn %s.objects.getSet(%s.class, this.id);\n",
+                                                        "        return %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         foreignKeyFieldAnnotation.model()
                                                     )
                                                 );
 
-                                                methodStr.append("\t}\n");
+                                                //methodStr.append("\t}\n");
+                                                methodStr.append("    }\n");
                                                 methodStr.append("}");
 
                                                 if (generateCode) {
                                                     out.writeBytes(methodStr.toString() );
                                                 }
-                                                
                                             } catch (java.io.IOException e) {
                                                 System.err.println(e);
                                             } finally {
-
                                                 if (out != null) {
                                                     out.close();
                                                 }
@@ -947,7 +946,6 @@ public abstract class JediORMEngine {
 
                                         if (fieldAnnotation instanceof ManyToManyField) {
                                             ManyToManyField manyToManyFieldAnnotation = (ManyToManyField) fieldAnnotation;
-
                                             String fmt = "";
 
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
@@ -1127,7 +1125,6 @@ public abstract class JediORMEngine {
 
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
                                                 out.seek(0);
-
                                                 String currentLine = null;
 
                                                 while ( (currentLine = out.readLine() ) != null) {
@@ -1148,26 +1145,29 @@ public abstract class JediORMEngine {
                                                 } else {
                                                     out.seek(out.length() );
                                                 }
-
                                                 StringBuilder methodStr = new StringBuilder();
                                                 methodStr.append("\n");
-                                                methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
+                                                //methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
+                                                methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
                                                         //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
-                                                        "\tpublic jedi.db.models.QuerySet %sSet() {\n",
+                                                        //"\tpublic jedi.db.models.QuerySet %sSet() {\n",
+                                                        "    public jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
                                                         //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
-                                                        "\t\treturn %s.objects.getSet(%s.class, this.id);\n",
+                                                        //"\t\treturn %s.objects.getSet(%s.class, this.id);\n",
+                                                        "        return %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         manyToManyFieldAnnotation.model()
                                                     )
                                                 );
-                                                methodStr.append("\t}\n");
+                                                //methodStr.append("\t}\n");
+                                                methodStr.append("    }\n");
                                                 methodStr.append("}");
 
                                                 if (generateCode) {
@@ -1227,7 +1227,6 @@ public abstract class JediORMEngine {
 
                             if (databaseEngine.trim().equalsIgnoreCase("mysql") 
                                 || databaseEngine.trim().equalsIgnoreCase("postgresql") ) {
-                                
                                 sqlTransaction = "BEGIN;\n\n";
                             }
                             sqlTransaction += sql;
@@ -1238,7 +1237,6 @@ public abstract class JediORMEngine {
                             if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
                                 sqlTransaction += sqlOracleSequences;
                             }
-
                             sqlTransaction += "COMMIT";
 
                             if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {

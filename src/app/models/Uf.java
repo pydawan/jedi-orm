@@ -151,8 +151,8 @@ public class Uf extends Model {
         this.situacao = situacao;
     }
 
-	@SuppressWarnings("rawtypes")
-	public jedi.db.models.QuerySet editoraSet() {
-		return Editora.objects.getSet(Uf.class, this.id);
-	}
+    @SuppressWarnings("rawtypes")
+    public jedi.db.models.QuerySet editoraSet() {
+        return Editora.objects.getSet(Uf.class, this.id);
+    }
 }

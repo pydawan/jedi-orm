@@ -134,6 +134,6 @@ public class Pais extends Model {
 
     @SuppressWarnings("rawtypes")
     public jedi.db.models.QuerySet uf_set() {
-        return Uf.objects.get_set(Pais.class, this.id);
+        return Uf.objects.getSet(Pais.class, this.id);
     }
 }

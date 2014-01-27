@@ -465,7 +465,7 @@ public class Manager {
                     querySet.add(model);
                 }
                 if (querySet != null) {
-                    querySet.is_persisted(true);
+                    querySet.isPersisted(true);
                 }
                 resultSet.close();
             } catch (Exception e) {

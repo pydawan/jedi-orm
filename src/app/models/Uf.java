@@ -153,6 +153,6 @@ public class Uf extends Model {
 
     @SuppressWarnings("rawtypes")
     public jedi.db.models.QuerySet editora_set() {
-        return Editora.objects.get_set(Uf.class, this.id);
+        return Editora.objects.getSet(Uf.class, this.id);
     }
 }

@@ -153,7 +153,7 @@ public class Model implements Comparable<Model>, Serializable {
         this.autoCloseConnection = autoCloseConnection;
     }
     
-    public Model auto_close_connection(boolean autoCloseConnection) {
+    public Model autoCloseConnection(boolean autoCloseConnection) {
         this.autoCloseConnection = autoCloseConnection;
         return this;
     }

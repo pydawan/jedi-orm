@@ -54,18 +54,19 @@ import jedi.db.models.Manager;
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class JediORMEngine {
-
     // Application's root directory.
-    public static final String APP_ROOT_DIR = System.getProperty("user.dir");
+    public static String APP_ROOT_DIR = System.getProperty("user.dir");
 
     // Application's source code directory.
-    public static final String APP_SRC_DIR = String.format(
-        "%s/web/WEB-INF/src",
+    public static String APP_SRC_DIR = String.format(
+//        "%s/web/WEB-INF/src",
+        "%s/src",
         APP_ROOT_DIR
     );
 
-    public static final String APP_DB_CONFIG = String.format(
-        "%s/web/WEB-INF/config/database.properties",
+    public static String APP_DB_CONFIG = String.format(
+//        "%s/web/WEB-INF/config/database.properties",
+        "%s/database.properties",
         JediORMEngine.APP_ROOT_DIR
     );
 
@@ -1340,7 +1341,7 @@ public abstract class JediORMEngine {
                             }
                         }
                     } else {
-                        syncdb(appDirContent.getAbsolutePath());
+                        syncdb(appDirContent.getAbsolutePath() );
                     }
                 }
             }

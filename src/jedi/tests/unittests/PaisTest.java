@@ -29,23 +29,18 @@ public class PaisTest {
     public static void testCleanup() {
         // Deletes all the rows on the table after the tests.
         // Below the foreign key constraints in MySQL are handled. 
-
         // Disables all fk.
-        Pais.objects.raw("SET FOREIGN_KEY_CHECKS = 0");
-        
+        // Pais.objects.raw("SET FOREIGN_KEY_CHECKS = 0");
         Pais.objects.all().delete();
-        
         // Enables all fk.
-        Pais.objects.raw("SET FOREIGN_KEY_CHECKS = 1");
+        // Pais.objects.raw("SET FOREIGN_KEY_CHECKS = 1");
     }
 
     @Test
     public void testInsert() {
         Pais paisEsperado = new Pais("Brasil", "BR");
         paisEsperado.insert();
-
         Pais paisObtido = Pais.objects.get("nome", "Brasil");
-
         Assert.assertEquals(paisEsperado.getId(), paisObtido.getId() );
     }
 
@@ -53,22 +48,19 @@ public class PaisTest {
     public void testUpdate() {
         Pais paisEsperado = Pais.objects.get("nome", "Brasil");
         paisEsperado.update("nome='Brazil'");
-
         Pais paisObtido = Pais.objects.get("sigla", "BR");
-
         Assert.assertTrue(paisEsperado.getNome().equals(paisObtido.getNome() ) );
     }
 
     @Test
     public void testDelete() {
         int esperado = 0;
-
+        
         for (Pais pais : Pais.objects.<Pais> all() ) {
             pais.delete();
         }
 
         int obtido = Pais.objects.count();
-
         Assert.assertEquals(esperado, obtido);
     }
 
@@ -80,9 +72,7 @@ public class PaisTest {
         paisEsperado.setCapital("Washington");
         paisEsperado.setContinente("Americano");
         paisEsperado.save();
-
         Pais paisObtido = Pais.objects.get("sigla", "UZ");
-
         Assert.assertEquals(paisEsperado.getId(), paisObtido.getId() );
     }
 
@@ -91,10 +81,7 @@ public class PaisTest {
         Pais paisEsperado = Pais.objects.get("sigla", "UZ");
         paisEsperado.setSigla("US");
         paisEsperado.save();
-
         Pais paisObtido = Pais.objects.get("sigla", "US");
-
         Assert.assertTrue(paisEsperado.getNome().equals(paisObtido.getNome() ) );
     }
-
 }

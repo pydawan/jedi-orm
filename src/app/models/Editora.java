@@ -95,6 +95,6 @@ public class Editora extends Model {
 
     @SuppressWarnings("rawtypes")
     public jedi.db.models.QuerySet livro_set() {
-        return Livro.objects.get_set(Editora.class, this.id);
+        return Livro.objects.getSet(Editora.class, this.id);
     }
 }

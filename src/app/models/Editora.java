@@ -93,8 +93,8 @@ public class Editora extends Model {
         this.uf = (Uf) uf;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet livro_set() {
-        return Livro.objects.getSet(Editora.class, this.id);
-    }
+	@SuppressWarnings("rawtypes")
+	public jedi.db.models.QuerySet livroSet() {
+		return Livro.objects.getSet(Editora.class, this.id);
+	}
 }

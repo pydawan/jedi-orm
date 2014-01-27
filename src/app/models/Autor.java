@@ -88,8 +88,8 @@ public class Autor extends Model {
         this.email = email;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet livro_set() {
-        return Livro.objects.getSet(Autor.class, this.id);
-    }
+	@SuppressWarnings("rawtypes")
+	public jedi.db.models.QuerySet livroSet() {
+		return Livro.objects.getSet(Autor.class, this.id);
+	}
 }

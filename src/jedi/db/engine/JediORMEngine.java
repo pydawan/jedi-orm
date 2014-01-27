@@ -864,7 +864,6 @@ public abstract class JediORMEngine {
                                                     onUpdateString
                                                 );
                                             }
-
                                             sqlIndex += String.format(
                                                 "CREATE INDEX idx_%s_%s ON %s (%s);\n\n",
                                                 tableName,
@@ -872,12 +871,10 @@ public abstract class JediORMEngine {
                                                 tableName,
                                                 columnName
                                             );
-
                                             java.io.RandomAccessFile out = null;
 
                                             try {
                                                 boolean generateCode = true;
-                                                
                                                 String classPath = appModelFile.getAbsolutePath();
                                                 classPath = classPath.replace(
                                                     appModelFile.getName(), 
@@ -886,20 +883,17 @@ public abstract class JediORMEngine {
                                                         foreignKeyFieldAnnotation.model()
                                                     )
                                                 );
-
                                                 // Creates a random access file.
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
-
                                                 // Sets the file's pointer at the first register of the file.
                                                 out.seek(0);
-
                                                 String currentLine = null;
 
                                                 while ( (currentLine = out.readLine() ) != null) {
-
                                                     if (currentLine.contains(
                                                             String.format(
-                                                                "%s_set", 
+                                                                //"%s_set",
+                                                                "%sSet",
                                                                 modelClass.getSimpleName().toLowerCase() 
                                                             ) 
                                                         ) 
@@ -920,13 +914,15 @@ public abstract class JediORMEngine {
                                                 methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
-                                                        "\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        "\tpublic jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
-                                                        "\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        "\t\treturn %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         foreignKeyFieldAnnotation.model()
                                                     )
@@ -1121,9 +1117,7 @@ public abstract class JediORMEngine {
 
                                             try {
                                                 boolean generateCode = true;
-
                                                 String classPath = appModelFile.getAbsolutePath();
-
                                                 classPath = classPath.replace(
                                                     appModelFile.getName(), 
                                                     String.format(
@@ -1134,13 +1128,13 @@ public abstract class JediORMEngine {
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
                                                 out.seek(0);
 
-                                                String current_line = null;
+                                                String currentLine = null;
 
-                                                while ( (current_line = out.readLine() ) != null) {
-
-                                                    if (current_line.contains(
+                                                while ( (currentLine = out.readLine() ) != null) {
+                                                    if (currentLine.contains(
                                                             String.format(
-                                                                "%s_set", 
+                                                                //"%s_set",
+                                                                "%sSet",
                                                                 modelClass.getSimpleName().toLowerCase()
                                                             )
                                                         )
@@ -1160,13 +1154,15 @@ public abstract class JediORMEngine {
                                                 methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
-                                                        "\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
+                                                        "\tpublic jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
-                                                        "\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
+                                                        "\t\treturn %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         manyToManyFieldAnnotation.model()
                                                     )
@@ -1187,11 +1183,9 @@ public abstract class JediORMEngine {
                                         }
                                     }
                                 }
-
                                 sql = sql.substring(0, sql.lastIndexOf(",") ) + "\n";
 
                                 if (tableAnnotation != null) {
-
                                     if (databaseEngine.trim().equalsIgnoreCase("mysql") ) {
                                         sql += String.format(
                                             ") %s %s %s;\n\n",
@@ -1229,7 +1223,6 @@ public abstract class JediORMEngine {
                         }
 
                         try {
-
                             String sqlTransaction = "";
 
                             if (databaseEngine.trim().equalsIgnoreCase("mysql") 
@@ -1237,7 +1230,6 @@ public abstract class JediORMEngine {
                                 
                                 sqlTransaction = "BEGIN;\n\n";
                             }
-                            
                             sqlTransaction += sql;
                             sqlTransaction += sqlManyToManyAssociation;
                             sqlTransaction += sqlForeignKey;
@@ -1252,13 +1244,10 @@ public abstract class JediORMEngine {
                             if (databaseEngine.trim().equalsIgnoreCase("oracle") ) {
                                 sqlTransaction = sqlTransaction.toUpperCase();
                             }
-
                             // Shows the complete SQL that generates the application's database structure.
                             // System.out.println(sql_transaction);
-
                             Scanner scanner = new Scanner(sqlTransaction);
                             scanner.useDelimiter(";\n");
-                            
                             String currentStatement = "";
                             System.out.println("");
 

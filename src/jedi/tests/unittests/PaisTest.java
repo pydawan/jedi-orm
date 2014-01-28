@@ -308,7 +308,7 @@ public class PaisTest {
     public void testDelete() {
         int esperado = 0;
         
-        for (Pais pais : Pais.objects.<Pais> all() ) {
+        for (Pais pais : Pais.objects.<Pais>all() ) {
             pais.delete();
         }
 

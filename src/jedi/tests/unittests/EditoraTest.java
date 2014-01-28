@@ -82,7 +82,7 @@ public class EditoraTest {
     public void testSaveInsert() {
         Editora editoraEsperada = new Editora();
         editoraEsperada.setNome("McGraw Hill");
-        editoraEsperada.setUf(new Uf("New York", "NY", new Pais("Unitated States of America", "US") ) );
+        editoraEsperada.setUf(new Uf("New York", "NY", new Pais("Unitated Ufs of America", "US") ) );
         editoraEsperada.save();
 
         Editora editoraObtida = Editora.objects.get("nome", "McGraw Hill");

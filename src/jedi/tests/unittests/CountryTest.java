@@ -309,7 +309,7 @@ public class CountryTest {
     public void testDelete() {
         // Expected.
         int expectedOcurrences = 0;
-        
+        // Iterates through a list of countries.
         for (Country country : Country.objects.<Country> all() ) {
             country.delete();
         }

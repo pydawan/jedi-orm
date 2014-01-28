@@ -5,7 +5,7 @@ Jedi-ORM
 What is Jedi-ORM?
 --------------
 #
-**Jedi-ORM** is a ***[Object Relational Mapping](http://en.wikipedia.org/wiki/Object-relational_mapping "Object Relational Mapping") [Framework](http://en.wikipedia.org/wiki/Software_framework "Framework")*** for ***[Java](http://en.wikipedia.org/wiki/Java_%28programming_language%29 "Java - Computer Programming Language")*** Projects, it was written in Java languag.e
+**Jedi-ORM** is a ***[Object Relational Mapping](http://en.wikipedia.org/wiki/Object-relational_mapping "Object Relational Mapping") [Framework](http://en.wikipedia.org/wiki/Software_framework "Framework")*** for ***[Java](http://en.wikipedia.org/wiki/Java_%28programming_language%29 "Java - Computer Programming Language")*** Projects, it was written in Java language.
 
 This project was based on [Django's ORM](https://docs.djangoproject.com/en/dev/topics/db/ "Django's ORM") with the objective of providing a simple and efficient solution.
 

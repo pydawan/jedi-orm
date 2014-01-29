@@ -525,14 +525,18 @@ public class Model implements Comparable<Model>, Serializable {
                     Field field = null;                 
                     String fieldName = "";
                     String fieldValue = "";
+                    String columnName = "";
+                    String columnValue = "";
                     
                     for (int i = 0; i < args.length; i++) {
                         fieldName = args[i].split("=")[0];
+                        columnName = fieldName.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2");
                         
                         if (fieldName.endsWith("_id") ) {
                             fieldName = fieldName.replace("_id", "");
                         }
                         fieldValue = args[i].split("=")[1];
+                        columnValue = fieldValue;
                         
                         if (fieldValue.startsWith("'") && fieldValue.endsWith("'") ) {
                             fieldValue = fieldValue.substring(1, fieldValue.length() - 1);
@@ -558,13 +562,13 @@ public class Model implements Comparable<Model>, Serializable {
                             }
                         } else {
                         }
-                        fieldsAndValues += args[i] + ", ";
+                        fieldsAndValues += String.format("%s=%s, ", columnName, columnValue);
                     }
                     fieldsAndValues = fieldsAndValues.substring(0, fieldsAndValues.lastIndexOf(",") );
                 }
             }
-            sql = String.format("%s %s WHERE id = %s", sql, fieldsAndValues, this.getClass().getSuperclass()
-                .getDeclaredField("id").get(this) );
+            sql = String.format("%s %s WHERE id=%s", sql, fieldsAndValues, this.getClass()
+                .getSuperclass().getDeclaredField("id").get(this) );
             // System.out.println(sql);
             this.connection.prepareStatement(sql).execute();
             

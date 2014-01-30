@@ -892,7 +892,6 @@ public abstract class JediORMEngine {
                                                 while ( (currentLine = out.readLine() ) != null) {
                                                     if (currentLine.contains(
                                                             String.format(
-                                                                //"%s_set",
                                                                 "%sSet",
                                                                 modelClass.getSimpleName().toLowerCase() 
                                                             ) 
@@ -914,21 +913,17 @@ public abstract class JediORMEngine {
                                                 methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
-                                                        //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
                                                         "    public jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
-                                                        //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
                                                         "        return %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         foreignKeyFieldAnnotation.model()
                                                     )
                                                 );
-
-                                                //methodStr.append("\t}\n");
                                                 methodStr.append("    }\n");
                                                 methodStr.append("}");
 
@@ -1163,7 +1158,6 @@ public abstract class JediORMEngine {
                                                 while ( (currentLine = out.readLine() ) != null) {
                                                     if (currentLine.contains(
                                                             String.format(
-                                                                //"%s_set",
                                                                 "%sSet",
                                                                 modelClass.getSimpleName().toLowerCase()
                                                             )
@@ -1180,26 +1174,20 @@ public abstract class JediORMEngine {
                                                 }
                                                 StringBuilder methodStr = new StringBuilder();
                                                 methodStr.append("\n");
-                                                //methodStr.append("\t@SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
-                                                        //"\tpublic jedi.db.models.QuerySet %s_set() {\n",
-                                                        //"\tpublic jedi.db.models.QuerySet %sSet() {\n",
                                                         "    public jedi.db.models.QuerySet %sSet() {\n",
                                                         modelClass.getSimpleName().toLowerCase()
                                                     )
                                                 );
                                                 methodStr.append(
                                                     String.format(
-                                                        //"\t\treturn %s.objects.get_set(%s.class, this.id);\n",
-                                                        //"\t\treturn %s.objects.getSet(%s.class, this.id);\n",
                                                         "        return %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
                                                         manyToManyFieldAnnotation.model()
                                                     )
                                                 );
-                                                //methodStr.append("\t}\n");
                                                 methodStr.append("    }\n");
                                                 methodStr.append("}");
 

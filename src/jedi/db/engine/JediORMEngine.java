@@ -1037,9 +1037,38 @@ public abstract class JediORMEngine {
                                                     ).toLowerCase()
                                                 )
                                             );
+                                            
+                                            String onDeleteString = "";
 
+                                            if (manyToManyFieldAnnotation.on_delete().equals(Models.PROTECT) ) {
+                                                onDeleteString = " ON DELETE RESTRICT";
+                                            } else if (manyToManyFieldAnnotation.on_delete().equals(Models.SET_NULL) ) {
+                                                onDeleteString = " ON DELETE SET NULL";
+                                            } else if (manyToManyFieldAnnotation.on_delete().equals(Models.CASCADE) ) {
+                                                onDeleteString = " ON DELETE CASCADE";
+                                            } else if (manyToManyFieldAnnotation.on_delete().equals(Models.SET_DEFAULT) ) {
+                                                onDeleteString = " ON DELETE SET DEFAULT";
+                                            }
+
+                                            String onUpdateString = " ON UPDATE";
+
+                                            if (manyToManyFieldAnnotation.on_update().equals(Models.PROTECT) ) {
+                                                onUpdateString = " ON UPDATE RESTRICT";
+                                            } else if (manyToManyFieldAnnotation.on_update().equals(Models.SET_NULL) ) {
+                                                onUpdateString = " ON UPDATE SET NULL";
+                                            } else if (manyToManyFieldAnnotation.on_update().equals(Models.CASCADE) ) {
+                                                onUpdateString = " ON UPDATE CASCADE";
+                                                
+                                                if (databaseEngine != null && databaseEngine.equalsIgnoreCase("oracle") ) {
+                                                    onUpdateString = "";
+                                                }
+
+                                            } else if (manyToManyFieldAnnotation.on_update().equals(Models.SET_DEFAULT) ) {
+                                                onUpdateString = " ON UPDATE SET DEFAULT";
+                                            }
+                                            
                                             sqlForeignKey += String.format(
-                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
+                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id)%s%s;\n\n",
                                                 tableName,
                                                 manyToManyFieldAnnotation.references().replaceAll(
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
@@ -1052,7 +1081,9 @@ public abstract class JediORMEngine {
                                                 modelClass.getSimpleName().replaceAll(
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
                                                 ).toLowerCase(),
-                                                tableName
+                                                tableName,
+                                                onDeleteString,
+                                                onUpdateString
                                             );
 
                                             sqlIndex += String.format(
@@ -1073,7 +1104,7 @@ public abstract class JediORMEngine {
                                                 ).toLowerCase());
 
                                             sqlForeignKey += String.format(
-                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id);\n\n",
+                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id)%s%s;\n\n",
                                                 tableName,
                                                 manyToManyFieldAnnotation.references().replaceAll(
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
@@ -1090,7 +1121,9 @@ public abstract class JediORMEngine {
                                                 ).toLowerCase(),
                                                 manyToManyFieldAnnotation.references().replaceAll(
                                                     "([a-z0-9]+)([A-Z])", "$1_$2"
-                                                ).toLowerCase()
+                                                ).toLowerCase(),
+                                                onDeleteString,
+                                                onUpdateString
                                             );
 
                                             sqlIndex += String.format(

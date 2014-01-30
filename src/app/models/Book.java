@@ -17,6 +17,7 @@
 
 package app.models;
 
+import jedi.db.Models;
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ForeignKeyField;
@@ -33,10 +34,17 @@ public class Book extends Model {
     @CharField(max_length=30, required=true, unique=true, comment="This field stores the book\\'s title.")
     private String title;
 
-    @ManyToManyField(model="Author", references="authors")
+    @ManyToManyField(model="Author", 
+            references="authors",
+            on_delete=Models.CASCADE,
+            on_update=Models.CASCADE)
     private QuerySet<Author> authors;
 
-    @ForeignKeyField(model="Publisher", constraint_name="fk_books_publishers", references="publishers")
+    @ForeignKeyField(model="Publisher", 
+            constraint_name="fk_books_publishers", 
+            references="publishers", 
+            on_delete=Models.CASCADE, 
+            on_update=Models.CASCADE)
     private Publisher publisher;
 
     @CharField(max_length=15, required=true)
@@ -62,6 +70,10 @@ public class Book extends Model {
         return authors;
     }
     
+    public Publisher getPublisher() {
+        return publisher;
+    }
+    
     public String getPublicationDate() {
         return publicationDate;
     }
@@ -73,6 +85,10 @@ public class Book extends Model {
     
     public void setAuthors(QuerySet<Author> authors) {
         this.authors = authors;
+    }
+    
+    public void setPublisher(Publisher publisher) {
+        this.publisher = publisher;
     }
     
     public void setPublicationDate(String publicationDate) {

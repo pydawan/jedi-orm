@@ -27,7 +27,7 @@ public class AuthorTest {
 
     @AfterClass
     public static void testCleanup() {
-        for (Author author : Author.objects.<Author> all() ) {
+        for (Author author : Author.objects.<Author> all()) {
             author.delete();
         }
     }
@@ -40,7 +40,7 @@ public class AuthorTest {
         expectedAuthor.setEmail("paulocoelho@gmail.com");
         expectedAuthor.save();
         Author obtainedAuthor = Author.objects.get("email", "paulocoelho@gmail.com");
-        Assert.assertEquals(expectedAuthor.getId(), obtainedAuthor.getId() );
+        Assert.assertEquals(expectedAuthor.getId(), obtainedAuthor.getId());
     }
 
     @Test
@@ -48,7 +48,7 @@ public class AuthorTest {
         Author expectedAuthor = Author.objects.get("email", "paulocoelho@gmail.com");
         expectedAuthor.update("lastName='Coelho'");
         Author obtainedAuthor = Author.objects.get("email", "paulocoelho@gmail.com");
-        Assert.assertTrue(expectedAuthor.getLastName().equals(obtainedAuthor.getLastName() ) );
+        Assert.assertTrue(expectedAuthor.getLastName().equals(obtainedAuthor.getLastName()));
     }
 
     @Test
@@ -67,7 +67,7 @@ public class AuthorTest {
         expectedAuthor.setEmail("jrrtolkien@gmail.com");
         expectedAuthor.save();
         Author obtainedAuthor = Author.objects.get("email", "jrrtolkien@gmail.com");
-        Assert.assertEquals(expectedAuthor.getId(), obtainedAuthor.getId() );
+        Assert.assertEquals(expectedAuthor.getId(), obtainedAuthor.getId());
     }
 
     @Test
@@ -76,6 +76,6 @@ public class AuthorTest {
         expectedAuthor.setLastName("Reuel Tolkien");
         expectedAuthor.save();
         Author obtainedAuthor = Author.objects.get("email", "jrrtolkien@gmail.com");
-        Assert.assertTrue(expectedAuthor.getLastName().equals(obtainedAuthor.getLastName() ) );
+        Assert.assertTrue(expectedAuthor.getLastName().equals(obtainedAuthor.getLastName()));
     }
 }

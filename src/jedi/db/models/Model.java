@@ -509,9 +509,8 @@ public class Model implements Comparable<Model>, Serializable {
                     } else if (field.getType().getSuperclass() != null && field.getType().getSuperclass()
                         .getSimpleName().equals("Model") ) {  
                         foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
-
-                        // Saves the model if it not saved yet.
                         Model model = (Model) field.get(this);
+                        // Saves the model if it not saved yet.
                         model.save();
                         
                         if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty() ) {

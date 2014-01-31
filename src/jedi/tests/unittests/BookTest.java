@@ -79,4 +79,12 @@ public class BookTest {
         expectedBook.setAuthors(authors);
         expectedBook.save();
     }
+    
+    @Test
+    public void testSaveUpdate() {
+        Book expectedBook = Book.objects.get("publicationDate", "10/10/2000 ...");
+        expectedBook.update("publicationDate='10/10/2000'");
+        Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");
+        Assert.assertEquals(expectedBook, obtainedBook);
+    }
 }

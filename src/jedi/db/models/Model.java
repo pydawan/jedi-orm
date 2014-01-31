@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/26
+ * Date: 2014/01/31
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -19,6 +19,7 @@ package jedi.db.models;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
@@ -301,25 +302,12 @@ public class Model implements Comparable<Model>, Serializable {
                     }
                 } else {
                     if (foreignKeyAnnotation != null) {
-                        // 1 - Obtendo a referencia para o campo do modelo atual.
-                        // 2 - Recuperando o valor do id.
-                        // OBS: Tratar o retorno de toString() do modelo e muito perigoso uma vez que
-                        // o usuario pode ter a possibilidade de mudar a representacao do objeto e o codigo
-                        // que faz o tratamento do retorno e altamente dependente do formato do retorno.
                         Object id = ( (Model) field.get(this) ).id;
                         
                         if (Integer.parseInt(id.toString() ) == 0) {
                             ( (Model) field.get(this) ).save();
                             id = ( (Model) field.get(this ) ).id;
                         }
-                        // String id = "";
-                        // Lancar excessao de campo nao existente informando qual o campo.
-                        // Se o atributo pais nao for configurado em Uf por exemplo, ocorrera NullPointerException.
-                        // id = field.get(this).toString();
-                        // id = id.substring(id.indexOf("id"), id.indexOf(",") );
-                        // id = id.replace(" ", "");
-                        // id = id.substring(id.indexOf("=") + 1, id.length() );
-                        // id = id.trim();
                         values += String.format("%s, ", id);
                     } else if (field.getType().getName().equals("java.util.List") 
                         || field.getType().getName().equals("jedi.db.models.QuerySet") ) {
@@ -454,6 +442,7 @@ public class Model implements Comparable<Model>, Serializable {
             String sql = "UPDATE";
             String tableName = String.format("%ss", this.getClass().getSimpleName()
                 .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+            List<String> manyToManySQLs =  new ArrayList<String>();
             Table tableAnnotation = (Table) this.getClass().getAnnotation(Table.class);
             
             if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty() ) {
@@ -477,23 +466,53 @@ public class Model implements Comparable<Model>, Serializable {
                         continue;
                     
                     ForeignKeyField foreignKeyAnnotation = null;
+                    ManyToManyField manyToManyAnnotation = null;
                     
-                    if (field.getType().getSuperclass() != null && field.getType().getSuperclass()
+                    if (field.getType().getName().equals("jedi.db.models.QuerySet") 
+                        || field.getType().getName().equals("java.util.List")) {
+                        manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
+                        
+                        if (manyToManyAnnotation != null && !manyToManyAnnotation.model().isEmpty()
+                            && !manyToManyAnnotation.references().isEmpty()) {
+                            
+                            for (Model model : (List<Model>) field.get(this)) {
+                                model.save();
+                                Object id = model.id;
+                                manyToManySQLs.add(
+                                    String.format(
+                                        "UPDATE %s_%s SET %s_id = %s WHERE %s_id = %s",
+                                        tableName,
+                                        manyToManyAnnotation
+                                            .references()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                            .toLowerCase(),
+                                        manyToManyAnnotation
+                                            .references()
+                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                            .toLowerCase(),
+                                        id,
+                                        tableName,
+                                        this.id
+                                    )
+                                );
+                            }
+                        }
+                    } else if (field.getType().getSuperclass() != null && field.getType().getSuperclass()
                         .getSimpleName().equals("Model") ) {  
                         foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
                         
                         if (foreignKeyAnnotation != null && !foreignKeyAnnotation.references().isEmpty() ) {
                             fieldsAndValues += String.format("%s_id = ", field.getType().getSimpleName()
-                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                         }
                     } else {
                         fieldsAndValues += String.format("%s = ", field.getName()
-                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase() );
+                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2").toLowerCase());
                     }
                                             
                     if (field.getType().toString().endsWith("String") ) {
                         if (field.get(this) != null) {
-                            fieldsAndValues += String.format("'%s', ", ( (String) field.get(this) )
+                            fieldsAndValues += String.format("'%s', ", ((String) field.get(this))
                                 .replaceAll("'", "\\\\'") );
                         } else {
                             fieldsAndValues += "'', ";
@@ -512,8 +531,10 @@ public class Model implements Comparable<Model>, Serializable {
                         );
                     } else {
                         if (foreignKeyAnnotation != null) {
-                            Object id = ( (Model) field.get(this) ).id;
+                            Object id = ((Model) field.get(this)).id;
                             fieldsAndValues += String.format("%s, ", id);
+                        } else if (manyToManyAnnotation != null) { 
+                            
                         } else {
                             fieldsAndValues += String.format("%s, ", field.get(this) );
                         }
@@ -562,15 +583,20 @@ public class Model implements Comparable<Model>, Serializable {
                             }
                         } else {
                         }
-                        fieldsAndValues += String.format("%s=%s, ", columnName, columnValue);
+                        fieldsAndValues += String.format("%s = %s, ", columnName, columnValue);
                     }
                     fieldsAndValues = fieldsAndValues.substring(0, fieldsAndValues.lastIndexOf(",") );
                 }
             }
-            sql = String.format("%s %s WHERE id=%s", sql, fieldsAndValues, this.getClass()
+            sql = String.format("%s %s WHERE id = %s", sql, fieldsAndValues, this.getClass()
                 .getSuperclass().getDeclaredField("id").get(this) );
             // System.out.println(sql);
             this.connection.prepareStatement(sql).execute();
+            
+            for (String manyToManySQL : manyToManySQLs) {
+                // System.out.println(manyToManySQL);
+                this.connection.prepareStatement(sql).execute();
+            }
             
             if (!this.connection.getAutoCommit() ) {
                 this.connection.commit();

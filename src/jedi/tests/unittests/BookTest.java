@@ -67,4 +67,16 @@ public class BookTest {
         int obtained = Book.objects.all().delete().count();
         Assert.assertEquals(expected, obtained);
     }
+    
+    @Test
+    public void testSaveInsert() {
+        Book expectedBook = new Book();
+        expectedBook.setTitle("Java Cookbook");
+        expectedBook.setPublicationDate("10/10/2000 ...");
+        expectedBook.setPublisher(new Publisher("O'Reilly", new State("New York", "NY", new Country("Unitated States of America", "US"))));
+        QuerySet<Author> authors = new QuerySet<Author>();
+        authors.add(new Author("Ian", "F. Darwin", "iandarwin@gmail.com"));
+        expectedBook.setAuthors(authors);
+        expectedBook.save();
+    }
 }

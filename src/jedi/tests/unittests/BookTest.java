@@ -87,6 +87,7 @@ public class BookTest {
         Book expectedBook = Book.objects.get("publicationDate", "10/10/2000 ...");
         expectedBook.setPublicationDate("10/10/2000");
         expectedBook.getAuthors().add(new Author("Thiago", "Monteiro", "thiagomonteiro@gmail.com"));
+        expectedBook.setPublisher(new Publisher("McGraw-Hill", State.objects.get("acronym", "NY").as(State.class)));
         expectedBook.save();
         Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");
         Assert.assertEquals(expectedBook, obtainedBook);

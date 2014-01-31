@@ -33,13 +33,9 @@ public class BookTest {
 
     @AfterClass
     public static void cleanUp() {
-        /*
         for (Book book : Book.objects.<Book>all()) {
             book.delete();
-        }*/
-        
-        // Alternative form.
-        Book.objects.all().delete();
+        }
     }
     
     @Test
@@ -63,5 +59,12 @@ public class BookTest {
         Book obtainedBook = Book.objects.get("title", "O Alquimistaa");
         obtainedBook.update("title='O Alquimista'");
         Assert.assertEquals(expectedBook.getTitle(), obtainedBook.getTitle());
+    }
+    
+    @Test
+    public void testDelete() {
+        int expected = 0;
+        int obtained = Book.objects.all().delete().count();
+        Assert.assertEquals(expected, obtained);
     }
 }

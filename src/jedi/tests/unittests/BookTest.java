@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/30
+ * Date: 2014/01/31
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -78,12 +78,16 @@ public class BookTest {
         authors.add(new Author("Ian", "F. Darwin", "iandarwin@gmail.com"));
         expectedBook.setAuthors(authors);
         expectedBook.save();
+        Book obtainedBook = Book.objects.get("title", "Java Cookbook");
+        Assert.assertEquals(expectedBook.getTitle(), obtainedBook.getTitle());
     }
     
     @Test
     public void testSaveUpdate() {
         Book expectedBook = Book.objects.get("publicationDate", "10/10/2000 ...");
-        expectedBook.update("publicationDate='10/10/2000'");
+        expectedBook.setPublicationDate("10/10/2000");
+        expectedBook.getAuthors().add(new Author("Thiago", "Monteiro", "thiagomonteiro@gmail.com"));
+        expectedBook.save();
         Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");
         Assert.assertEquals(expectedBook, obtainedBook);
     }

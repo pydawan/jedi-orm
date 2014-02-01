@@ -60,7 +60,7 @@ public class Model implements Comparable<Model>, Serializable {
         // If DEBUG mode is enabled show a message.        
         try {
             super.finalize();
-            if (this.connection != null && !this.connection.isValid(10) ) {
+            if (this.connection != null && !this.connection.isValid(20)) {
                 this.connection.close();
             }
         } catch (Throwable e) {
@@ -483,27 +483,64 @@ public class Model implements Comparable<Model>, Serializable {
                         if (manyToManyAnnotation != null && !manyToManyAnnotation.model().isEmpty()
                             && !manyToManyAnnotation.references().isEmpty()) {
                             
+                            boolean persistedModel = false;
+                            
                             for (Model model : (List<Model>) field.get(this)) {
-                                // Saves the model if it not saved yet.
+                                persistedModel = model.isPersisted();
                                 model.save();
                                 Object id = model.id;
-                                manyToManySQLs.add(
-                                    String.format(
-                                        "UPDATE %s_%s SET %s_id = %s WHERE %s_id = %s",
-                                        tableName,
-                                        manyToManyAnnotation
-                                            .references()
-                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            .toLowerCase(),
-                                        manyToManyAnnotation
-                                            .references()
-                                            .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            .toLowerCase(),
-                                        id,
-                                        tableName,
-                                        this.id
-                                    )
-                                );
+
+                                // Checks if the model was persisted.
+                                if (!persistedModel) {
+                                    manyToManySQLs.add(
+                                        String.format(
+                                            "INSERT INTO %s_%s (%s_id, %s_id) VALUES (%s, %s)",
+                                            tableName,
+                                            manyToManyAnnotation
+                                                .references()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            this
+                                                .getClass()
+                                                .getSimpleName()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            manyToManyAnnotation
+                                                .model()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            this.id,
+                                            id
+                                        )
+                                    );
+                                } else {
+                                    manyToManySQLs.add(
+                                        String.format(
+                                            "UPDATE %s_%s SET %s_id = %s WHERE %s_id = %s AND %s_id = %s",
+                                            tableName,
+                                            manyToManyAnnotation
+                                                .references()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            manyToManyAnnotation
+                                                .model()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            id,
+                                            this
+                                                .getClass()
+                                                .getSimpleName()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            this.id,
+                                            manyToManyAnnotation
+                                                .model()
+                                                .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
+                                                .toLowerCase(),
+                                            id
+                                        )
+                                    );
+                                }
                             }
                         }
                     } else if (field.getType().getSuperclass() != null && field.getType().getSuperclass()
@@ -607,7 +644,7 @@ public class Model implements Comparable<Model>, Serializable {
             
             for (String manyToManySQL : manyToManySQLs) {
                 // System.out.println(manyToManySQL);
-                this.connection.prepareStatement(sql).execute();
+                this.connection.prepareStatement(manyToManySQL).execute();
             }
             
             if (!this.connection.getAutoCommit() ) {

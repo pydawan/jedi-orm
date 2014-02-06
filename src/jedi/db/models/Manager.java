@@ -90,7 +90,7 @@ public class Manager {
      * 
      * @return QuerySet
      */
-    public <T extends Model> QuerySet<T> all(Class<T> model_class) {
+    public <T extends Model> QuerySet<T> all(Class<T> modelClass) {
         QuerySet<T> querySet = null;
 
         if (this.connection != null) {

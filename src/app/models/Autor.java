@@ -89,7 +89,7 @@ public class Autor extends Model {
     }
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet livroSet() {
+    public jedi.db.models.QuerySet getLivroSet() {
         return Livro.objects.getSet(Autor.class, this.id);
     }
 }

@@ -78,7 +78,7 @@ public class Country extends Model {
     }
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet stateSet() {
+    public jedi.db.models.QuerySet getStateSet() {
         return State.objects.getSet(Country.class, this.id);
     }
 }

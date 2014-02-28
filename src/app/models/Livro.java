@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/02/15
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -33,7 +33,7 @@ public class Livro extends Model {
     // Attributes
     private static final long serialVersionUID = 9076408430303339094L;
 
-    @CharField(max_length=30, required=true, unique=true, comment="Esse campo armazena o nome do livro.")
+    @CharField(max_length=100, required=true, unique=true, comment="Esse campo armazena o nome do livro.")
     private String titulo;
 
     @ManyToManyField(model="Autor", references="autores")
@@ -80,7 +80,7 @@ public class Livro extends Model {
         return titulo;
     }
 
-    public QuerySet getAutores() {
+    public QuerySet<Autor> getAutores() {
         return autores;
     }
 

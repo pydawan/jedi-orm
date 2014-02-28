@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/02/16
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -21,6 +21,7 @@ import java.util.Date;
 
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DateField;
+import jedi.db.annotations.fields.EmailField;
 import jedi.db.annotations.fields.IntegerField;
 import jedi.db.models.Manager;
 import jedi.db.models.Model;
@@ -35,17 +36,11 @@ public class Pessoa extends Model {
     @IntegerField
     private int idade;
 
-    @CharField(max_length=14, required=false)
-    private String cpf;
-
-    @CharField(max_length=10, required=false)
-    private String rg;
-
-    @CharField(max_length=1)
-    private String tipoPessoa;
-
     @DateField(auto_now=true, auto_now_add=true, comment="Data do aniversário")
     private Date dataNascimento;
+    
+    @EmailField
+    private String email;
 
     public static Manager objects = new Manager(Pessoa.class);
 
@@ -56,31 +51,23 @@ public class Pessoa extends Model {
         this.id = id;
         this.nome = nome;
         this.idade = idade;
-        this.tipoPessoa = tipoPessoa;
     }
 
     public Pessoa(String nome, int idade, String tipoPessoa) {
         this.nome = nome;
         this.idade = idade;
-        this.tipoPessoa = tipoPessoa;
     }
 
     public Pessoa(int id, String nome, int idade, String cpf, String rg, String tipoPessoa, Date dataNascimento) {
         this.id = id;
         this.nome = nome;
         this.idade = idade;
-        this.cpf = cpf;
-        this.rg = rg;
-        this.tipoPessoa = tipoPessoa;
         this.dataNascimento = dataNascimento;
     }
 
     public Pessoa(String nome, int idade, String cpf, String rg, String tipoPessoa, Date dataNascimento) {
         this.nome = nome;
         this.idade = idade;
-        this.cpf = cpf;
-        this.rg = rg;
-        this.tipoPessoa = tipoPessoa;
         this.dataNascimento = dataNascimento;
     }
 
@@ -93,20 +80,12 @@ public class Pessoa extends Model {
         return idade;
     }
 
-    public String getCpf() {
-        return cpf;
-    }
-
-    public String getRg() {
-        return rg;
-    }
-
-    public String getTipoPessoa() {
-        return tipoPessoa;
-    }
-
     public Date getDataNascimento() {
         return dataNascimento;
+    }
+    
+    public String getEmail() {
+    	return email;
     }
 
     // Setters
@@ -118,20 +97,15 @@ public class Pessoa extends Model {
         this.idade = idade;
     }
 
-    public void setCpf(String cpf) {
-        this.cpf = cpf;
-    }
-
-    public void setRg(String rg) {
-        this.rg = rg;
-    }
-
-    public void setTipoPessoa(String tipoPessoa) {
-        this.tipoPessoa = tipoPessoa;
-    }
-
     public void setDataNascimento(Date dataNascimento) {
         this.dataNascimento = dataNascimento;
     }
+    
+    public void setEmail(String email) {
+    	this.email = email;
+    }
 
+    public PessoaFisica getPessoaFisica() {
+        return PessoaFisica.objects.get("pessoa_id", this.id);
+    }
 }

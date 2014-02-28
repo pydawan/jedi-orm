@@ -37,8 +37,10 @@ public class State extends Model {
     private String capital;
 
     @ForeignKeyField(model="Country", 
-        constraint_name="fk_states_countries", references="countries", 
-        on_delete=Models.CASCADE, on_update=Models.CASCADE)
+        constraint_name="fk_states_countries", 
+        references="countries", 
+        on_delete=Models.CASCADE, 
+        on_update=Models.CASCADE)
     private Country country;
 
     @CharField(max_length=1, default_value="A", comment="Status (A - Active / I - Inactive)")
@@ -105,10 +107,10 @@ public class State extends Model {
     
     public void setStatus(String status) {
         this.status = status;
-    }
+    }  
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet publisherSet() {
+    public jedi.db.models.QuerySet getPublisherSet() {
         return Publisher.objects.getSet(State.class, this.id);
     }
 }

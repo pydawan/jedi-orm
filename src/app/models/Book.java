@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/28
+ * Date: 2014/02/20
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -41,7 +41,7 @@ public class Book extends Model {
     private QuerySet<Author> authors;
 
     @ForeignKeyField(model="Publisher", 
-            constraint_name="fk_books_publishers", 
+            constraint_name="fk_books_publishers",
             references="publishers", 
             on_delete=Models.CASCADE, 
             on_update=Models.CASCADE)
@@ -53,9 +53,13 @@ public class Book extends Model {
     public static Manager objects = new Manager(Book.class);
 
     // Constructors
-    public Book() {}
+    public Book() {
+    	authors = new QuerySet<Author>();
+    	publisher = new Publisher();
+    }
 
     public Book(String title, QuerySet<Author> authors, String publicationDate) {
+    	this();
         this.title = title;
         this.authors = authors;
         this.publicationDate = publicationDate;

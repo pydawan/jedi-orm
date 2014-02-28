@@ -78,7 +78,7 @@ public class Publisher extends Model {
     }
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet bookSet() {
+    public jedi.db.models.QuerySet getBookSet() {
         return Book.objects.getSet(Publisher.class, this.id);
     }
 }

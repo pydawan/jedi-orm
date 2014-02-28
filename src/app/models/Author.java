@@ -76,7 +76,7 @@ public class Author extends Model {
     }
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet bookSet() {
+    public jedi.db.models.QuerySet getBookSet() {
         return Book.objects.getSet(Author.class, this.id);
     }
 }

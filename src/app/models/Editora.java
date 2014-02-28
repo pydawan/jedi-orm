@@ -34,7 +34,7 @@ public class Editora extends Model {
     private String endereco;
 
     @ForeignKeyField(model="Uf", constraint_name="fk_editoras_ufs", references="ufs", on_delete=Models.CASCADE)
-    private State uf;
+    private Uf uf;
 
     public static Manager objects = new Manager(Editora.class);
 
@@ -51,20 +51,20 @@ public class Editora extends Model {
 
     public Editora(String nome, Model uf) {
         this.nome = nome;
-        this.uf = (State) uf;
+        this.uf = (Uf) uf;
     }
 
     public Editora(String nome, String endereco, Model uf) {
         this.nome = nome;
         this.endereco = endereco;
-        this.uf = (State) uf;
+        this.uf = (Uf) uf;
     }
 
     public Editora(int id, String nome, String endereco, Model uf) {
         this.id = id;
         this.nome = nome;
         this.endereco = endereco;
-        this.uf = (State) uf;
+        this.uf = (Uf) uf;
     }
 
     // Getters
@@ -76,7 +76,7 @@ public class Editora extends Model {
         return endereco;
     }
 
-    public State getUf() {
+    public Uf getUf() {
         return uf;
     }
 
@@ -90,11 +90,11 @@ public class Editora extends Model {
     }
 
     public void setUf(Model uf) {
-        this.uf = (State) uf;
+        this.uf = (Uf) uf;
     }
 
     @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet livroSet() {
+    public jedi.db.models.QuerySet getLivroSet() {
         return Livro.objects.getSet(Editora.class, this.id);
     }
 }

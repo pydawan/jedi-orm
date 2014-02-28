@@ -31,16 +31,24 @@ public class JediORM {
      */
     public static void main(String[] args) {
         try {
+        	JediORMEngine.DEBUG = true;
+        	JediORMEngine.WEB_APP = false;
             if (args.length > 0 && !args[0].trim().equals("syncdb")) {
-                JediORMEngine.APP_ROOT_DIR = args[0];
-                JediORMEngine.APP_DB_CONFIG = String.format("%s%sconfig%sdatabase.properties", 
-                        JediORMEngine.APP_ROOT_DIR, File.separator, File.separator);
+                JediORMEngine.APP_ROOT_DIR = args[0];                
             } else {
                 JediORMEngine.APP_ROOT_DIR = System.getProperty("user.dir");
-                JediORMEngine.APP_DB_CONFIG = String.format("%s%sdatabase.properties", 
+            }
+            if (JediORMEngine.WEB_APP) {              
+            	JediORMEngine.APP_SRC_DIR = String.format("%s/web/WEB-INF/src", 
+            			JediORMEngine.APP_ROOT_DIR, File.separator);
+            	JediORMEngine.APP_DB_CONFIG_FILE = String.format("%s/web/WEB-INF/database.properties", 
+                        JediORMEngine.APP_ROOT_DIR, File.separator, File.separator);
+            } else {
+            	JediORMEngine.APP_SRC_DIR = String.format("%s%ssrc", 
+            			JediORMEngine.APP_ROOT_DIR, File.separator);
+            	JediORMEngine.APP_DB_CONFIG_FILE = String.format("%s%sdatabase.properties", 
                         JediORMEngine.APP_ROOT_DIR, File.separator);
             }
-            JediORMEngine.APP_SRC_DIR = String.format("%s%ssrc", JediORMEngine.APP_ROOT_DIR, File.separator);
             JediORMEngine.syncdb(JediORMEngine.APP_SRC_DIR);
         } catch (Exception e) {
             e.printStackTrace();

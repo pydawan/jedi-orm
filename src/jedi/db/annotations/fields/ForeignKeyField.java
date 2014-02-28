@@ -33,6 +33,7 @@ public @interface ForeignKeyField {
     public String references();
     public String referenced_column() default "";
     public String comment() default "";
+    public boolean unique() default false;
     public Models on_delete() default Models.CASCADE;
     public Models on_update() default Models.CASCADE;
 }

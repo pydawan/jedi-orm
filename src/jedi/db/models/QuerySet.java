@@ -49,8 +49,7 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     private int offset = 0;
     private transient boolean isPersited;
 
-    public QuerySet() {
-    }
+    public QuerySet() {}
 
     public QuerySet(Class<T> entity) {
         this.entity = entity;
@@ -1038,4 +1037,10 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
         }
         return obj;
     }
+    
+    public QuerySet<T> create(String... list) {
+    	Manager objects = new Manager(this.entity);
+    	this.add((T)objects.create(list));
+    	return this;
+    }   
 }

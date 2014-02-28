@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/30
+ * Date: 2014/02/15
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -17,19 +17,29 @@
 
 package jedi.tests.unittests;
 
+import jedi.db.engine.JediORMEngine;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import app.models.Publisher;
 import app.models.Country;
+import app.models.Publisher;
 import app.models.State;
 
 public class PublisherTest {
+	
+	@BeforeClass
+	public static void testSetup() {
+		JediORMEngine.FOREIGN_KEY_CHECKS = false;
+		JediORMEngine.flush();
+	}
 
     @AfterClass
     public static void testCleanup() {
-        Country.objects.all().delete();
+        //Country.objects.all().delete();
+    	JediORMEngine.droptables();
     }
 
     @Test

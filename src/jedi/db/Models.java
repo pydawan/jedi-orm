@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/02/20
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -29,13 +29,13 @@ public enum Models {
     SET_DEFAULT("SET DEFAULT"),
     DO_NOTHING("");
 
-    private final String valor;
+    private final String value;
 
-    private Models(String valor) {
-        this.valor = valor;
+    private Models(String value) {
+        this.value = value;
     }
 
-    public String getValor() {
-        return valor;
+    public String getValue() {
+        return value;
     }
 }

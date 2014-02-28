@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/29
+ * Date: 2014/02/15
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -17,19 +17,29 @@
 
 package jedi.tests.unittests;
 
+import jedi.db.engine.JediORMEngine;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import app.models.Author;
 
 public class AuthorTest {
+	
+	@BeforeClass
+	public static void testSetup() {
+		JediORMEngine.FOREIGN_KEY_CHECKS = false;
+		JediORMEngine.flush();
+	}
 
     @AfterClass
     public static void testCleanup() {
-        for (Author author : Author.objects.<Author> all()) {
-            author.delete();
-        }
+//        for (Author author : Author.objects.<Author> all()) {
+//            author.delete();
+//        }
+    	JediORMEngine.droptables();
     }
 
     @Test
@@ -77,5 +87,16 @@ public class AuthorTest {
         expectedAuthor.save();
         Author obtainedAuthor = Author.objects.get("email", "jrrtolkien@gmail.com");
         Assert.assertTrue(expectedAuthor.getLastName().equals(obtainedAuthor.getLastName()));
+    }
+    
+    @Test
+    public void testFilter() {
+    	Author authorExpected = new Author();
+    	authorExpected.setFirstName("Thiago");
+    	authorExpected.setLastName("Monteiro");
+    	authorExpected.setEmail("thiago.amm.agr@gmail.com");
+    	authorExpected.save();
+    	Author authorObtained = Author.objects.<Author>filter("firstName='Thiago'").first();
+    	Assert.assertEquals(authorExpected.getFirstName(), authorObtained.getFirstName());
     }
 }

@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/31
+ * Date: 2014/02/19
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -17,10 +17,12 @@
 
 package jedi.tests.unittests;
 
+import jedi.db.engine.JediORMEngine;
 import jedi.db.models.QuerySet;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
 import app.models.Author;
@@ -30,12 +32,16 @@ import app.models.Publisher;
 import app.models.State;
 
 public class BookTest {
+	
+	@BeforeClass
+	public static void testSetup() {
+		JediORMEngine.FOREIGN_KEY_CHECKS = false;
+		JediORMEngine.flush();
+	}
 
     @AfterClass
-    public static void cleanUp() {
-        for (Book book : Book.objects.<Book>all()) {
-            book.delete();
-        }
+    public static void testCleanUp() {
+    	JediORMEngine.droptables();
     }
     
     @Test
@@ -91,7 +97,21 @@ public class BookTest {
         expectedBook.getAuthors().add(new Author("Thiago", "Monteiro", "thiagomonteiro@gmail.com"));
         expectedBook.setPublisher(new Publisher("McGraw-Hill", State.objects.get("acronym", "NY").as(State.class)));
         expectedBook.save();
-        Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");
+        Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");        
         Assert.assertEquals(expectedBook, obtainedBook);
+    }
+    
+    @Test
+    public void testFilter() {
+    	Book expectedBook = new Book();
+        expectedBook.setTitle("Voina i Mir");
+        expectedBook.setPublicationDate("10/10/1865");        
+        expectedBook.setPublisher(new Publisher("Lenin Publisher", new State("Moscou", "MO", new Country("Russia", "RU"))));
+        QuerySet<Author> authors = new QuerySet<Author>();
+        authors.add(new Author("Lev", "Tolstoy", "tolstoy@yandex.ru"));
+        expectedBook.setAuthors(authors);
+        expectedBook.save();
+        Book obtainedBook = Book.objects.<Book>filter("title='Voina i Mir'").first();        
+        Assert.assertEquals(expectedBook.getTitle(), obtainedBook.getTitle());
     }
 }

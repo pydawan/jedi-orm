@@ -22,12 +22,19 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+import jedi.db.Models;
+
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ManyToManyField {
-    public String model();
+	public String model() default "";
     public String column_name() default "";
-    public String references();
+    public String references() default "";
     public String referenced_column() default "";
     public String comment() default "";
+    public String through() default "";
+    public boolean self() default false;
+    public boolean symmetrical() default false;
+    public Models on_delete() default Models.CASCADE;
+    public Models on_update() default Models.CASCADE;
 }

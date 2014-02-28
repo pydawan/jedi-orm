@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/28
+ * Date: 2014/02/15
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -17,6 +17,7 @@
 
 package jedi.tests.unittests;
 
+import jedi.db.engine.JediORMEngine;
 import jedi.db.models.QuerySet;
 
 import org.junit.AfterClass;
@@ -28,13 +29,10 @@ import app.models.Country;
 
 public class CountryTest {
 
-    @AfterClass
-    public static void testCleanup() {
-        Country.objects.all().delete();
-    }
-
-    @BeforeClass
+	@BeforeClass
     public static void testSetup() {
+    	JediORMEngine.FOREIGN_KEY_CHECKS = false;
+    	JediORMEngine.flush();
         QuerySet<Country> countries = new QuerySet<Country>();
         // Sets the QuerySet model class.
         countries.entity(Country.class);
@@ -282,6 +280,12 @@ public class CountryTest {
         countries.add(new Country("Zimbabwe", "ZW"));
         countries.save();
     }
+	
+    @AfterClass
+    public static void testCleanup() {
+        // Country.objects.all().delete();
+    	JediORMEngine.droptables();
+    }
 
     @Test
     public void testInsert() {
@@ -324,10 +328,10 @@ public class CountryTest {
         // Expected.
         Country expectedCountry = new Country();
         expectedCountry.setName("United States of America");
-        expectedCountry.setAcronym("UZ");
+        expectedCountry.setAcronym("UU");
         expectedCountry.save();
         // Obtained.
-        Country obtainedCountry = Country.objects.get("acronym", "UZ");
+        Country obtainedCountry = Country.objects.get("acronym", "UU");
         // Assertion.
         Assert.assertEquals(expectedCountry.getId(), obtainedCountry.getId());
     }
@@ -335,7 +339,7 @@ public class CountryTest {
     @Test
     public void testSaveUpdate() {
         // Expected.
-        Country expectedCountry = Country.objects.get("acronym", "UZ");
+        Country expectedCountry = Country.objects.get("acronym", "UU");
         expectedCountry.setAcronym("US");
         expectedCountry.save();
         // Obtained.

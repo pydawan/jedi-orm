@@ -74,10 +74,10 @@ public class ConnectionFactory {
     public static Connection getConnection() {
         Connection connection = null;
 
-        if (JediORMEngine.APP_DB_CONFIG != null && (new File(JediORMEngine.APP_DB_CONFIG)).exists()) {
+        if (JediORMEngine.APP_DB_CONFIG_FILE != null && (new File(JediORMEngine.APP_DB_CONFIG_FILE)).exists()) {
             try {
                 Properties databaseSettings = new Properties();
-                FileInputStream fileInputStream = new FileInputStream(JediORMEngine.APP_DB_CONFIG);
+                FileInputStream fileInputStream = new FileInputStream(JediORMEngine.APP_DB_CONFIG_FILE);
                 databaseSettings.load(fileInputStream);
 
                 String databaseEngine = databaseSettings.getProperty("database.engine") != null

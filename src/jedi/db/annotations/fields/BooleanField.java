@@ -24,9 +24,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BooleanField {
-    public boolean required() default true;
+public @interface BooleanField {    
     public boolean unique() default false;
-    public boolean default_value() default true;
+    public boolean default_value() default false;
     public String comment() default "";
 }

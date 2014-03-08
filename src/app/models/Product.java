@@ -21,8 +21,8 @@ import java.math.BigDecimal;
 
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DecimalField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Product extends Model {
     // Attributes
@@ -31,7 +31,7 @@ public class Product extends Model {
     @CharField(max_length=30)
     private String name;
 
-    @DecimalField(precision=4, scale=2, unique=true)
+    @DecimalField(precision=7, scale=2, unique=true)
     private BigDecimal price;
 
     public static Manager objects = new Manager(Product.class);
@@ -58,7 +58,7 @@ public class Product extends Model {
         this.name = name;
     }
 
-    public void setPrice(BigDecimal price) {
-        this.price = price;
+    public void setPrice(double price) {
+        this.price = new BigDecimal(price);
     }
 }

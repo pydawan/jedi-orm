@@ -21,8 +21,8 @@ import java.math.BigDecimal;
 
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DecimalField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Produto extends Model {
     // Attributes

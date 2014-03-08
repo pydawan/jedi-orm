@@ -19,9 +19,9 @@ package app.models;
 
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
-import jedi.db.models.QuerySet;
+import jedi.db.models.manager.Manager;
+import jedi.db.models.query.QuerySet;
 
 @Table(name="people")
 public class Person extends Model {
@@ -40,17 +40,15 @@ public class Person extends Model {
 		this.name = name;
 	}
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getGroupSet() {
-    	QuerySet<Membership> memberships = Membership.objects.getSet(Person.class, this.id);    	
-    	QuerySet<Group> groups = new QuerySet<Group>();
-    	Group group = null;
-    	for (Membership membership : memberships) {
-    		group = Group.objects.<Group>get("id", membership.getGroup().getId());
-    		// ManyToManyField.
-    		group.getMembers();
-    		groups.add(group);
-    	}
-    	return groups;
+    public QuerySet<Group> getGroupSet() {
+        QuerySet<Membership> memberships = Membership.objects.getSet(Person.class, this.id);
+        QuerySet<Group> groups = new QuerySet<Group>();
+        Group group = null;
+        for (Membership membership : memberships) {
+            group = Group.objects.<Group>get("id", membership.getGroup().getId());
+            group.getMembers();
+            groups.add(group);
+        }
+        return groups;
     }
 }

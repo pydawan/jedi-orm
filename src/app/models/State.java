@@ -17,11 +17,10 @@
 
 package app.models;
 
-import jedi.db.Models;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class State extends Model {
     // Attributes
@@ -36,11 +35,7 @@ public class State extends Model {
     @CharField(max_length=50, unique=true, required=false)
     private String capital;
 
-    @ForeignKeyField(model="Country", 
-        constraint_name="fk_states_countries", 
-        references="countries", 
-        on_delete=Models.CASCADE, 
-        on_update=Models.CASCADE)
+    @ForeignKeyField
     private Country country;
 
     @CharField(max_length=1, default_value="A", comment="Status (A - Active / I - Inactive)")
@@ -109,8 +104,7 @@ public class State extends Model {
         this.status = status;
     }  
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getPublisherSet() {
+    public jedi.db.models.query.QuerySet<Publisher> getPublisherSet() {
         return Publisher.objects.getSet(State.class, this.id);
     }
 }

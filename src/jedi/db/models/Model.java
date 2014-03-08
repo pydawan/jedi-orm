@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/02/27
+ * Date: 2014/03/08
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -19,6 +19,7 @@ package jedi.db.models;
 
 import java.io.Serializable;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -30,13 +31,17 @@ import java.util.List;
 
 import jedi.db.ConnectionFactory;
 import jedi.db.annotations.Table;
+import jedi.db.annotations.fields.BooleanField;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DateField;
 import jedi.db.annotations.fields.DateTimeField;
 import jedi.db.annotations.fields.ForeignKeyField;
 import jedi.db.annotations.fields.ManyToManyField;
 import jedi.db.annotations.fields.OneToOneField;
+import jedi.db.annotations.fields.TimeField;
 import jedi.db.engine.JediORMEngine;
+import jedi.db.models.manager.Manager;
+import jedi.db.models.query.QuerySet;
 import jedi.db.util.TableUtil;
 
 /**
@@ -117,7 +122,6 @@ public class Model implements Comparable<Model>, Serializable {
 		if (field != null && !field.trim().isEmpty()) {
 			try {
 				Field f = null;
-
 				if (field.trim().equalsIgnoreCase("id")) {
 					f = this.getClass().getSuperclass().getDeclaredField(field);
 				} else {
@@ -204,14 +208,18 @@ public class Model implements Comparable<Model>, Serializable {
 			String sql = "INSERT INTO";
 			String columns = "";
 			String values = "";
+			String references = null;
+			String manyToManySQLFormatter = "INSERT INTO %s_%s (%s_id, %s_id) VALUES (%d,";
+			List<String> manyToManySQLs = new ArrayList<String>();
+			Manager associatedModelManager = null;
 			OneToOneField oneToOneFieldAnnotation = null;
 			ForeignKeyField foreignKeyFieldAnnotation = null;
 			ManyToManyField manyToManyFieldAnnotation = null;
 			DateField dateFieldAnnotation = null;
+			TimeField timeFieldAnnotation = null;
 			DateTimeField dateTimeFieldAnnotation = null;
-			String manyToManySQLFormatter = "INSERT INTO %s_%s (%s_id, %s_id) VALUES (%d,";
-			List<String> manyToManySQLs = new ArrayList<String>();
-			Manager associatedModelManager = null;
+			CharField charFieldAnnotation = null;
+			BooleanField booleanFieldAnnotation = null;
 			for (Field field : this.getClass().getDeclaredFields()) {
 				field.setAccessible(true);
 				if (field.getName().equals("serialVersionUID"))
@@ -222,36 +230,37 @@ public class Model implements Comparable<Model>, Serializable {
 				oneToOneFieldAnnotation = field.getAnnotation(OneToOneField.class);
 				manyToManyFieldAnnotation = field.getAnnotation(ManyToManyField.class);
 				dateFieldAnnotation = field.getAnnotation(DateField.class);
+				timeFieldAnnotation = field.getAnnotation(TimeField.class);
 				dateTimeFieldAnnotation = field.getAnnotation(DateTimeField.class);
+				charFieldAnnotation = field.getAnnotation(CharField.class);
+				booleanFieldAnnotation = field.getAnnotation(BooleanField.class);
 				// Treats the columns.
 				if (field.getType().getSuperclass() != null && 
 					field.getType().getSuperclass().getSimpleName().equals("Model")) {
 					if (foreignKeyFieldAnnotation != null) {
-						if (!foreignKeyFieldAnnotation.references().trim().isEmpty()) {
-							columns += String.format("%s_id, ", getColumnName(field));
-						}
+						columns += String.format("%s_id, ", getColumnName(field));
 					} else if (oneToOneFieldAnnotation != null) {
-						if (!oneToOneFieldAnnotation.references().trim().isEmpty()) {
-							columns += String.format("%s_id, ", getColumnName(field));
-						}						
+						columns += String.format("%s_id, ", getColumnName(field));							
 					} else {
 						
 					}
-				} else if (field.getType().getName().equals("java.util.List") 
-						|| field.getType().getName().equals("jedi.db.models.QuerySet")) {
+				} else if (field.getType().getName().equals("java.util.List") || 
+						   field.getType().getName().equals("jedi.db.models.query.QuerySet")) {
 					// Doesn't creates the field here.
 				} else {
 					columns += String.format("%s, ", getColumnName(field.getName()));
 				}
 				// Treats the values.
-				if (field.getType().toString().endsWith("String")) {
+				if (field.getType().getSimpleName().equalsIgnoreCase("boolean")) {
+					values += String.format("%s, ", field.get(this).equals(Boolean.FALSE) ? 0 : 1);
+				} else if (field.getType().toString().endsWith("String")) {
 					if (field.get(this) != null) {
 						// Substituindo ' por \' para evitar erro de sintaxe no SQL.
 						values += String.format("'%s', ", ((String) field.get(this)).replaceAll("'", "\\\\'"));
 					} else {
-						CharField charFieldAnnotation = field.getAnnotation(CharField.class);
 						if (charFieldAnnotation != null) {
 							if (charFieldAnnotation.default_value().trim().equals("\\0")) {
+								// Removes the column.
 								columns = columns.replace(String.format("%s, ", getColumnName(field.getName())), "");
 							} else {
 								values += String.format("'%s', ", charFieldAnnotation.default_value().replaceAll("'", "\\\\'"));
@@ -261,8 +270,9 @@ public class Model implements Comparable<Model>, Serializable {
 						}
 					}
 				} else if (field.getType().toString().endsWith("Date") || 
-						   field.getType().toString().endsWith("PyDate")) {
-					Date date = (Date) field.get(this);					
+						   field.getType().toString().endsWith("PyDate") || 
+						   field.getType().toString().endsWith("DateTime")) {
+					Date date = (Date) field.get(this);
 					if (date != null) {
 						if (dateFieldAnnotation != null) {
 							values += String.format(
@@ -270,6 +280,13 @@ public class Model implements Comparable<Model>, Serializable {
 								date.getYear() + 1900, 
 								date.getMonth() + 1,
 								date.getDate() 
+							);
+						} else if (timeFieldAnnotation != null) { 
+							values += String.format(
+								"'%02d:%02d:%02d', ",
+								date.getHours(),
+								date.getMinutes(), 
+								date.getSeconds()
 							);
 						} else if (dateTimeFieldAnnotation != null) {
 							values += String.format(
@@ -284,10 +301,10 @@ public class Model implements Comparable<Model>, Serializable {
 						} else {
 							
 						}						
-					} else {						
+					} else {
 						if (dateFieldAnnotation != null) {
 							if (dateFieldAnnotation.default_value().trim().equals("")) {
-								if (dateFieldAnnotation.auto_now()) {
+								if (dateFieldAnnotation.auto_now() || dateTimeFieldAnnotation.auto_now_add()) {
 									SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 									values += String.format("'%s', ", sdf.format(new Date()));
 								} else {
@@ -299,6 +316,24 @@ public class Model implements Comparable<Model>, Serializable {
 										.default_value().trim()
 										.equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", 
 									dateFieldAnnotation
+										.default_value()
+										.trim()
+								);
+							}
+						} else if (timeFieldAnnotation != null) { 
+							if (timeFieldAnnotation.default_value().trim().equals("")) {
+								if (timeFieldAnnotation.auto_now_add() || timeFieldAnnotation.auto_now()) {
+									SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+									values += String.format("'%s', ", sdf.format(new Date()));
+								} else {
+									columns = columns.replace(String.format("%s, ", getColumnName(field)), "");
+								}
+							} else {
+								values += String.format(
+									timeFieldAnnotation
+										.default_value().trim()
+										.equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", 
+									timeFieldAnnotation
 										.default_value()
 										.trim()
 								);
@@ -315,17 +350,27 @@ public class Model implements Comparable<Model>, Serializable {
 							id = ((Model) field.get(this)).id;
 						}
 						values += String.format("%s, ", id);
-					} else if (field.getType().getName().equals("java.util.List") 
-							|| field.getType().getName().equals("jedi.db.models.QuerySet")) {
-						manyToManyFieldAnnotation = field.getAnnotation(ManyToManyField.class);
-						associatedModelManager = new Manager(
-							Class.forName(
-								String.format(
-									"app.models.%s", 
-									manyToManyFieldAnnotation.model()
-								)
-							)
-						);
+					} else if ((field.getType().getName().equals("java.util.List") || 
+							    field.getType().getName().equals("jedi.db.models.query.QuerySet")) &&
+							    manyToManyFieldAnnotation != null) {
+                        String model = manyToManyFieldAnnotation.model();
+                        if (model == null || model.trim().isEmpty()) {
+                        	ParameterizedType genericType = null;
+                        	if (ParameterizedType.class.isAssignableFrom(field.getGenericType().getClass())) {
+                                genericType = (ParameterizedType) field.getGenericType();
+                                Class superClazz = ((Class) (genericType.getActualTypeArguments()[0])).getSuperclass();
+                                if (superClazz == Model.class) {
+                                    Class clazz = (Class) genericType.getActualTypeArguments()[0];
+                                    model = clazz.getSimpleName();
+                                }
+                            }                                            	
+                        }
+                        references = manyToManyFieldAnnotation.references();
+                        if (references == null || references.trim().isEmpty()) {
+                        	references = TableUtil.getTableName(model);
+                        }
+                        String packageName = this.getClass().getPackage().getName();
+						associatedModelManager = new Manager(Class.forName(String.format("%s.%s", packageName, model)));
 						if (field.getType().getName().equals("java.util.List")) {
 							for (Object obj : (List) field.get(this)) {
 								((Model) obj).insert();
@@ -333,23 +378,23 @@ public class Model implements Comparable<Model>, Serializable {
 									String.format(
 										manyToManySQLFormatter,
 										tableName,
-										getColumnName(manyToManyFieldAnnotation.references()),
-										getColumnName(manyToManyFieldAnnotation.model()),
+										references,
+										getColumnName(model),
 										getColumnName(this.getClass()),
 										((Model) obj).id()
 									)
 								);
 							}
 						}
-						if (field.getType().getName().equals("jedi.db.models.QuerySet")) {
+						if (field.getType().getName().equals("jedi.db.models.query.QuerySet")) {
 							for (Object obj : (QuerySet) field.get(this)) {
-								((Model) obj).insert();
+								((Model) obj).insert();								
 								manyToManySQLs.add(
 									String.format(
 										manyToManySQLFormatter,
 										tableName,
-										getColumnName(manyToManyFieldAnnotation.references()),										
-										getColumnName(manyToManyFieldAnnotation.model()),												
+										references,										
+										getColumnName(model),												
 										getColumnName(this.getClass()),												
 										((Model) obj).id()
 									)
@@ -368,20 +413,18 @@ public class Model implements Comparable<Model>, Serializable {
 				System.out.println(sql);
 			}
 			statement = this.connection.createStatement();
-			statement.executeUpdate(sql);			
+			statement.executeUpdate(sql);
 			if (!this.connection.getAutoCommit()) {
 				this.connection.commit();
 			}
 			Manager manager = new Manager(this.getClass());
 			this.id = manager.getLastInsertedID();
-			if (manyToManyFieldAnnotation != null) {
-				for (String associatedModelSQL : manyToManySQLs) {
-					associatedModelSQL = String.format("%s %d);", associatedModelSQL, this.id());
-					if (JediORMEngine.DEBUG) {
-						System.out.println(associatedModelSQL);
-					}
-					associatedModelManager.raw(associatedModelSQL);
+			for (String associatedModelSQL : manyToManySQLs) {
+				associatedModelSQL = String.format("%s %d);", associatedModelSQL, this.id());
+				if (JediORMEngine.DEBUG) {
+					System.out.println(associatedModelSQL);
 				}
+				associatedModelManager.raw(associatedModelSQL);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -425,12 +468,15 @@ public class Model implements Comparable<Model>, Serializable {
 			}
 			String sql = "UPDATE";
 			String fieldsAndValues = "";
+			String referencedModel = null;
+			String referencedTable = null;
 			List<String> manyToManySQLs = new ArrayList<String>();
 			sql = String.format("%s %s SET", sql, this.getTableName());
 			OneToOneField oneToOneFieldAnnotation = null;
-			ForeignKeyField foreignKeyAnnotation = null;
-			ManyToManyField manyToManyAnnotation = null;
+			ForeignKeyField foreignKeyFieldAnnotation = null;
+			ManyToManyField manyToManyFieldAnnotation = null;
 			DateField dateFieldAnnotation = null;
+			TimeField timeFieldAnnotation = null;
 			DateTimeField dateTimeFieldAnnotation = null;
 			if (args.length == 0) {
 				for (Field field : this.getClass().getDeclaredFields()) {
@@ -440,23 +486,38 @@ public class Model implements Comparable<Model>, Serializable {
 					if (field.getName().equals("objects"))
 						continue;
 					oneToOneFieldAnnotation = field.getAnnotation(OneToOneField.class);
-					foreignKeyAnnotation = field.getAnnotation(ForeignKeyField.class);
-					manyToManyAnnotation = field.getAnnotation(ManyToManyField.class);
+					foreignKeyFieldAnnotation = field.getAnnotation(ForeignKeyField.class);
+					manyToManyFieldAnnotation = field.getAnnotation(ManyToManyField.class);
 					dateFieldAnnotation = field.getAnnotation(DateField.class);
+					timeFieldAnnotation = field.getAnnotation(TimeField.class);
 					dateTimeFieldAnnotation = field.getAnnotation(DateTimeField.class);
 					String fieldName = field.getName();
 					String columnName = getColumnName(fieldName);
-					if (field.getType().getName().equals("jedi.db.models.QuerySet") || 
+					if (field.getType().getName().equals("jedi.db.models.query.QuerySet") || 
 						field.getType().getName().equals("java.util.List")) {
-						if (manyToManyAnnotation != null && 
-							!manyToManyAnnotation.model().isEmpty() && 
-							!manyToManyAnnotation.references().isEmpty()) {
+						if (manyToManyFieldAnnotation != null) {
+							referencedModel = manyToManyFieldAnnotation.model();
+	                        if (referencedModel == null || referencedModel.trim().isEmpty()) {
+	                        	ParameterizedType genericType = null;
+	                        	if (ParameterizedType.class.isAssignableFrom(field.getGenericType().getClass())) {
+	                                genericType = (ParameterizedType) field.getGenericType();
+	                                Class superClazz = ((Class) (genericType.getActualTypeArguments()[0])).getSuperclass();
+	                                if (superClazz == Model.class) {
+	                                    Class clazz = (Class) genericType.getActualTypeArguments()[0];
+	                                    referencedModel = clazz.getSimpleName();
+	                                }
+	                            }                                            	
+	                        }
+	                        referencedTable = manyToManyFieldAnnotation.references();
+	                        if (referencedTable == null || referencedTable.trim().isEmpty()) {
+	                        	referencedTable = TableUtil.getTableName(referencedModel);
+	                        }
 							boolean persistedModel = false;
 							for (Model model : (List<Model>) field.get(this)) {
 								persistedModel = model.isPersisted();
 								model.save();
 								Object id = model.id;
-								String intermediateModel = manyToManyAnnotation.through();
+								String intermediateModel = manyToManyFieldAnnotation.through();
 								if (intermediateModel == null || intermediateModel.trim().isEmpty()) {
 									// Checks if the model was persisted.
 									if (!persistedModel) {
@@ -464,9 +525,9 @@ public class Model implements Comparable<Model>, Serializable {
 											String.format(
 												"INSERT INTO %s_%s (%s_id, %s_id) VALUES (%s, %s)",
 												tableName,
-												getColumnName(manyToManyAnnotation.references()),
+												getColumnName(referencedTable),
 												getColumnName(this.getClass()),
-												getColumnName(manyToManyAnnotation.model()),
+												getColumnName(referencedModel),
 												this.id, 
 												id
 											)
@@ -476,12 +537,12 @@ public class Model implements Comparable<Model>, Serializable {
 											String.format(
 												"UPDATE %s_%s SET %s_id = %s WHERE %s_id = %s AND %s_id = %s", 
 												tableName, 
-												getColumnName(manyToManyAnnotation.references()), 
-												getColumnName(manyToManyAnnotation.model()),
+												getColumnName(referencedTable), 
+												getColumnName(referencedModel),
 												id, 
 												getColumnName(this.getClass()),
 												this.id,
-												getColumnName(manyToManyAnnotation.model()), 
+												getColumnName(referencedModel), 
 												id
 											)
 										);
@@ -493,16 +554,8 @@ public class Model implements Comparable<Model>, Serializable {
 							   field.getType().getSuperclass().getSimpleName().equals("Model")) {
 						Model model = (Model) field.get(this);
 						model.save(); // Saves the model if it not saved yet.
-						if (foreignKeyAnnotation != null) {
-							if (!foreignKeyAnnotation.references().trim().isEmpty()) {
-								fieldsAndValues += String.format("%s_id = ", columnName);
-							}
-						} else {
-							if (oneToOneFieldAnnotation != null) {
-								if (!oneToOneFieldAnnotation.references().trim().isEmpty()) {
-									fieldsAndValues += String.format("%s_id = ", columnName);
-								}
-							}
+						if (foreignKeyFieldAnnotation != null || oneToOneFieldAnnotation != null) {
+							fieldsAndValues += String.format("%s_id = ", columnName);
 						}
 					} else {
 						fieldsAndValues += String.format("%s = ", columnName);
@@ -514,33 +567,83 @@ public class Model implements Comparable<Model>, Serializable {
 							fieldsAndValues += "'', ";
 						}
 					} else if (field.getType().toString().endsWith("Date") || 
-							   field.getType().toString().endsWith("PyDate")) {
+							   field.getType().toString().endsWith("PyDate") || 
+							   field.getType().toString().endsWith("DateTime")) {
 						Date date = (Date) field.get(this);
-						if (dateFieldAnnotation != null) {
-							fieldsAndValues += String.format(
-								"'%d-%02d-%02d', ",
-								date.getYear() + 1900, 
-								date.getMonth() + 1,
-								date.getDate() 
-							);
-						} else if (dateTimeFieldAnnotation != null) {
-							fieldsAndValues += String.format(
-								"'%d-%02d-%02d %02d:%02d:%02d', ",
-								date.getYear() + 1900, 
-								date.getMonth() + 1,
-								date.getDate(), 
-								date.getHours(),
-								date.getMinutes(), 
-								date.getSeconds()
-							);
-						} else {
-							
+						if (date != null) {
+							if (dateFieldAnnotation != null) {
+								fieldsAndValues += String.format(
+									"'%d-%02d-%02d', ",
+									date.getYear() + 1900, 
+									date.getMonth() + 1,
+									date.getDate() 
+								);
+							} else if (timeFieldAnnotation != null) {
+								fieldsAndValues += String.format(
+									"'%02d:%02d:%02d', ",
+									date.getHours(),
+									date.getMinutes(), 
+									date.getSeconds()
+								);
+							} else if (dateTimeFieldAnnotation != null) {
+								fieldsAndValues += String.format(
+									"'%d-%02d-%02d %02d:%02d:%02d', ",
+									date.getYear() + 1900, 
+									date.getMonth() + 1,
+									date.getDate(), 
+									date.getHours(),
+									date.getMinutes(), 
+									date.getSeconds()
+								);
+							} else {
+								
+							}
+						} else {						
+							if (dateFieldAnnotation != null) {
+								if (dateFieldAnnotation.default_value().trim().equals("")) {
+									if (dateFieldAnnotation.auto_now() || dateTimeFieldAnnotation.auto_now_add()) {
+										SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+										fieldsAndValues += String.format("'%s', ", sdf.format(new Date()));
+									} else {
+										fieldsAndValues = fieldsAndValues.replace(String.format("%s, ", getColumnName(field)), "");
+									}
+								} else {
+									fieldsAndValues += String.format(
+										dateFieldAnnotation
+											.default_value().trim()
+											.equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", 
+										dateFieldAnnotation
+											.default_value()
+											.trim()
+									);
+								}
+							} else if (timeFieldAnnotation != null) { 
+								if (timeFieldAnnotation.default_value().trim().equals("")) {
+									if (timeFieldAnnotation.auto_now_add() || timeFieldAnnotation.auto_now()) {
+										SimpleDateFormat sdf = new SimpleDateFormat("HH:mm:ss");
+										fieldsAndValues += String.format("'%s', ", sdf.format(new Date()));
+									} else {
+										fieldsAndValues = fieldsAndValues.replace(String.format("%s, ", getColumnName(field)), "");
+									}
+								} else {
+									fieldsAndValues += String.format(
+										timeFieldAnnotation
+											.default_value().trim()
+											.equalsIgnoreCase("NULL") ? "%s, " : "'%s', ", 
+										timeFieldAnnotation
+											.default_value()
+											.trim()
+									);
+								}
+							} else {
+								fieldsAndValues += String.format("'', ", field.get(this));
+							}
 						}
 					} else {
-						if (oneToOneFieldAnnotation != null || foreignKeyAnnotation != null) {
+						if (oneToOneFieldAnnotation != null || foreignKeyFieldAnnotation != null) {
 							Object id = ((Model) field.get(this)).id;
 							fieldsAndValues += String.format("%s, ", id);
-						} else if (manyToManyAnnotation != null) {
+						} else if (manyToManyFieldAnnotation != null) {
 
 						} else {
 							fieldsAndValues += String.format("%s, ", field.get(this));
@@ -557,7 +660,7 @@ public class Model implements Comparable<Model>, Serializable {
 					String columnValue = "";
 					for (int i = 0; i < args.length; i++) {
 						fieldName = args[i].split("=")[0];
-						columnName = fieldName.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2");
+						columnName = TableUtil.getColumnName(fieldName);
 						if (fieldName.endsWith("_id")) {
 							fieldName = fieldName.replace("_id", "");
 						}
@@ -605,7 +708,7 @@ public class Model implements Comparable<Model>, Serializable {
 				System.out.println(sql + ";");
 			}
 			statement = this.connection.prepareStatement(sql);
-			statement.execute();			
+			statement.execute();
 			for (String manyToManySQL : manyToManySQLs) {
 				if (JediORMEngine.DEBUG) {
 					System.out.println(manyToManySQL);
@@ -804,7 +907,7 @@ public class Model implements Comparable<Model>, Serializable {
 						json += String.format("\n%s,", ((Model) f.get(this)).toJSON(i + 1));
 					}
 				} else if (f.getType().getName().equals("java.util.List")
-						|| f.getType().getName().equals("jedi.db.models.QuerySet")) {
+						|| f.getType().getName().equals("jedi.db.models.query.QuerySet")) {
 					String strItems = "";
 					for (Object item : (List) f.get(this)) {
 						strItems += String.format("\n%s,", ((Model) item).toJSON((i + 2)));
@@ -881,7 +984,7 @@ public class Model implements Comparable<Model>, Serializable {
 					f.getType().getSuperclass().getName().equals("jedi.db.models.Model")) {
 					xmlChildElements.append(String.format("\n%s\n", ((Model) f.get(this)).toXML(i + 1)));
 				} else if (f.getType().getName().equals("java.util.List")
-						|| f.getType().getName().equals("jedi.db.models.QuerySet")) {
+						|| f.getType().getName().equals("jedi.db.models.query.QuerySet")) {
 					String xmlChildOpenTag = "";
 					String xmlChildCloseTag = "";
 					Table tableAnnotation = null;
@@ -1010,7 +1113,7 @@ public class Model implements Comparable<Model>, Serializable {
 					f.getType().getSuperclass().getName().equals("jedi.db.models.Model")) {
 					xmlChildElements.append(String.format("%s\n", ((Model) f.get(this)).toXML(i + 1)));
 				} else if (f.getType().getName().equals("java.util.List")
-						|| f.getType().getName().equals("jedi.db.models.QuerySet")) {
+						|| f.getType().getName().equals("jedi.db.models.query.QuerySet")) {
 					String xmlChildOpenTag = "";
 					String xmlChildCloseTag = "";
 					Table tableAnnotation = null;

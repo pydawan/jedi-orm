@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/02/27
+ * Date: 2014/03/07
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -23,6 +23,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.lang.reflect.ParameterizedType;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -43,12 +44,15 @@ import jedi.db.annotations.fields.DateField;
 import jedi.db.annotations.fields.DateTimeField;
 import jedi.db.annotations.fields.DecimalField;
 import jedi.db.annotations.fields.EmailField;
+import jedi.db.annotations.fields.FloatField;
 import jedi.db.annotations.fields.ForeignKeyField;
 import jedi.db.annotations.fields.IntegerField;
 import jedi.db.annotations.fields.ManyToManyField;
 import jedi.db.annotations.fields.OneToOneField;
-import jedi.db.models.Manager;
+import jedi.db.annotations.fields.TextField;
+import jedi.db.annotations.fields.TimeField;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 import jedi.db.util.TableUtil;
 
 /**
@@ -261,10 +265,7 @@ public abstract class JediORMEngine {
                                             if (databaseEngine.equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     charFieldAnnotation.max_length(),
                                                     charFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
@@ -287,10 +288,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     charFieldAnnotation.max_length(),
                                                     charFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
@@ -308,20 +306,14 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         charFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.equalsIgnoreCase("oracle")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR2(%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     charFieldAnnotation.max_length(),
                                                     (
                                                         charFieldAnnotation.default_value() != null && 
@@ -338,20 +330,14 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         charFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.trim().equalsIgnoreCase("h2")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     charFieldAnnotation.max_length(),
                                                     charFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
@@ -368,111 +354,182 @@ public abstract class JediORMEngine {
                                             }
                                         }                                        
                                         if (fieldAnnotation instanceof EmailField) {
-                                            EmailField charFieldAnnotation = (EmailField) fieldAnnotation;                                            
+                                            EmailField emailFieldAnnotation = (EmailField) fieldAnnotation;                                            
                                             if (databaseEngine.equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
-                                                    charFieldAnnotation.max_length(),
-                                                    charFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    TableUtil.getColumnName(field),
+                                                    emailFieldAnnotation.max_length(),
+                                                    emailFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
-                                                        charFieldAnnotation.default_value() != null && 
-                                                        !charFieldAnnotation.default_value().equals("\\0") 
+                                                        emailFieldAnnotation.default_value() != null && 
+                                                        !emailFieldAnnotation.default_value().equals("\\0") 
                                                     ) ? String.format(
                                                         " DEFAULT '%s'", 
-                                                        charFieldAnnotation.default_value() 
+                                                        emailFieldAnnotation.default_value() 
                                                     ) : "",
-                                                    charFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    emailFieldAnnotation.unique() ? " UNIQUE" : "",
                                                     (
-                                                        charFieldAnnotation.comment() != null && 
-                                                        !charFieldAnnotation.comment().equals("")
+                                                        emailFieldAnnotation.comment() != null && 
+                                                        !emailFieldAnnotation.comment().equals("")
                                                     ) ? String.format(
                                                         " COMMENT '%s'", 
-                                                        charFieldAnnotation.comment() 
+                                                        emailFieldAnnotation.comment() 
                                                     ) : ""
                                                 );
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
-                                                    charFieldAnnotation.max_length(),
-                                                    charFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    TableUtil.getColumnName(field),
+                                                    emailFieldAnnotation.max_length(),
+                                                    emailFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
-                                                        charFieldAnnotation.default_value() != null && 
-                                                        !charFieldAnnotation.default_value().equals("\\0")
+                                                        emailFieldAnnotation.default_value() != null && 
+                                                        !emailFieldAnnotation.default_value().equals("\\0")
                                                     ) ? String.format(
                                                         " DEFAULT '%s'", 
-                                                        charFieldAnnotation.default_value() 
+                                                        emailFieldAnnotation.default_value() 
                                                     ) : "",
-                                                    charFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                    emailFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
-                                                if (charFieldAnnotation != null && 
-                                            		charFieldAnnotation.comment() != null && 
-                                            		!charFieldAnnotation.comment().trim().isEmpty()) {                                                    
+                                                if (emailFieldAnnotation != null && 
+                                            		emailFieldAnnotation.comment() != null && 
+                                            		!emailFieldAnnotation.comment().trim().isEmpty()) {                                                    
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
-                                                        charFieldAnnotation.comment()
+                                                        TableUtil.getColumnName(field),
+                                                        emailFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.equalsIgnoreCase("oracle")) {
                                                 sql += String.format(
                                                     "    %s VARCHAR2(%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
-                                                    charFieldAnnotation.max_length(),
+                                                    TableUtil.getColumnName(field),
+                                                    emailFieldAnnotation.max_length(),
                                                     (
-                                                        charFieldAnnotation.default_value() != null && 
-                                                        !charFieldAnnotation.default_value().equals("\\0")
+                                                        emailFieldAnnotation.default_value() != null && 
+                                                        !emailFieldAnnotation.default_value().equals("\\0")
                                                     ) ? String.format(
                                                         " DEFAULT '%s'", 
-                                                        charFieldAnnotation.default_value() 
+                                                        emailFieldAnnotation.default_value() 
                                                     ) : "",
-                                                    charFieldAnnotation.required() ? " NOT NULL" : "",
-                                                    charFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                    emailFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    emailFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
-                                                if (charFieldAnnotation != null && 
-                                            		charFieldAnnotation.comment() != null && 
-                                            		!charFieldAnnotation.comment().trim().isEmpty()) {
+                                                if (emailFieldAnnotation != null && 
+                                            		emailFieldAnnotation.comment() != null && 
+                                            		!emailFieldAnnotation.comment().trim().isEmpty()) {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
-                                                        charFieldAnnotation.comment()
+                                                        TableUtil.getColumnName(field),
+                                                        emailFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.trim().equalsIgnoreCase("h2") ) {
                                                 sql += String.format(
                                                     "    %s VARCHAR(%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
-                                                    charFieldAnnotation.max_length(),
-                                                    charFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    TableUtil.getColumnName(field),
+                                                    emailFieldAnnotation.max_length(),
+                                                    emailFieldAnnotation.required() ? " NOT NULL" : "",
                                                     (
-                                                        charFieldAnnotation.default_value() != null && 
-                                                        !charFieldAnnotation.default_value().equals("\\0")
+                                                        emailFieldAnnotation.default_value() != null && 
+                                                        !emailFieldAnnotation.default_value().equals("\\0")
                                                     ) ? String.format(
                                                         " DEFAULT '%s'", 
-                                                        charFieldAnnotation.default_value() 
+                                                        emailFieldAnnotation.default_value() 
                                                     ) : "",
-                                                    charFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                    emailFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                            } else {
+
+                                            }
+                                        }
+                                        if (fieldAnnotation instanceof TextField) {
+                                            TextField textFieldAnnotation = (TextField) fieldAnnotation;                                            
+                                            if (databaseEngine.equalsIgnoreCase("mysql")) {
+                                                sql += String.format(
+                                                    "    %s TEXT%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    textFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    (
+                                                        textFieldAnnotation.default_value() != null && 
+                                                        !textFieldAnnotation.default_value().equals("\\0") 
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        textFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    textFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        textFieldAnnotation.comment() != null && 
+                                                        !textFieldAnnotation.comment().equals("")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        textFieldAnnotation
+                                                        	.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
+                                                sql += String.format(
+                                                    "    %s TEXT%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    textFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    (
+                                                        textFieldAnnotation.default_value() != null && 
+                                                        !textFieldAnnotation.default_value().equals("\\0")
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        textFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    textFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                                if (textFieldAnnotation != null && 
+                                            		textFieldAnnotation.comment() != null && 
+                                            		!textFieldAnnotation.comment().trim().isEmpty()) {                                                    
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        TableUtil.getColumnName(field),
+                                                        textFieldAnnotation.comment()
+                                                    );
+                                                }
+                                            } else if (databaseEngine.equalsIgnoreCase("oracle")) {
+                                                sql += String.format(
+                                                    "    %s TEXT%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    (
+                                                        textFieldAnnotation.default_value() != null && 
+                                                        !textFieldAnnotation.default_value().equals("\\0")
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        textFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    textFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    textFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                                if (textFieldAnnotation != null && textFieldAnnotation.comment() != null 
+                                            		&& !textFieldAnnotation.comment().trim().isEmpty()) {
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        TableUtil.getColumnName(field),
+                                                        textFieldAnnotation.comment()
+                                                    );
+                                                }
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("h2")) {
+                                                sql += String.format(
+                                                    "    %s BLOB%s%s,\n",
+                                                    TableUtil.getColumnName(field),                                                    
+                                                    textFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    (
+                                                        textFieldAnnotation.default_value() != null && 
+                                                        !textFieldAnnotation.default_value().equals("\\0")
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        textFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    textFieldAnnotation.unique() ? " UNIQUE" : ""
                                                 );
                                             } else {
 
@@ -483,10 +540,7 @@ public abstract class JediORMEngine {
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     "    %s INT(%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     integerFieldAnnotation.size(),
                                                     integerFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !integerFieldAnnotation
@@ -510,10 +564,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s INT%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     integerFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !integerFieldAnnotation
                                                     	.default_value()
@@ -528,10 +579,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
                                                 sql += String.format(
                                                     "    %s NUMBER(%d,0) %s%s%s,\n", 
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     integerFieldAnnotation.size(),
                                                     !integerFieldAnnotation
                                                     	.default_value()
@@ -547,10 +595,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("h2")) {
                                                 sql += String.format(
                                                     "    %s INT(%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     integerFieldAnnotation.size(),
                                                     integerFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !integerFieldAnnotation
@@ -571,10 +616,7 @@ public abstract class JediORMEngine {
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
@@ -598,10 +640,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
@@ -626,9 +665,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
                                                 sql += String.format(
                                                     "    %s NUMERIC(%d,%d)%s%s%s%s,\n",
-                                                    field.getName().replaceAll(
-                                                        "([a-z0-9]+)([A-Z])", "$1_$2"
-                                                    ).toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
                                                     !decimalFieldAnnotation
@@ -653,10 +690,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.trim().equalsIgnoreCase("h2")) {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])","$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
@@ -674,7 +708,103 @@ public abstract class JediORMEngine {
 
                                             }
                                         }
-                                        /*
+                                        if (fieldAnnotation instanceof FloatField) {
+                                            FloatField floatFieldAnnotation = (FloatField) fieldAnnotation;
+                                            if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
+                                                sql += String.format(
+                                                    "    %s FLOAT(%d,%d)%s%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    floatFieldAnnotation.precision(),
+                                                    floatFieldAnnotation.scale(),
+                                                    floatFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !floatFieldAnnotation
+                                                    	.default_value()
+                                                    	.trim()
+                                                    	.isEmpty() ? String.format(
+                                                			" DEFAULT %s",
+                                                			floatFieldAnnotation.default_value()
+                                            			) : "",
+                                                    floatFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        floatFieldAnnotation.comment() != null && 
+                                                        !floatFieldAnnotation.comment().equals("") && 
+                                                        databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        floatFieldAnnotation .comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("postgresql")) {
+                                                sql += String.format(
+                                                    "    %s REAL(%d,%d)%s%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    floatFieldAnnotation.precision(),
+                                                    floatFieldAnnotation.scale(),
+                                                    floatFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !floatFieldAnnotation
+                                                    	.default_value()
+                                                    	.trim()
+                                                    	.isEmpty() ? 
+                                        			String.format(
+                                            			" DEFAULT %s",
+                                            			floatFieldAnnotation.default_value()
+                                        			) : "",
+                                                    floatFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        floatFieldAnnotation.comment() != null
+                                                        && !floatFieldAnnotation.comment().equals("") 
+                                                        && databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        floatFieldAnnotation.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("oracle")) {
+                                                sql += String.format(
+                                                    "    %s NUMERIC(%d,%d)%s%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    floatFieldAnnotation.precision(),
+                                                    floatFieldAnnotation.scale(),
+                                                    !floatFieldAnnotation
+                                                    	.default_value()
+                                                    	.trim()
+                                                    	.isEmpty() ? 
+                                        			String.format(
+                                            			" DEFAULT %s",
+                                            			floatFieldAnnotation.default_value()
+                                        			) : "",
+                                                    floatFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    floatFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        floatFieldAnnotation.comment() != null && 
+                                                        !floatFieldAnnotation.comment().equals("") && 
+                                                        databaseEngine.trim().equalsIgnoreCase("mysql")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        floatFieldAnnotation.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.trim().equalsIgnoreCase("h2")) {
+                                                sql += String.format(
+                                                    "    %s DECIMAL(%d,%d)%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    floatFieldAnnotation.precision(),
+                                                    floatFieldAnnotation.scale(),
+                                                    floatFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    !floatFieldAnnotation
+                                                    	.default_value()
+                                                    	.trim()
+                                                    	.isEmpty() ? 
+                                        			String.format(
+                                                        " DEFAULT %s",
+                                                        floatFieldAnnotation.default_value()
+                                                    ) : "",
+                                                    floatFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                            } else {
+
+                                            }
+                                        }
                                         if (fieldAnnotation instanceof BooleanField) {
                                         	BooleanField booleanFieldAnnotation = (BooleanField) fieldAnnotation;
                                         	String columnType = "";
@@ -683,15 +813,16 @@ public abstract class JediORMEngine {
                                         	if (databaseEngine.equalsIgnoreCase("mysql")) {
                                         		columnType = "TINYINT(1)";
                                         	} else if (databaseEngine.equalsIgnoreCase("postgresql")) {
-                                        		columnType = "SMALLINT(1)";                                        		
+                                        		columnType = "SMALLINT(1)";
                                         	}
                                         	sql += String.format(
-                                    			"    %s %s NOT NULL%s%s%s,\n",
+                                    			"    %s %s%s%s%s%s,\n",
                                     			TableUtil.getColumnName(field),
                                     			columnType,
+                                    			booleanFieldAnnotation.required() == true ? " NOT NULL" : "",
                                     			booleanFieldAnnotation.unique() == true ? " UNIQUE" : "",
                             					booleanFieldAnnotation.default_value() == true ? " DEFAULT 1" : " DEFAULT 0",
-                    							databaseEngine.equalsIgnoreCase("mysql") ? String.format(" COMMENT '%s'", comment) : ""
+                    							databaseEngine.equalsIgnoreCase("mysql") && !comment.isEmpty() ? String.format(" COMMENT '%s'", comment) : ""
                                 			);
                                         	if (databaseEngine.equalsIgnoreCase("postgresql")) {
                                         		postgresqlOrOracleColumnsComments += String.format(
@@ -701,7 +832,6 @@ public abstract class JediORMEngine {
                                     			);
                                         	}
                                         }
-                                        */
                                         if (fieldAnnotation instanceof DateField) {
                                             DateField dateFieldAnnotation = (DateField) fieldAnnotation;
                                             String format = "    %s DATE%s%s%s%s,\n";
@@ -712,10 +842,7 @@ public abstract class JediORMEngine {
                                             if (defaultDate.contains("NULL")) {
                                                 defaultDate = defaultDate.replace("DEFAULT", "");
                                             }                                                                                           
-                                        	String fieldName = field
-                                    			.getName()
-                                    			.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                    			.toLowerCase();
+                                        	String fieldName = TableUtil.getColumnName(field);
                                             if (dateFieldAnnotation.auto_now_add()) {
                                                 if (mySQLAutoNowAdd.get(tableName) == null) {
                                                     mySQLAutoNowAdd.put(tableName, new ArrayList<String>());
@@ -735,10 +862,7 @@ public abstract class JediORMEngine {
                                             if (databaseEngine.equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     format,
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateFieldAnnotation.required() ? " NOT NULL" : "",
                                                     defaultDate, 
                                                     dateFieldAnnotation.unique() ? " UNIQUE" : "",
@@ -753,10 +877,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s DATE%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateFieldAnnotation.required() ? " NOT NULL" : "",
                                                     dateFieldAnnotation.unique() ? " UNIQUE" : "",
                                                     (
@@ -781,20 +902,14 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         dateFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.equalsIgnoreCase("oracle") ) {
                                                 sql += String.format(
                                                     "    %s DATE%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     (
                                                         dateFieldAnnotation.default_value() != null 
                                                         && !dateFieldAnnotation.default_value().equals("\0") 
@@ -811,10 +926,7 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         dateFieldAnnotation.comment()
                                                     );
                                                 }
@@ -829,10 +941,7 @@ public abstract class JediORMEngine {
                                                 }
                                                 sql += String.format(
                                                     format,
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateFieldAnnotation.required() ? " NOT NULL" : "",
                                                     defaultDate,
                                                     dateFieldAnnotation.unique() ? " UNIQUE" : ""
@@ -840,7 +949,125 @@ public abstract class JediORMEngine {
                                             } else {
 
                                             }
-                                        }                                        
+                                        }
+                                        if (fieldAnnotation instanceof TimeField) {
+                                            TimeField timeFieldAnnotation = (TimeField) fieldAnnotation;
+                                            String format = "    %s TIME%s%s%s%s,\n";
+                                            String defaultTime = timeFieldAnnotation.default_value();
+                                            defaultTime = defaultTime.isEmpty() ? "" : 
+                                            String.format(" DEFAULT '%s'", defaultTime.trim().toUpperCase());
+                                            defaultTime = defaultTime.replace("'NULL'", "NULL");
+                                            if (defaultTime.contains("NULL")) {
+                                                defaultTime = defaultTime.replace("DEFAULT", "");
+                                            }                                                                                           
+                                        	String fieldName = TableUtil.getColumnName(field);
+                                            if (timeFieldAnnotation.auto_now_add()) {
+                                                if (mySQLAutoNowAdd.get(tableName) == null) {
+                                                    mySQLAutoNowAdd.put(tableName, new ArrayList<String>());
+                                                    mySQLAutoNowAdd.get(tableName).add(fieldName);
+                                                } else {
+                                                    mySQLAutoNowAdd.get(tableName).add(fieldName);
+                                                }
+                                            }
+                                            if (timeFieldAnnotation.auto_now()) {
+                                                if (mySQLAutoNow.get(tableName) == null) {
+                                                    mySQLAutoNow.put(tableName, new ArrayList<String>());
+                                                    mySQLAutoNow.get(tableName).add(fieldName);
+                                                } else {
+                                                    mySQLAutoNow.get(tableName).add(fieldName);
+                                                }
+                                            }
+                                            if (databaseEngine.equalsIgnoreCase("mysql")) {
+                                                sql += String.format(
+                                                    format,
+                                                    TableUtil.getColumnName(field),
+                                                    timeFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    defaultTime, 
+                                                    timeFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        timeFieldAnnotation.comment() != null && 
+                                                        !timeFieldAnnotation.comment().equals("")
+                                                    ) ? String.format(
+                                                        " COMMENT '%s'", 
+                                                        timeFieldAnnotation.comment() 
+                                                    ) : ""
+                                                );
+                                            } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
+                                                sql += String.format(
+                                                    "    %s TIME%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    timeFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    timeFieldAnnotation.unique() ? " UNIQUE" : "",
+                                                    (
+                                                        timeFieldAnnotation
+                                                        	.default_value() != null && 
+                                                        !timeFieldAnnotation
+                                                        	.default_value()
+                                                        	.trim()
+                                                        	.equals("\0") && 
+                                                        !timeFieldAnnotation
+                                                        	.default_value()
+                                                        	.trim()
+                                                        	.equals("")
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        timeFieldAnnotation.default_value() 
+                                                    ) : ""
+                                                );
+                                                if (timeFieldAnnotation != null
+                                                    && timeFieldAnnotation.comment() != null
+                                                    && !timeFieldAnnotation.comment().trim().isEmpty()) {
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        TableUtil.getColumnName(field),
+                                                        timeFieldAnnotation.comment()
+                                                    );
+                                                }
+                                            } else if (databaseEngine.equalsIgnoreCase("oracle") ) {
+                                                sql += String.format(
+                                                    "    %s DATE%s%s%s,\n",
+                                                    TableUtil.getColumnName(field),
+                                                    (
+                                                        timeFieldAnnotation.default_value() != null 
+                                                        && !timeFieldAnnotation.default_value().equals("\0") 
+                                                    ) ? String.format(
+                                                        " DEFAULT '%s'", 
+                                                        timeFieldAnnotation.default_value() 
+                                                    ) : "",
+                                                    timeFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    timeFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                                if (timeFieldAnnotation != null && 
+                                            		timeFieldAnnotation.comment() != null && 
+                                            		!timeFieldAnnotation.comment().trim().isEmpty()) {
+                                                    postgresqlOrOracleColumnsComments += String.format(
+                                                        "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
+                                                        tableName,
+                                                        TableUtil.getColumnName(field),
+                                                        timeFieldAnnotation.comment()
+                                                    );
+                                                }
+                                            } else if (databaseEngine.equalsIgnoreCase("h2")) {
+                                                format = "    %s TIME%s%s%s,\n";
+                                                if (timeFieldAnnotation.auto_now()) {
+                                                    defaultTime = " AS CURRENT_DATE()";
+                                                } else {
+                                                    if (timeFieldAnnotation.auto_now_add()) {
+                                                        defaultTime = " DEFAULT CURRENT_DATE";
+                                                    }
+                                                }
+                                                sql += String.format(
+                                                    format,
+                                                    TableUtil.getColumnName(field),
+                                                    timeFieldAnnotation.required() ? " NOT NULL" : "",
+                                                    defaultTime,
+                                                    timeFieldAnnotation.unique() ? " UNIQUE" : ""
+                                                );
+                                            } else {
+
+                                            }
+                                        }
                                         if (fieldAnnotation instanceof DateTimeField) {
                                             DateTimeField dateTimeFieldAnnotation = (DateTimeField) fieldAnnotation;
                                             String format = "    %s DATETIME%s%s%s%s%s,\n";
@@ -884,9 +1111,7 @@ public abstract class JediORMEngine {
                                                     format = "    %s TIMESTAMP%s%s%s%s%s,\n";
                                                 }
                                                 if (mysqlVersionNumber < 56) {
-                                                    String fieldName = field.getName()
-                                                        .replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        .toLowerCase();
+                                                    String fieldName = TableUtil.getColumnName(field);
                                                     if (dateTimeFieldAnnotation.auto_now_add()) {
                                                         if (mySQLAutoNowAdd.get(tableName) == null) {
                                                             mySQLAutoNowAdd.put(tableName, new ArrayList<String>());
@@ -908,10 +1133,7 @@ public abstract class JediORMEngine {
                                             if (databaseEngine.equalsIgnoreCase("mysql")) {
                                                 sql += String.format(
                                                     format,
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateTimeFieldAnnotation.required() ? " NOT NULL" : "",
                                                     defaultDate,
                                                     dateTimeFieldAnnotation.auto_now() && 
@@ -932,10 +1154,7 @@ public abstract class JediORMEngine {
                                             } else if (databaseEngine.equalsIgnoreCase("postgresql")) {
                                                 sql += String.format(
                                                     "    %s TIMESTAMP%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateTimeFieldAnnotation.required() ? " NOT NULL" : "",
                                                     dateTimeFieldAnnotation.unique() ? " UNIQUE" : "",
                                                     (
@@ -959,20 +1178,14 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         dateTimeFieldAnnotation.comment()
                                                     );
                                                 }
                                             } else if (databaseEngine.equalsIgnoreCase("oracle")) {
                                                 sql += String.format(
                                                     "    %s DATETIME%s%s%s,\n",
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     (
                                                         dateTimeFieldAnnotation.default_value() != null && 
                                                         !dateTimeFieldAnnotation.default_value().equals("\0") 
@@ -989,10 +1202,7 @@ public abstract class JediORMEngine {
                                                     postgresqlOrOracleColumnsComments += String.format(
                                                         "COMMENT ON COLUMN %s.%s IS '%s';\n\n",
                                                         tableName,
-                                                        field
-                                                        	.getName()
-                                                        	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                        	.toLowerCase(),
+                                                        TableUtil.getColumnName(field),
                                                         dateTimeFieldAnnotation.comment()
                                                     );
                                                 }
@@ -1007,10 +1217,7 @@ public abstract class JediORMEngine {
                                                 }
                                                 sql += String.format(
                                                     format,
-                                                    field
-                                                    	.getName()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    TableUtil.getColumnName(field),
                                                     dateTimeFieldAnnotation.required() ? " NOT NULL" : "",
                                                     defaultDate,
                                                     dateTimeFieldAnnotation.unique() ? " UNIQUE" : ""
@@ -1024,25 +1231,15 @@ public abstract class JediORMEngine {
                                             String columnName = "";
                                             String referencedColumn = "";
                                             if (oneToOneFieldAnnotation.column_name().equals("")) {
-                                                columnName = field
-                                            		.getName()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                columnName = TableUtil.getColumnName(field);
                                                 columnName = String.format("%s_id", columnName);
                                             } else {
-                                                columnName = oneToOneFieldAnnotation
-                                            		.column_name()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                columnName = TableUtil.getColumnName(oneToOneFieldAnnotation.column_name());
                                             }
-
                                             if (oneToOneFieldAnnotation.referenced_column().equals("")) {
                                                 referencedColumn = "id";
                                             } else {
-                                                referencedColumn = oneToOneFieldAnnotation
-                                            		.referenced_column()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                referencedColumn = TableUtil.getColumnName(oneToOneFieldAnnotation.referenced_column());
                                             }
                                             sql += String.format(
                                                 "    %s INT NOT NULL UNIQUE%s,\n",
@@ -1083,17 +1280,27 @@ public abstract class JediORMEngine {
                                             } else if (oneToOneFieldAnnotation.on_update().equals(Models.SET_DEFAULT)) {
                                                 onUpdateString = " ON UPDATE SET DEFAULT";
                                             }
+                                            String model = oneToOneFieldAnnotation.model();
+                                            if (model == null || model.trim().isEmpty()) {
+                                            	model = field.getType().getName().replace(field.getType().getPackage().getName() + ".", "");
+                                            }
+                                            String constraintName = oneToOneFieldAnnotation.constraint_name();                                            
+                                            if (constraintName == null || constraintName.trim().isEmpty()) {
+                                            	constraintName = String.format("fk_%s_%s", tableName, TableUtil.getTableName(field.getType()));
+                                            }
+                                            String references = oneToOneFieldAnnotation.references();
+                                            if (references == null || references.trim().isEmpty()) {
+                                            	references = TableUtil.getTableName(field.getType());
+                                            } else {
+                                            	references = TableUtil.getColumnName(references);
+                                            }
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
                                                 sqlForeignKey += String.format(
                                                     "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    oneToOneFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    oneToOneFieldAnnotation
-                                                    	.references()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    references,
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1102,13 +1309,9 @@ public abstract class JediORMEngine {
                                                 sqlForeignKey += String.format(
                                                     "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    oneToOneFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    oneToOneFieldAnnotation
-                                                    	.references()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    references,
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1117,13 +1320,9 @@ public abstract class JediORMEngine {
                                                 sqlForeignKey += String.format(
                                                     "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    oneToOneFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    oneToOneFieldAnnotation
-                                                    	.references()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])","$1_$2")
-                                                    	.toLowerCase(),
+                                                    references,
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1140,13 +1339,7 @@ public abstract class JediORMEngine {
                                             try {
                                                 boolean generateCode = true;
                                                 String classPath = appModelFile.getAbsolutePath();
-                                                classPath = classPath.replace(
-                                            		appModelFile.getName(), 
-                                                    String.format(
-                                                        "%s.java",
-                                                        oneToOneFieldAnnotation.model()
-                                                    )
-                                                );
+                                                classPath = classPath.replace(appModelFile.getName(), String.format("%s.java", model));
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
                                                 out.seek(0);
                                                 String currentLine = null;
@@ -1194,24 +1387,15 @@ public abstract class JediORMEngine {
                                             String columnName = "";
                                             String referencedColumn = "";
                                             if (foreignKeyFieldAnnotation.column_name().equals("")) {
-                                                columnName = field
-                                            		.getName()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                columnName = TableUtil.getColumnName(field);
                                                 columnName = String.format("%s_id", columnName);
                                             } else {
-                                                columnName = foreignKeyFieldAnnotation
-                                            		.column_name()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                columnName = TableUtil.getColumnName(foreignKeyFieldAnnotation.column_name());
                                             }
                                             if (foreignKeyFieldAnnotation.referenced_column().equals("")) {
                                                 referencedColumn = "id";
                                             } else {
-                                                referencedColumn = foreignKeyFieldAnnotation
-                                            		.referenced_column()
-                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            		.toLowerCase();
+                                                referencedColumn = TableUtil.getColumnName(foreignKeyFieldAnnotation.referenced_column());
                                             }
                                             sql += String.format(
                                                 "    %s INT NOT NULL%s,\n",
@@ -1245,17 +1429,27 @@ public abstract class JediORMEngine {
                                             } else if (foreignKeyFieldAnnotation.on_update().equals(Models.SET_DEFAULT) ) {
                                                 onUpdateString = " ON UPDATE SET DEFAULT";
                                             }
+                                            String model = foreignKeyFieldAnnotation.model();
+                                            if (model == null || model.trim().isEmpty()) {
+                                            	model = field.getType().getName().replace(field.getType().getPackage().getName() + ".", "");
+                                            }
+                                            String constraintName = foreignKeyFieldAnnotation.constraint_name();
+                                            if (constraintName == null || constraintName.trim().isEmpty()) {
+                                            	constraintName = String.format("fk_%s_%s", tableName, TableUtil.getTableName(field.getType()));
+                                            }
+                                            String references = foreignKeyFieldAnnotation.references();
+                                            if (references == null || references.trim().isEmpty()) {
+                                            	references = TableUtil.getTableName(field.getType());
+                                            } else {
+                                            	references = TableUtil.getColumnName(references);
+                                            }
                                             if (databaseEngine.trim().equalsIgnoreCase("mysql")) {
                                                 sqlForeignKey += String.format(
                                                 	"ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.references()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    references,
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1264,13 +1458,9 @@ public abstract class JediORMEngine {
                                                 sqlForeignKey += String.format(
                                                     "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.references()
-                                                    	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                                    	.toLowerCase(),
+                                                    references,                                                    	
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1279,13 +1469,9 @@ public abstract class JediORMEngine {
                                                 sqlForeignKey += String.format(
                                                     "ALTER TABLE %s ADD CONSTRAINT %s FOREIGN KEY (%s) REFERENCES %s (%s)%s%s;\n",
                                                     tableName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.constraint_name(),
+                                                    constraintName,
                                                     columnName,
-                                                    foreignKeyFieldAnnotation
-                                                    	.references()
-                                                		.replaceAll("([a-z0-9]+)([A-Z])","$1_$2")
-                                                		.toLowerCase(),
+                                                    references,
                                                     referencedColumn,
                                                     onDeleteString,
                                                     onUpdateString
@@ -1297,7 +1483,7 @@ public abstract class JediORMEngine {
                                                 columnName,
                                                 tableName,
                                                 columnName
-                                            );                                            
+                                            );
                                             if (intermediateModels.contains(modelClass.getSimpleName())) {
                                             	continue;
                                             }                                            
@@ -1305,13 +1491,7 @@ public abstract class JediORMEngine {
                                             try {
                                                 boolean generateCode = true;
                                                 String classPath = appModelFile.getAbsolutePath();
-                                                classPath = classPath.replace(
-                                                    appModelFile.getName(), 
-                                                    String.format(
-                                                        "%s.java",
-                                                        foreignKeyFieldAnnotation.model()
-                                                    )
-                                                );
+                                                classPath = classPath.replace(appModelFile.getName(), String.format("%s.java", model));
                                                 // Creates a random access file.
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
                                                 // Sets the file's pointer at the first register of the file.
@@ -1330,10 +1510,10 @@ public abstract class JediORMEngine {
                                                 }
                                                 StringBuilder methodStr = new StringBuilder();
                                                 methodStr.append("\n");
-                                                methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
                                                 methodStr.append(
                                                     String.format(
-                                                        "    public jedi.db.models.QuerySet get%sSet() {\n",
+                                                        "    public jedi.db.models.query.QuerySet<%s> get%sSet() {\n",
+                                                        modelClass.getSimpleName(),
                                                         modelClass.getSimpleName()
                                                     )
                                                 );
@@ -1341,7 +1521,7 @@ public abstract class JediORMEngine {
                                                     String.format(
                                                         "        return %s.objects.getSet(%s.class, this.id);\n",
                                                         modelClass.getSimpleName(),
-                                                        foreignKeyFieldAnnotation.model()
+                                                        model
                                                     )
                                                 );
                                                 methodStr.append("    }\n");
@@ -1359,8 +1539,28 @@ public abstract class JediORMEngine {
                                         }
                                         if (fieldAnnotation instanceof ManyToManyField) {
                                             ManyToManyField manyToManyFieldAnnotation = (ManyToManyField) fieldAnnotation;
-                                            String fmt = "";                                            
-                                            if (manyToManyFieldAnnotation.through().isEmpty()) {                                            	                                            	
+                                            String fmt = "";
+                                            String through = manyToManyFieldAnnotation.through();
+                                            through = through.trim();
+                                            String model = manyToManyFieldAnnotation.model();                                        
+                                            if (model == null || model.trim().isEmpty()) {
+                                            	ParameterizedType genericType = null;
+                                            	if (ParameterizedType.class.isAssignableFrom(field.getGenericType().getClass())) {
+                                                    genericType = (ParameterizedType) field.getGenericType();
+                                                    Class superClazz = ((Class) (genericType.getActualTypeArguments()[0])).getSuperclass();
+                                                    if (superClazz == Model.class) {
+                                                        Class clazz = (Class) genericType.getActualTypeArguments()[0];
+                                                        model = clazz.getSimpleName();                                                        
+                                                    }
+                                                }                                            	
+                                            }
+                                            String references = manyToManyFieldAnnotation.references();
+                                            if (references == null || references.trim().isEmpty()) {
+                                            	references = TableUtil.getTableName(model);
+                                            } else {
+                                            	references = TableUtil.getColumnName(references);
+                                            }
+                                            if (through.isEmpty()) {                                            	                                            	
                                             	if (databaseEngine.equalsIgnoreCase("mysql")) {
 	                                                fmt = "CREATE TABLE IF NOT EXISTS %s_%s (\n";
 	                                                fmt += "    id INT NOT NULL PRIMARY KEY AUTO_INCREMENT,\n";
@@ -1395,40 +1595,15 @@ public abstract class JediORMEngine {
 	                                            sqlManyToManyAssociation += String.format(
 	                                        		fmt, 
 	                                        		tableName, 
-	                                        		manyToManyFieldAnnotation
-	                                        			.references()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase(),
-	                                        		modelClass
-	                                        			.getSimpleName()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase(),
-	                                        		manyToManyFieldAnnotation
-	                                        			.model()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase(),	
+	                                        		TableUtil.getColumnName(references),
+	                                        		TableUtil.getColumnName(modelClass),
+	                                        		TableUtil.getColumnName(model),	
 	                                        		tableName,
-	                                        		manyToManyFieldAnnotation
-	                                        			.references()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase(),
-	                                        		modelClass
-	                                        			.getSimpleName()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase(),
-	                                        		manyToManyFieldAnnotation
-	                                        			.model()
-	                                            		.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            		.toLowerCase()
+	                                        		TableUtil.getColumnName(references),
+	                                        		TableUtil.getColumnName(modelClass),
+	                                        		TableUtil.getColumnName(model)
 	                                    		);	                                            
-	                                            String tbName = String.format(
-                                            		"%s_%s", 
-                                    				tableName, 
-                                            		manyToManyFieldAnnotation
-                                            			.references()
-                                            			.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-                                            			.toLowerCase()
-                                    			);	                                            
+	                                            String tbName = String.format("%s_%s", tableName, TableUtil.getColumnName(references));	                                            
 	                                            if (!JediORMEngine.generatedTables.contains(tbName)) {
 	                                            	JediORMEngine.generatedTables.add(tbName);
 	                                            }	
@@ -1440,25 +1615,21 @@ public abstract class JediORMEngine {
 	                                            	oracleSequence.append("NOORDER NOCYCLE;");
 	                                            	oracleSequence.append("\n\n");                                            
 	                                            	// Sequence.
-	                                            	sqlOracleSequences += String.format(oracleSequence.toString(), 
-	                                            			tableName, 
-	                                            			manyToManyFieldAnnotation
-	                                            				.references()
-	                                            				.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            				.toLowerCase());                                            	
+	                                            	sqlOracleSequences += String.format(
+                                            			oracleSequence.toString(), 
+                                            			tableName, 
+                                            			TableUtil.getColumnName(references)
+                                        			);                                            	
 	                                            	String manyToManyTableName = String.format(
-	                                            			"%s_%s", 
-	                                            			tableName, 
-	                                            			manyToManyFieldAnnotation
-	                                            				.references()
-	                                            				.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            				.toLowerCase());
+                                            			"%s_%s", 
+                                            			tableName, 
+                                            			TableUtil.getColumnName(references)
+                                        			);
 	                                            	String triggerName = String.format(
-	                                            			"tgr_autoincr_%s_%s", 
-	                                            			tableName, 
-	                                            			manyToManyFieldAnnotation.references()
-	                                            				.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                            				.toLowerCase());
+                                            			"tgr_autoincr_%s_%s", 
+                                            			tableName, 
+                                            			TableUtil.getColumnName(references)
+                                        			);
 	                                            	// Trigger de auto-incremento
 	                                            	sqlOracleAutoIncrementTriggers.put(manyToManyTableName, triggerName);
 	                                            }	                                            
@@ -1484,24 +1655,15 @@ public abstract class JediORMEngine {
 	                                                }
 	                                            } else if (manyToManyFieldAnnotation.on_update().equals(Models.SET_DEFAULT)) {
 	                                                onUpdateString = " ON UPDATE SET DEFAULT";
-	                                            }	                                            
+	                                            }
 	                                            sqlForeignKey += String.format(
 	                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id)%s%s;\n",
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
 	                                                tableName,
-	                                                modelClass
-	                                                	.getSimpleName()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(modelClass),
 	                                                tableName,
 	                                                onDeleteString,
 	                                                onUpdateString
@@ -1509,121 +1671,307 @@ public abstract class JediORMEngine {
 	                                            sqlIndex += String.format(
 	                                                "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n",
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                modelClass
-	                                                	.getSimpleName()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
+	                                                TableUtil.getColumnName(modelClass),
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                modelClass
-	                                                	.getSimpleName()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase()
+	                                                TableUtil.getColumnName(references),
+	                                                TableUtil.getColumnName(modelClass)
                                             	);	
 	                                            sqlForeignKey += String.format(
 	                                                "ALTER TABLE %s_%s ADD CONSTRAINT fk_%s_%s_%s FOREIGN KEY (%s_id) REFERENCES %s (id)%s%s;\n",
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                manyToManyFieldAnnotation
-	                                                	.model()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
+	                                                TableUtil.getColumnName(references),	                                                	
+	                                                TableUtil.getColumnName(model),
+	                                                TableUtil.getColumnName(references),
 	                                                onDeleteString,
 	                                                onUpdateString
 	                                            );	
 	                                            sqlIndex += String.format(
 	                                                "CREATE INDEX idx_%s_%s_%s_id ON %s_%s (%s_id);\n",
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                manyToManyFieldAnnotation
-	                                                	.model()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
+	                                                TableUtil.getColumnName(references),
+	                                                TableUtil.getColumnName(model),
 	                                                tableName,
-	                                                manyToManyFieldAnnotation
-	                                                	.references()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase(),
-	                                                manyToManyFieldAnnotation
-	                                                	.model()
-	                                                	.replaceAll("([a-z0-9]+)([A-Z])", "$1_$2")
-	                                                	.toLowerCase()
+	                                                TableUtil.getColumnName(references),
+	                                                TableUtil.getColumnName(model)
 	                                            );	                                            
 	                                        }
-                                            java.io.RandomAccessFile out = null;	
+                                            java.io.RandomAccessFile out = null;
+                                            boolean generateCode = true;
+                                            String classPath = appModelFile.getAbsolutePath();
+                                            String currentLine = null;
+                                            StringBuilder methodStr = new StringBuilder();
+                                            String intermediateTable = null;                                            
+                                            String fieldType = field.getGenericType().toString().replace("java.util.List", "List");
+                                        	fieldType = fieldType.replace("jedi.db.models.query.QuerySet", "QuerySet");
+                                        	fieldType = fieldType.replace(modelClass.getPackage().getName() + ".", "");
                                             try {
-                                                boolean generateCode = true;
-                                                String classPath = appModelFile.getAbsolutePath();
-                                                classPath = classPath.replace(
-                                                    appModelFile.getName(), 
-                                                    String.format("%s.java", manyToManyFieldAnnotation.model())
-                                                );	
+                                                if (through.isEmpty()) {
+	                                                classPath = classPath.replace(appModelFile.getName(), String.format("%s.java", model));
+                                                }
                                                 out = new java.io.RandomAccessFile(classPath, "rw");
                                                 out.seek(0);
-                                                String currentLine = null;	
-                                                while ((currentLine = out.readLine()) != null) {
-                                                    if (currentLine.contains(String.format("get%sSet", modelClass.getSimpleName()))) {
-                                                        generateCode = false;
-                                                    }
-                                                }	
-                                                if (out.length() > 0) {
+                                                methodStr.append("\n");
+                                                if (through.isEmpty()) {
+                                                	while ((currentLine = out.readLine()) != null) {                                                	
+                                                		if (currentLine.contains(String.format("get%sSet", modelClass.getSimpleName()))) {
+                                                			generateCode = false;
+                                                			break;
+                                                		}
+                                                	}	
+	                                                methodStr.append(
+	                                                    String.format(
+	                                                        "    public jedi.db.models.query.QuerySet<%s> get%sSet() {\n",
+	                                                        modelClass.getSimpleName(),
+	                                                        modelClass.getSimpleName()
+	                                                    )
+	                                                );
+	                                                methodStr.append(
+	                                                    String.format(
+	                                                        "        return %s.objects.getSet(%s.class, this.id);\n",
+	                                                        modelClass.getSimpleName(),
+	                                                        model
+	                                                    )
+	                                                );	                                                
+                                                } else {
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"    public %s get%s() {\n",
+                                        					fieldType,                                        					
+                                        					String.format(
+                                    							"%s%s", 
+                                    							Character.toUpperCase(field.getName().charAt(0)), 
+                                								field.getName().substring(1)
+                                							)
+                                    					)
+                                    				);                                                	
+                                                	while ((currentLine = out.readLine()) != null) {                                                	
+                                                		if (currentLine.contains(
+                                            				String.format(
+                                            					"    public %s get%s%s() {",
+                                            					fieldType,                                        					
+                                    							Character.toUpperCase(field.getName().charAt(0)), 
+                                								field.getName().substring(1)
+                                        					))) {
+                                                			generateCode = false;
+                                                			break;
+                                                		}
+                                                	}
+                                                	Class intermediateModelClass = Class.forName(
+                                            			String.format(
+                                        					"%s.%s", 
+                                        					modelClass
+                                        						.getPackage()
+                                        						.getName(), 
+                                    						through
+                                    					)
+                                					);
+                                                	intermediateTable = TableUtil.getTableName(intermediateModelClass);
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"        %s %s = %s.objects.getSet(%s.class, this.id);\n",
+                                        					fieldType.replace(model, through),
+                                        					intermediateTable,
+                                        					through,
+                                        					modelClass.getSimpleName()
+                                    					)
+                                        			);
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"        %s = new %s();\n", 
+                                        					field.getName(), 
+                                        					fieldType.startsWith("List") ? 
+                                							fieldType.replace("List", "java.util.ArrayList") : fieldType
+                                    					)
+                                					);                                                	
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"        %s %s = null;\n", 
+                                        					model, 
+                                        					model.toLowerCase()
+                                    					)
+                                					);
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"        for (%s %s : %s) {\n",
+                                        					through,
+                                        					through.toLowerCase(),
+                                        					intermediateTable
+                                    					)
+                                        			);
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"            %s = %s.objects.<%s>get(\"id\", %s.get%s().getId());\n",
+                                        					model.toLowerCase(),
+                                        					model,
+                                        					model,
+                                        					through.toLowerCase(),
+                                        					model
+                                            			)
+                                        			);
+                                                	methodStr.append(
+                                            			String.format(
+                                        					"            %s.add(%s);\n", 
+                                        					field.getName(), 
+                                        					model.toLowerCase()
+                                    					)
+                                					);
+                                                	methodStr.append("        }\n");
+                                                	methodStr.append(String.format("        return %s;\n", field.getName()));
+                                                }
+                                            	methodStr.append("    }\n");
+                                            	if (!through.isEmpty()) {                                            		
+ 	                                            	methodStr.append("\n");	                                            	
+	                                            	methodStr.append(
+	                                        			String.format(
+	                                    					"    public void set%s%s(%s %s) {\n",
+	                                    					Character.toUpperCase(field.getName().charAt(0)),
+	                                    					field.getName().substring(1),
+	                                    					fieldType,
+	                                    					field.getName()
+	                                					)
+	                                    			);
+	                                            	methodStr.append(String.format("        this.%s = %s;\n", field.getName(), field.getName()));
+	                                            	methodStr.append("    }\n");
+ 	                                            	
+                                            	}
+                                            	methodStr.append("}");
+                                            	if (out.length() > 0) {
                                                     out.seek(out.length() - 1);
                                                 } else {
                                                     out.seek(out.length());
-                                                }
-                                                StringBuilder methodStr = new StringBuilder();
-                                                methodStr.append("\n");
-                                                methodStr.append("    @SuppressWarnings(\"rawtypes\")\n");
-                                                methodStr.append(
-                                                    String.format(
-                                                        "    public jedi.db.models.QuerySet get%sSet() {\n",
-                                                        modelClass.getSimpleName()
-                                                    )
-                                                );
-                                                methodStr.append(
-                                                    String.format(
-                                                        "        return %s.objects.getSet(%s.class, this.id);\n",
-                                                        modelClass.getSimpleName(),
-                                                        manyToManyFieldAnnotation.model()
-                                                    )
-                                                );
-                                                methodStr.append("    }\n");
-                                                methodStr.append("}");
+                                                }                                            	
                                                 if (generateCode) {
                                                     out.writeBytes(methodStr.toString());
                                                 }
-                                            } catch (java.io.IOException e) {
+                                            } catch (IOException e) {
                                                 System.err.println(e);
                                             } finally {
                                                 if (out != null) {
                                                     out.close();
                                                 }
+                                            }
+                                            if (!through.isEmpty()) {
+	                                            try {
+	                                                generateCode = true;
+	                                                classPath = appModelFile.getAbsolutePath();
+	                                                model = manyToManyFieldAnnotation.model();
+	                                                if (model == null || model.trim().isEmpty()) {
+	                                                	ParameterizedType genericType = null;
+	                                                	if (ParameterizedType.class.isAssignableFrom(field.getGenericType().getClass())) {
+	                                                        genericType = (ParameterizedType) field.getGenericType();
+	                                                        Class superClazz = ((Class) (genericType.getActualTypeArguments()[0])).getSuperclass();
+	                                                        if (superClazz == Model.class) {
+	                                                            Class clazz = (Class) genericType.getActualTypeArguments()[0];
+	                                                            model = clazz.getSimpleName();                                                        
+	                                                        }
+	                                                    }                                            	
+	                                                }
+	                                                classPath = classPath.replace(appModelFile.getName(), String.format("%s.java", model));
+	                                                out = new java.io.RandomAccessFile(classPath, "rw");
+	                                                out.seek(0);
+	                                                currentLine = null;
+	                                                methodStr = methodStr.delete(0, methodStr.length());
+	                                                methodStr.append("\n");
+	                                                while ((currentLine = out.readLine()) != null) {                                                	
+	                                            		if (currentLine.contains(
+                                            				String.format(
+                                        						"QuerySet<%s> get%sSet", 
+                                        						modelClass.getSimpleName(),
+                                        						modelClass.getSimpleName()
+                                    						)
+                                						)) {
+	                                            			generateCode = false;
+	                                            			break;
+	                                            		}
+	                                            	}
+	                                                methodStr.append(
+	                                                    String.format(
+	                                                        "    public jedi.db.models.query.QuerySet<%s> get%sSet() {\n",
+	                                                        modelClass.getSimpleName(),
+	                                                        modelClass.getSimpleName()
+	                                                    )
+	                                                );
+	                                                methodStr.append(
+	                                                    String.format(
+	                                                        "        jedi.db.models.query.QuerySet<%s> %s = %s.objects.getSet(%s.class, this.id);\n",
+	                                                        through,
+	                                                        intermediateTable,
+	                                                        through,
+	                                                        model
+	                                                    )
+	                                                );
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"        jedi.db.models.query.QuerySet<%s> %s = new jedi.db.models.query.QuerySet<%s>();\n",
+                                            				modelClass.getSimpleName(),
+                                            				TableUtil.getTableName(modelClass),
+                                            				modelClass.getSimpleName()
+                                        				)
+                                    				);
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"        %s %s = null;\n",
+                                            				modelClass.getSimpleName(),
+                                            				modelClass.getSimpleName().toLowerCase()
+                                            				
+                                                		)
+                                            		);
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"        for (%s %s : %s) {\n",
+                                            				through,
+                                            				through.toLowerCase(),
+                                            				intermediateTable
+                                        				)
+                                    				);
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"            %s = %s.objects.<%s>get(\"id\", %s.get%s().getId());\n", 
+                                            				modelClass.getSimpleName().toLowerCase(),
+                                            				modelClass.getSimpleName(),
+                                            				modelClass.getSimpleName(),
+                                            				through.toLowerCase(),
+                                            				modelClass.getSimpleName()
+                                        				)
+                                    				);
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"            %s.get%s%s();\n", 
+                                            				modelClass.getSimpleName().toLowerCase(),
+                                            				Character.toUpperCase(field.getName().charAt(0)),
+                                            				field.getName().substring(1)
+                                        				)
+                                    				);
+	                                                methodStr.append(
+                                                		String.format(
+                                            				"            %s.add(%s);\n", 
+                                            				TableUtil.getTableName(modelClass),
+                                            				modelClass.getSimpleName().toLowerCase()
+                                        				)
+                                    				);
+	                                                methodStr.append("        }\n");
+	                                                methodStr.append(String.format("        return %s;\n", TableUtil.getTableName(modelClass)));
+	                                                methodStr.append("    }\n");	                                                
+	                                            	methodStr.append("}");
+	                                            	if (out.length() > 0) {
+	                                                    out.seek(out.length() - 1);
+	                                                } else {
+	                                                    out.seek(out.length());
+	                                                }                                            	
+	                                                if (generateCode) {
+	                                                    out.writeBytes(methodStr.toString());
+	                                                }
+	                                            } catch (java.io.IOException e) {
+	                                            	System.err.println(e);
+	                                            } finally {
+	                                            	if (out != null) {
+	                                            		out.close();
+	                                            	}
+	                                            }
                                             }
                                         }
                                     }

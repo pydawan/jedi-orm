@@ -22,8 +22,8 @@ import java.sql.Date;
 import jedi.db.Models;
 import jedi.db.annotations.fields.DateField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Emprestimo extends Model {
 	private static final long serialVersionUID = -4411210868254749824L;

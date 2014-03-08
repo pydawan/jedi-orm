@@ -19,12 +19,14 @@ package app.models;
 
 import java.util.Date;
 
+import jedi.db.annotations.fields.BooleanField;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DateField;
 import jedi.db.annotations.fields.EmailField;
 import jedi.db.annotations.fields.IntegerField;
-import jedi.db.models.Manager;
+import jedi.db.annotations.fields.TextField;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Pessoa extends Model {
     // Attributes
@@ -41,6 +43,12 @@ public class Pessoa extends Model {
     
     @EmailField
     private String email;
+    
+    @BooleanField(required=false)
+    private boolean admin;
+    
+    @TextField
+    private String observacao;
 
     public static Manager objects = new Manager(Pessoa.class);
 
@@ -87,6 +95,14 @@ public class Pessoa extends Model {
     public String getEmail() {
     	return email;
     }
+    
+    public boolean isAdmin() {
+    	return admin;
+    }
+    
+    public String getObservacao() {
+    	return observacao;
+    }
 
     // Setters
     public void setNome(String nome) {
@@ -104,8 +120,16 @@ public class Pessoa extends Model {
     public void setEmail(String email) {
     	this.email = email;
     }
+    
+    public void isAdmin(boolean admin) {
+    	this.admin = admin;
+    }
+    
+    public void setObservacao(String observacao) {
+    	this.observacao = observacao;
+    }
 
     public PessoaFisica getPessoaFisica() {
-        return PessoaFisica.objects.get("pessoa_id", this.id);
+        return PessoaFisica.objects.get("pessoas_fisicas_id", this.id);
     }
 }

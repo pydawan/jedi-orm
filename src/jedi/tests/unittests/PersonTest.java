@@ -44,15 +44,13 @@ public class PersonTest {
 		Person expectedPerson = new Person();
 		expectedPerson.setName("Thiago Alexandre Martins Monteiro");
 		expectedPerson.insert();
-		Person obtainedPerson = Person.objects.get("name",
-				"Thiago Alexandre Martins Monteiro");
+		Person obtainedPerson = Person.objects.get("name", "Thiago Alexandre Martins Monteiro");
 		Assert.assertEquals(expectedPerson, obtainedPerson);
 	}
 
 	@Test
 	public void testUpdate() {
-		Person expectedPerson = Person.objects.get("name",
-				"Thiago Alexandre Martins Monteiro");
+		Person expectedPerson = Person.objects.get("name", "Thiago Alexandre Martins Monteiro");
 		expectedPerson.update("name='Thiago Alexandre'");
 		Person obtainedPerson = Person.objects.get("name", "Thiago Alexandre");
 		Assert.assertNotNull(obtainedPerson);

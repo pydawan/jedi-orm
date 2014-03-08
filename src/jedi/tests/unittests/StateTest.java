@@ -37,10 +37,6 @@ public class StateTest {
 
     @AfterClass
     public static void testCleanup() {
-//        for (State state : State.objects.<State> all()) {
-//            state.delete();
-//            state.getCountry().delete();
-//        }
     	JediORMEngine.droptables();
     }
 

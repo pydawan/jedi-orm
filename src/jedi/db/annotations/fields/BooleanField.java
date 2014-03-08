@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/01/28
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -24,7 +24,8 @@ import java.lang.annotation.Target;
 
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
-public @interface BooleanField {    
+public @interface BooleanField {
+	public boolean required() default true;
     public boolean unique() default false;
     public boolean default_value() default false;
     public String comment() default "";

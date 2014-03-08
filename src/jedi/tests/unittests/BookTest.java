@@ -18,7 +18,7 @@
 package jedi.tests.unittests;
 
 import jedi.db.engine.JediORMEngine;
-import jedi.db.models.QuerySet;
+import jedi.db.models.query.QuerySet;
 
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -100,7 +100,7 @@ public class BookTest {
         Book obtainedBook = Book.objects.get("publicationDate", "10/10/2000");        
         Assert.assertEquals(expectedBook, obtainedBook);
     }
-    
+
     @Test
     public void testFilter() {
     	Book expectedBook = new Book();
@@ -108,10 +108,11 @@ public class BookTest {
         expectedBook.setPublicationDate("10/10/1865");        
         expectedBook.setPublisher(new Publisher("Lenin Publisher", new State("Moscou", "MO", new Country("Russia", "RU"))));
         QuerySet<Author> authors = new QuerySet<Author>();
+        authors.setEntity(Author.class);
         authors.add(new Author("Lev", "Tolstoy", "tolstoy@yandex.ru"));
         expectedBook.setAuthors(authors);
         expectedBook.save();
-        Book obtainedBook = Book.objects.<Book>filter("title='Voina i Mir'").first();        
+        Book obtainedBook = Book.objects.<Book>filter("title='Voina i Mir'").first();
         Assert.assertEquals(expectedBook.getTitle(), obtainedBook.getTitle());
     }
 }

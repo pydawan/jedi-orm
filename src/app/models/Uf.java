@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/03/05
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -17,11 +17,10 @@
 
 package app.models;
 
-import jedi.db.Models;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Uf extends Model {
     // Attributes
@@ -39,8 +38,7 @@ public class Uf extends Model {
     @CharField(max_length=30, unique=false, required=false, comment="Região em que está localizada a Unidade Federativa.")
     private String regiao;
 
-    @ForeignKeyField(model="Pais", constraint_name="fk_ufs_paises", references="paises", on_delete=Models.CASCADE, 
-            on_update=Models.CASCADE, comment="País onde está localizada a Unidade Federativa.")
+    @ForeignKeyField(comment="País onde está localizada a Unidade Federativa.")
     private Pais pais;
 
     @CharField(max_length=1, default_value="A", comment="Situação da Unidade Federativa (A - Ativa / I - Inativa)")
@@ -151,8 +149,7 @@ public class Uf extends Model {
         this.situacao = situacao;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getEditoraSet() {
+    public jedi.db.models.query.QuerySet<Editora> getEditoraSet() {
         return Editora.objects.getSet(Uf.class, this.id);
     }
 }

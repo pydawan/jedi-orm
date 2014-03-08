@@ -42,4 +42,6 @@ public @interface EmailField {
     public String unique_for_month() default "";
     public String unique_for_year() default "";
     public String verbose_name() default "";
+    // public Class<? extends Validator> validator() default EmailValidator.class;
+    //public Class<? extends Model> models() default Model.class;
 }

@@ -21,9 +21,9 @@ import jedi.db.Models;
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ManyToManyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
-import jedi.db.models.QuerySet;
+import jedi.db.models.manager.Manager;
+import jedi.db.models.query.QuerySet;
 
 @Table(name="servidores")
 public class Servidor extends Model {
@@ -72,8 +72,7 @@ public class Servidor extends Model {
 		this.cpf = cpf;
 	}
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getEmprestimoSet() {
+    public jedi.db.models.query.QuerySet<Emprestimo> getEmprestimoSet() {
         return Emprestimo.objects.getSet(Servidor.class, this.id);
     }
 }

@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/01/28
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -25,10 +25,9 @@ import java.lang.annotation.Target;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface TextField {
-    public int max_length() default 1;
     public String comment() default "";
     public boolean primary_key() default false;
-    public boolean required() default false;
+    public boolean required() default true;
     public boolean unique() default false;
     public String[] choices() default "";
     public String db_column() default "";

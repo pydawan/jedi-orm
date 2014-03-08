@@ -19,8 +19,8 @@ package app.models;
 
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 @Table(name="paises", engine="InnoDB", charset="utf8", comment="Tabela de paises.")
 public class Pais extends Model {
@@ -132,8 +132,7 @@ public class Pais extends Model {
         this.situacao = situacao;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getUfSet() {
+    public jedi.db.models.query.QuerySet<Uf> getUfSet() {
         return Uf.objects.getSet(Pais.class, this.id);
     }
 }

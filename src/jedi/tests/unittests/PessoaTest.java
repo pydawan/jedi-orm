@@ -88,15 +88,16 @@ public class PessoaTest {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        pessoaEsperada.save();
+        pessoaEsperada.save();        
         Pessoa pessoaObtida = Pessoa.objects.get("nome", "Guido");
-        Assert.assertEquals(pessoaEsperada.getId(), pessoaObtida.getId());
+        Assert.assertEquals(pessoaEsperada.getId(), pessoaObtida.getId());       
     }
 
     @Test
     public void testSaveUpdate() {
         Pessoa pessoaEsperada = Pessoa.objects.get("nome", "Guido");
         pessoaEsperada.setNome("Guido van Rossum");
+        pessoaEsperada.isAdmin(true);
         pessoaEsperada.save();
         Pessoa pessoaObtida = Pessoa.objects.get("nome", "Guido van Rossum");
         Assert.assertTrue(pessoaEsperada.getNome().equals(pessoaObtida.getNome()));

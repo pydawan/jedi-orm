@@ -19,8 +19,8 @@ package app.models;
 
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 @Table(name="autores")
 public class Autor extends Model {
@@ -88,8 +88,7 @@ public class Autor extends Model {
         this.email = email;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getLivroSet() {
+    public jedi.db.models.query.QuerySet<Livro> getLivroSet() {
         return Livro.objects.getSet(Autor.class, this.id);
     }
 }

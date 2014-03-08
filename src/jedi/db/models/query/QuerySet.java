@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/26
+ * Date: 2014/03/04
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -15,7 +15,7 @@
  *    Thiago Alexandre Martins Monteiro - initial API and implementation
  ************************************************************************************************/
 
-package jedi.db.models;
+package jedi.db.models.query;
 
 import java.lang.reflect.Field;
 import java.sql.Connection;
@@ -29,6 +29,8 @@ import java.util.List;
 
 import jedi.db.ConnectionFactory;
 import jedi.db.annotations.Table;
+import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 import jedi.types.Block;
 import jedi.types.Function;
 
@@ -44,7 +46,7 @@ import jedi.types.Function;
 @SuppressWarnings({"rawtypes", "unchecked"})
 public class QuerySet<T extends Model> extends ArrayList<T> {
 
-    private static final long serialVersionUID = 1071905522184893192L;
+	private static final long serialVersionUID = 1071905522184893192L;
     private Class<T> entity = null;
     private int offset = 0;
     private transient boolean isPersited;
@@ -89,24 +91,20 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     // orderBy
     public QuerySet orderBy(String field) {
         QuerySet orderedList = null;
-
         if (field != null && !field.equals("") && !this.isEmpty()) {
             Comparator comparator = null;
-
             try {
                 // As variáveis abaixo tem modificador final para serem
                 // acessadas nas classes internas.
                 final String fld = field.replace("-", "");
                 final String fld2 = field;
                 Field f = null;
-
                 if (field.equals("id") || field.equals("-id")) {
                     f = this.entity.getSuperclass().getDeclaredField("id");
                 } else {
                     f = this.entity.getDeclaredField(fld);
                 }
                 f.setAccessible(true);
-
                 if (f != null) {
                     if (field.equals("id")) {
                         comparator = new Comparator<Model>() {
@@ -133,7 +131,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                             }
                         };
                     }
-
                     if (f.getType().getName().equals("java.lang.String")) {
                         comparator = new Comparator<Model>() {
                             public int compare(Model m1, Model m2) {
@@ -143,7 +140,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                                     f1.setAccessible(true);
                                     Field f2 = m2.getClass().getDeclaredField(fld);
                                     f2.setAccessible(true);
-
                                     if (fld2.startsWith("-")) {
                                         result = ((String) f2.get(m2)).compareTo((String) f1.get(m1));
                                     } else {
@@ -168,13 +164,11 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet limit(int... params) {
         QuerySet objs = null;
-
         if (!this.isEmpty() && params != null) {
             objs = new QuerySet();
             objs.entity = this.entity;
             int start = 0;
             int end = 0;
-
             // Se for um argumento:
             // params[0] - limit
             if (params.length == 1) {
@@ -190,16 +184,13 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             // Se forem dois argumentos:
             // params[0] - offset
             // params[1] - limit
-
             if (params.length == 2) {
                 start = params[0];
                 end = params[0] + params[1];
             }
-
             if (end > this.size()) {
                 end = this.size();
             }
-
             for (int i = start; i < end; i++) {
                 objs.add(this.get(i));
             }
@@ -210,12 +201,10 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     public QuerySet offset(int offset) {
         QuerySet records = null;
         this.offset = offset;
-
         // Verificando se a lista é vazia.
         if (!this.isEmpty()) {
             records = new QuerySet();
             records.entity = this.entity;
-
             for (int i = offset; i < this.size(); i++) {
                 records.add(this.get(i));
             }
@@ -225,11 +214,9 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet save() {
         Connection connection = ConnectionFactory.getConnection();
-
         if (connection != null) {
             if (!this.isEmpty()) {
                 boolean autoCloseConnection;
-
                 for (Object o : this) {
                     Model model = (Model) o;
                     model.connection(connection);
@@ -241,7 +228,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                 // Informando que a lista foi persistida.
                 this.isPersisted(true);
             }
-
             try {
                 connection.close();
             } catch (SQLException e) {
@@ -253,7 +239,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet delete() {
         Connection connection = ConnectionFactory.getConnection();
-
         if (connection != null) {
             if (!this.isEmpty()) {
                 Model model;
@@ -270,7 +255,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                 this.isPersisted(false);
                 this.removeAll(this);
             }
-
             try {
                 connection.close();
             } catch (SQLException e) {
@@ -285,7 +269,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     // Por exemplo: ufs.update("pais", paises.filter("nome", "Brasil") );
     public QuerySet update(String... args) {
         Connection connection = ConnectionFactory.getConnection();
-
         if (connection != null) {
             if (!this.isEmpty()) {
                 boolean autoCloseConnection;
@@ -298,7 +281,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                     model.autoCloseConnection(autoCloseConnection);
                 }
             }
-
             try {
                 connection.close();
             } catch (SQLException e) {
@@ -314,7 +296,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet all() {
         QuerySet querySet = new QuerySet();
-
         for (int i = 0; i < this.size(); i++) {
             querySet.add(this.get(i));
         }
@@ -323,7 +304,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     private QuerySet<T> in(String query) {
         QuerySet<T> querySet = null;
-
         try {
             if (query != null && !query.trim().isEmpty()) {
                 query = query.replace("__in", "");
@@ -331,21 +311,18 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                 query = query.replaceAll("',\\s+", "',");
                 query = query.replaceAll("[\\[\\]]", "");
                 String[] queryComponents = query.split("=");
-
                 if (queryComponents != null && queryComponents.length > 0) {
                     querySet = new QuerySet<T>();
                     querySet.entity(this.entity);
                     String fieldName = queryComponents[0].trim();
                     String[] fieldValues = queryComponents[1].split(",");
                     Field field = null;
-
                     if (fieldName.equalsIgnoreCase("id")) {
                         field = this.entity.getSuperclass().getDeclaredField(fieldName);
                     } else {
                         field = this.entity.getDeclaredField(fieldName);
                     }
                     field.setAccessible(true);
-
                     for (T model : this) {
                         for (String fieldValue : fieldValues) {
                             if (field.get(model) != null && field.get(model).toString().equals(fieldValue.replaceAll("'(.*)'", "$1"))) {
@@ -363,28 +340,24 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     private QuerySet<T> range(String query) {
         QuerySet<T> querySet = null;
-
         try {
             if (query != null && !query.trim().isEmpty()) {
                 query = query.replace("__range", "");
                 query = query.replace(", ", ",");
                 query = query.replaceAll("['\\[\\]]", "");
                 String[] queryComponents = query.split("=");
-
                 if (queryComponents != null && queryComponents.length > 0) {
                     querySet = new QuerySet<T>();
                     querySet.entity(this.entity);
                     String fieldName = queryComponents[0];
                     String[] fieldValues = queryComponents[1].split(",");
                     Field field = null;
-
                     if (fieldName.trim().equalsIgnoreCase("id")) {
                         field = this.entity.getSuperclass().getDeclaredField(fieldName);
                     } else {
                         field = this.entity.getDeclaredField(fieldName);
                     }
                     field.setAccessible(true);
-
                     for (T model : this) {
                         for (int fieldValue = Integer.parseInt(fieldValues[0]); fieldValue <= Integer.parseInt(fieldValues[1]); fieldValue++) {
                             if (field.get(model).equals(fieldValue)) {
@@ -402,7 +375,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     private QuerySet<T> filterNumericField(String query) {
         QuerySet<T> querySet = null;
-
         if (query != null && !query.trim().isEmpty()) {
             querySet = new QuerySet();
             query = query.trim().toLowerCase();
@@ -413,7 +385,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             String fieldValue = queryComponents[2].trim();
             // System.out.printf("%s%s%s", field_name, operator, field_value);
             Field field = null;
-
             try {
                 if (fieldName.equals("id")) {
                     field = this.entity.getSuperclass().getDeclaredField(fieldName);
@@ -421,7 +392,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                     field = this.entity.getDeclaredField(fieldName);
                 }
                 field.setAccessible(true);
-
                 for (T model : this) {
                     if (operator.equals("<")) {
                         if (field.getDouble(model) < Double.parseDouble(fieldValue)) {
@@ -459,14 +429,12 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     private QuerySet<T> exact(String query) {
         QuerySet<T> querySet = null;
-
         if (query != null && !query.trim().isEmpty()) {
             querySet = new QuerySet<T>();
             query = query.replace("__exact", "");
             String[] queryComponents = query.split("=");
             String fieldName = queryComponents[0];
             String fieldValue = queryComponents[1];
-
             if (fieldValue.equalsIgnoreCase("null")) {
                 querySet.add(this.isNull(String.format("%s__isnull=true", fieldName)));
             } else {
@@ -477,9 +445,7 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     }
 
     private QuerySet<T> isNull(String query) {
-
         QuerySet<T> querySet = null;
-
         if (query != null && !query.trim().isEmpty()) {
             querySet = new QuerySet<T>();
             query = query.trim().toLowerCase();
@@ -488,7 +454,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             String fieldName = queryComponents[0];
             boolean isNull = Boolean.parseBoolean(queryComponents[1]);
             Field field = null;
-
             try {
                 if (fieldName.equalsIgnoreCase("id")) {
                     field = this.entity.getSuperclass().getDeclaredField(fieldName);
@@ -496,7 +461,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                     field = this.entity.getDeclaredField(fieldName);
                 }
                 field.setAccessible(true);
-
                 for (T model : this) {
                     if (isNull) {
                         if (field.get(model) == null) {
@@ -517,7 +481,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> startsWith(String query) {
         QuerySet<T> querySet = null;
-
         if (query != null && !query.isEmpty()) {
             querySet = new QuerySet<T>();
             query = query.replace("__startswith", "");
@@ -525,7 +488,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             String fieldName = queryComponents[0];
             String fieldValue = queryComponents[1];
             Field field = null;
-
             try {
                 if (fieldName.equals("id")) {
                     field = this.entity.getSuperclass().getDeclaredField(fieldName);
@@ -549,7 +511,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> endsWith(String query) {
         QuerySet<T> querySet = null;
-
         if (query != null && !query.isEmpty()) {
             querySet = new QuerySet<T>();
             query = query.replace("__endswith", "");
@@ -557,7 +518,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             String fieldName = queryComponents[0];
             String fieldValue = queryComponents[1];
             Field field = null;
-
             try {
                 if (fieldName.equals("id")) {
                     field = this.entity.getSuperclass().getDeclaredField(fieldName);
@@ -581,7 +541,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> contains(String query) {
         QuerySet<T> querySet = null;
-
         if (query != null && !query.isEmpty()) {
             querySet = new QuerySet<T>();
             query = query.replace("__contains", "");
@@ -589,7 +548,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             String fieldName = queryComponents[0];
             String fieldValue = queryComponents[1];
             Field field = null;
-
             try {
                 if (fieldName.equals("id")) {
                     field = this.entity.getSuperclass().getDeclaredField(fieldName);
@@ -613,10 +571,8 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> filter(String... queries) {
         QuerySet<T> querySet = null;
-
         if (queries != null && !queries.toString().trim().isEmpty()) {
             querySet = new QuerySet<T>();
-
             for (String query : queries) {
                 query = query.trim();
                 // Retirando o excesso de espaços ao redor do operador =
@@ -684,7 +640,7 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     // models com o id igual a 0.
     // Esse conflito foi solucionado através do atributo is_persisted.
     public boolean add(T model) {
-        if (model != null && model.id == 0) {
+        if (model != null && model.id() == 0) {
             model.id(this.size() + 1);
         }
         return super.add(model);
@@ -746,7 +702,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> remove(String... queries) {
         QuerySet<T> querySet = this.filter(queries);
-
         if (querySet != null && !querySet.isEmpty()) {
             this.removeAll(querySet);
         }
@@ -755,7 +710,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> remove(String query) {
         QuerySet<T> querySet = this.filter(query);
-
         if (querySet != null && !querySet.isEmpty()) {
             this.removeAll(querySet);
         }
@@ -784,7 +738,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> distinct() {
         QuerySet<T> querySet = null;
-
         if (!this.isEmpty()) {
             // Eliminando elementos repetidos da coleção através de HashSet.
             querySet = new QuerySet(new HashSet<T>(this));
@@ -794,7 +747,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public T earliest() {
         T model = null;
-
         if (!this.isEmpty()) {
             model = this.get(0);
         }
@@ -803,7 +755,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public T latest() {
         T model = null;
-
         if (!this.isEmpty()) {
             model = this.get(this.size() - 1);
         }
@@ -812,7 +763,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public QuerySet<T> get(String field, Object value) {
         QuerySet<T> querySet = null;
-
         if (!this.isEmpty()) {
             if (value instanceof String) {
                 querySet = this.filter(String.format("%s__in=['%s']", field, value));
@@ -829,9 +779,7 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
     // Integeger -> Object.
     public T get(String id, int value) {
         T model = null;
-
         QuerySet<T> querySet = null;
-
         if (!this.isEmpty()) {
             querySet = this.get("id", new Integer(value));
             model = querySet != null && !querySet.isEmpty() ? querySet.get(0) : null;
@@ -856,21 +804,17 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public String toJSON() {
         String json = "[";
-
         if (!this.isEmpty()) {
             json += "\n";
         }
-
         for (Model model : this) {
             json += String.format("%s,\n", model.toJSON(1));
         }
-
         if (!this.isEmpty()) {
             json = json.substring(0, json.length() - 2);
             json += "\n";
         }
         json += "]";
-
         return json;
     }
 
@@ -879,7 +823,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
         String xmlElementOpenTag = "";
         String xmlElementCloseTag = "";
         Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
-
         if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty()) {
             xmlElementOpenTag += String.format("<%s>", tableAnnotation.name().trim().toLowerCase());
             xmlElementCloseTag += String.format("<%s>", tableAnnotation.name().trim().toLowerCase());
@@ -887,7 +830,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             xmlElementOpenTag += String.format("<%ss>", this.entity.getSimpleName().toLowerCase());
             xmlElementCloseTag += String.format("</%ss>", this.entity.getSimpleName().toLowerCase());
         }
-
         if (!this.isEmpty()) {
             for (Model model : this) {
                 xml += String.format("%s\n", model.toXML(1));
@@ -907,7 +849,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
         String xmlElementOpenTag = "";
         String xmlElementCloseTag = "";
         Table tableAnnotation = (Table) this.entity.getAnnotation(Table.class);
-
         if (tableAnnotation != null && !tableAnnotation.name().trim().isEmpty()) {
             xmlElementOpenTag += String.format("<%s>", tableAnnotation.name().trim().toLowerCase());
             xmlElementCloseTag += String.format("<%s>", tableAnnotation.name().trim().toLowerCase());
@@ -915,7 +856,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
             xmlElementOpenTag += String.format("<%ss>", this.entity.getSimpleName().toLowerCase());
             xmlElementCloseTag += String.format("</%ss>", this.entity.getSimpleName().toLowerCase());
         }
-
         if (!this.isEmpty()) {
             for (Model model : this) {
                 xml += String.format("%s\n", model.toExtenseXML(1));
@@ -941,7 +881,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public void each(Block block) {
         int index = 0;
-
         if (block != null) {
             for (T object : this) {
                 block.index = index++;
@@ -953,7 +892,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public void each(Function function) {
         int index = 0;
-
         if (function != null) {
             for (T object : this) {
                 function.index = index++;
@@ -972,11 +910,9 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
 
     public List<List<String>> get(String fieldNames) {
         List<List<String>> fieldsValues = null;
-
         if (fieldNames != null && !fieldNames.trim().isEmpty()) {
             fieldsValues = new ArrayList<List<String>>();
             String[] fields = null;
-
             // Apenas um atributo.
             if (fieldNames.matches("^(\\w+)$")) {
                 fields = new String[]{fieldNames};
@@ -986,11 +922,10 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
                 // espaço como separador.
                 fields = fieldNames.split(",\\s+");
             } else {
+            	
             }
-
             for (T model : this) {
                 List<String> fieldValue = new ArrayList<String>();
-
                 for (String field : fields) {
                     if (model.get(field) != null) {
                         fieldValue.add((model.get(field)).toString());
@@ -1011,7 +946,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
      */
     public T first() {
         T obj = null;
-
         // Verificando se a lista não é vazia.
         if (!this.isEmpty()) {
             // Ordenando a lista em ordem crescente pela chave primária.
@@ -1029,7 +963,6 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
      */
     public T last() {
         T obj = null;
-
         if (!this.isEmpty()) {
             // Ordenando a lista em ordem decrescente pela chave primária.
             this.orderBy("-id");

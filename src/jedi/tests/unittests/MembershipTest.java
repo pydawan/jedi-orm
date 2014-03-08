@@ -18,6 +18,7 @@
 package jedi.tests.unittests;
 
 import jedi.db.engine.JediORMEngine;
+import jedi.types.DateTime;
 import jedi.types.PyDate;
 
 import org.junit.AfterClass;
@@ -51,19 +52,19 @@ public class MembershipTest {
 		Membership m1 = new Membership();
 		m1.setPerson(ringo);
 		m1.setGroup(beatles);
-		m1.setDateJoined(new PyDate(1962, 8, 16));
+		m1.setDateJoined(new DateTime(1962, 8, 16));
 		m1.setInviteReason("Needed a new drummer.");
 		m1.insert();
 		Membership m2 = new Membership();
 		m2.setPerson(paul);
 		m2.setGroup(beatles);
-		m2.setDateJoined(new PyDate(1960, 8, 1));
+		m2.setDateJoined(new DateTime(1960, 8, 1));
 		m2.setInviteReason("Wanted to form a band.");
 		m2.insert();
 		Membership m3 = new Membership();
 		m3.setPerson(john);
 		m3.setGroup(beatles);
-		m3.setDateJoined(new PyDate(1960, 8, 1));
+		m3.setDateJoined(new DateTime(1960, 8, 1));
 		m3.setInviteReason("Wanted to form a band.");
 		m3.insert();
 		Membership m4 = new Membership();

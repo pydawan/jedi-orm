@@ -19,27 +19,19 @@ package app.models;
 
 import java.util.Date;
 
-import jedi.db.Models;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.DateField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Membership extends Model {	
 	private static final long serialVersionUID = -1658988303242454439L;
 	
-	@ForeignKeyField(model="Person", 
-			constraint_name="fk_memberships_people", 
-			references="people", 
-			on_delete=Models.CASCADE)
+	@ForeignKeyField
 	private Person person;
 	
-	@ForeignKeyField(
-			model="Group",
-			constraint_name="fk_memberships_groups",
-			references="groups",
-			on_delete=Models.CASCADE)
+	@ForeignKeyField
 	private Group group;
 
 	@DateField

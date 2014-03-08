@@ -65,7 +65,6 @@ public abstract class TableUtil {
 	public static final String getColumnName(Field f) {
 		String columnName = "";
 		if (f != null) {
-//			columnName = getColumnName(f.getType().getSimpleName());
 			columnName = getColumnName(f.getName());
 		}
 		return columnName;

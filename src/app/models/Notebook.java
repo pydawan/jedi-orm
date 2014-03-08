@@ -18,8 +18,8 @@
 package app.models;
 
 import jedi.db.annotations.fields.CharField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Notebook extends Model {
 	private static final long serialVersionUID = 2208401363196881965L;
@@ -50,13 +50,11 @@ public class Notebook extends Model {
 		this.numeroPatrimonio = numeroPatrimonio;
 	}    
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getEmprestimoSet() {
+    public jedi.db.models.query.QuerySet<Emprestimo> getEmprestimoSet() {
         return Emprestimo.objects.getSet(Notebook.class, this.id);
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getServidorSet() {
+    public jedi.db.models.query.QuerySet<Servidor> getServidorSet() {
         return Servidor.objects.getSet(Notebook.class, this.id);
     }
 }

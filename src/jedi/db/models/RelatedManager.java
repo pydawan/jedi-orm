@@ -10,6 +10,8 @@
  ******************************************************************************/
 package jedi.db.models;
 
+import jedi.db.models.manager.Manager;
+
 //Especificacao do Model Manager para associacoes 1-N e N-N
 //https://docs.djangoproject.com/en/dev/ref/models/relations/#django.db.models.fields.related.RelatedManager.add
 public class RelatedManager extends Manager {

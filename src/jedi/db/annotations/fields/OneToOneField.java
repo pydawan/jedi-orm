@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/01/23
+ * Date: 2014/03/07
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -27,10 +27,10 @@ import jedi.db.Models;
 @Target(ElementType.FIELD)
 @Retention(RetentionPolicy.RUNTIME)
 public @interface OneToOneField {
-    public String model();
+    public String model() default "";
     public String column_name() default "";
-    public String constraint_name();
-    public String references();
+    public String constraint_name() default "";
+    public String references() default "";
     public String referenced_column() default "";
     public String comment() default "";
     public boolean unique() default true;

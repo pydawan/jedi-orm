@@ -19,8 +19,8 @@ package app.models;
 
 import jedi.db.annotations.Table;
 import jedi.db.annotations.fields.CharField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 @Table(name="countries", engine="InnoDB", charset="utf8", comment="Table of countries.")
 public class Country extends Model {
@@ -77,8 +77,7 @@ public class Country extends Model {
         this.status = status;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getStateSet() {
+    public jedi.db.models.query.QuerySet<State> getStateSet() {
         return State.objects.getSet(Country.class, this.id);
     }
 }

@@ -20,8 +20,8 @@ package app.models;
 import jedi.db.Models;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Editora extends Model {
     // Attributes
@@ -93,8 +93,7 @@ public class Editora extends Model {
         this.uf = (Uf) uf;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getLivroSet() {
+    public jedi.db.models.query.QuerySet<Livro> getLivroSet() {
         return Livro.objects.getSet(Editora.class, this.id);
     }
 }

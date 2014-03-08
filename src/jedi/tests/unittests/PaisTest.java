@@ -18,7 +18,7 @@
 package jedi.tests.unittests;
 
 import jedi.db.engine.JediORMEngine;
-import jedi.db.models.QuerySet;
+import jedi.db.models.query.QuerySet;
 
 import org.junit.AfterClass;
 import org.junit.Assert;

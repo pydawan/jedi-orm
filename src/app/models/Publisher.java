@@ -20,8 +20,8 @@ package app.models;
 import jedi.db.Models;
 import jedi.db.annotations.fields.CharField;
 import jedi.db.annotations.fields.ForeignKeyField;
-import jedi.db.models.Manager;
 import jedi.db.models.Model;
+import jedi.db.models.manager.Manager;
 
 public class Publisher extends Model {
     // Attributes
@@ -77,8 +77,7 @@ public class Publisher extends Model {
         this.state = state;
     }
 
-    @SuppressWarnings("rawtypes")
-    public jedi.db.models.QuerySet getBookSet() {
+    public jedi.db.models.query.QuerySet<Book> getBookSet() {
         return Book.objects.getSet(Publisher.class, this.id);
     }
 }

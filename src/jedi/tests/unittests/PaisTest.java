@@ -277,8 +277,8 @@ public class PaisTest {
 		paises.add(new Pais("Mayotte", "YT"));
 		paises.add(new Pais("South Africa", "ZA"));
 		paises.add(new Pais("Zambia", "ZM"));
-		paises.add(new Pais("Zimbabwe", "ZW"));
-		//paises.save();
+		paises.add(new Pais("Zimbabwe", "ZW"));		
+		paises.save();		
 	}
 	
 	@AfterClass

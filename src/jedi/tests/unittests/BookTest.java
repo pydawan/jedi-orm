@@ -54,8 +54,9 @@ public class BookTest {
         authors.add(new Author("Paulo", "Coelho", "paulocoelho@gmail.com"));
         expectedBook.setAuthors(authors);
         expectedBook.save();
-        Book obtainedBook = Book.objects.get("title", "O Alquimistaa");
+        Book obtainedBook = Book.objects.get("title", "O Alquimistaa");        
         Assert.assertEquals(expectedBook.getId(), obtainedBook.getId());
+        System.out.println(expectedBook.toCSV());
     }
     
     @Test

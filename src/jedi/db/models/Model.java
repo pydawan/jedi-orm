@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/03/08
+ * Date: 2014/03/18
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -26,6 +26,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Date;
 import java.util.List;
 
@@ -1225,8 +1226,52 @@ public class Model implements Comparable<Model>, Serializable {
 		return xml.toString();
 	}
 	
+	/**
+	 * Method that returns the model data representation 
+	 * in CSV (Comma Separated Value) format. 
+	 * @return String
+	 */
 	public String toCSV() {
-		return null;
+		String csv = "";
+		for (Field field : this.getClass().getDeclaredFields()) {			
+			field.setAccessible(true);
+			if (field.getName().equals("serialVersionUID")) {
+				continue;
+			}
+			if (field.getName().equals("objects")) {
+				continue;
+			}
+			try {
+				if (field.get(this) != null) {
+					if (Collection.class.isAssignableFrom(field.getType())) {
+						List<Model> models = (List<Model>) field.get(this); 
+						for (Model model : models) {
+							csv += String.format("\"%s\",", model.toCSV());
+						}
+					} else if (Model.class.isAssignableFrom(field.getType())) {
+						csv += String.format("\"%s\",", ((Model) field.get(this)).toCSV());					
+					} else {
+						String s = field.get(this).toString();
+						if (s.startsWith("\"") && s.endsWith("\"")) {
+							if (s.contains(",")) {
+								csv += String.format("\"%s\",", field.get(this));
+							} else {
+								csv += String.format("\"\"%s\"\",", field.get(this));
+							}
+						} else {
+							csv += String.format("%s,", field.get(this));
+						}
+					}					
+				}			
+				
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			} catch (IllegalAccessException e) {
+				e.printStackTrace();
+			}
+		}		
+		csv = csv.endsWith(",") ? csv.substring(0, csv.length() - 1) : csv; 
+		return csv;
 	}
 
 	public <T extends Model> T as(Class<T> c) {

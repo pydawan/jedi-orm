@@ -31,7 +31,7 @@ public class Produto extends Model {
     @CharField(max_length=30)
     private String nome;
 
-    @DecimalField(precision=4, scale=2, unique=true)
+    @DecimalField(scale=4, precision=2, unique=true)
     private BigDecimal preco;
 
     public static Manager objects = new Manager(Produto.class);

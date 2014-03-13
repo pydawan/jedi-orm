@@ -3,7 +3,7 @@
  * 
  * Version: 1.0
  * 
- * Date: 2014/03/07
+ * Date: 2014/03/08
  * 
  * Copyright (c) 2014 Thiago Alexandre Martins Monteiro.
  * 
@@ -149,15 +149,7 @@ public abstract class JediORMEngine {
                             if (!modelClassName.endsWith("java")) {
                                 continue;
                             }
-                            modelClassName = modelClassName.replace(
-                        		String.format(
-                    				"%s%ssrc%s", 
-                    				JediORMEngine.APP_ROOT_DIR, 
-                    				File.separator, 
-                    				File.separator
-                				), 
-                				""
-            				);
+                            modelClassName = modelClassName.replace(String.format("%s%s", JediORMEngine.APP_SRC_DIR, File.separator), "");
                             modelClassName = modelClassName.replace(File.separator, ".").replace(".java", "");
                             JediORMEngine.readedAppModels.add(modelClassName);                                
                             Class modelClass = null;
@@ -203,15 +195,7 @@ public abstract class JediORMEngine {
                                 if (!modelClassName.endsWith("java")) {
                                     continue;
                                 }
-                                modelClassName = modelClassName.replace(
-                            		String.format(
-                        				"%s%ssrc%s", 
-                                		JediORMEngine.APP_ROOT_DIR, 
-                                		File.separator, 
-                                		File.separator
-                            		), 
-                            		""
-                        		);
+                                modelClassName = modelClassName.replace(String.format("%s%s", JediORMEngine.APP_SRC_DIR, File.separator), "");
                                 modelClassName = modelClassName.replace(File.separator, ".").replace(".java", "");
                                 JediORMEngine.readedAppModels.add(modelClassName);                                
                                 // A model class reference.
@@ -617,8 +601,8 @@ public abstract class JediORMEngine {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
                                                     TableUtil.getColumnName(field),
-                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !decimalFieldAnnotation
                                                     	.default_value()
@@ -641,8 +625,8 @@ public abstract class JediORMEngine {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s%s,\n",
                                                     TableUtil.getColumnName(field),
-                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !decimalFieldAnnotation
                                                     	.default_value()
@@ -666,8 +650,8 @@ public abstract class JediORMEngine {
                                                 sql += String.format(
                                                     "    %s NUMERIC(%d,%d)%s%s%s%s,\n",
                                                     TableUtil.getColumnName(field),
-                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.precision(),
                                                     !decimalFieldAnnotation
                                                     	.default_value()
                                                     	.trim()
@@ -691,8 +675,8 @@ public abstract class JediORMEngine {
                                                 sql += String.format(
                                                     "    %s DECIMAL(%d,%d)%s%s%s,\n",
                                                     TableUtil.getColumnName(field),
-                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.scale(),
+                                                    decimalFieldAnnotation.precision(),
                                                     decimalFieldAnnotation.required() ? " NOT NULL" : "",
                                                     !decimalFieldAnnotation
                                                     	.default_value()

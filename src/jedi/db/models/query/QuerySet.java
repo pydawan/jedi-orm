@@ -867,6 +867,14 @@ public class QuerySet<T extends Model> extends ArrayList<T> {
         }
         return xml;
     }
+    
+    public String toCSV() {
+    	String csv = "";
+    	for (Model model : this) {
+    		csv += String.format("%s\n", model.toCSV());
+    	}
+    	return csv;
+    }
 
     public QuerySet append(T object) {
         if (object != null) {

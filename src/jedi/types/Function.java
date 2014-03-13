@@ -25,6 +25,7 @@ public class Function<T> implements Runnable {
 
     public Function() {}
 
+    @SuppressWarnings("unchecked")
     public <E> Function(E... objects) {
         this.objects = objects;
     }
